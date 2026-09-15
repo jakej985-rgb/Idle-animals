@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
+import '../models/habitat.dart';
+import '../models/species.dart';
 import '../providers/game_notifier.dart';
 import '../widgets/currency_header.dart';
 import '../widgets/habitat_viewport.dart';
 import '../widgets/needs_panel.dart';
 import '../widgets/offline_modal.dart';
-import '../widgets/restoration_modal.dart';
 import 'archive_sheet.dart';
-import 'expeditions_sheet.dart';
-import 'missions_sheet.dart';
+import 'operations_sheet.dart';
 import 'research_sheet.dart';
 import 'staff_sheet.dart';
 import 'upgrades_sheet.dart';
-import 'world_map_sheet.dart';
 
 class SanctuaryScreen extends ConsumerStatefulWidget {
   const SanctuaryScreen({super.key});
@@ -73,49 +72,14 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
                     CurrencyHeader(state: state),
                     const SizedBox(height: 8),
 
-                    // 2. Quick Action Bar (Map Switcher, Expeditions, Missions, Prestige, Audio)
-                    _buildTopActionBar(context, state, controller,
-                        hasCompletedExpedition, hasClaimableMission),
-                    const SizedBox(height: 8),
-
-                    // 3. Habitat Title & Status Badge
-                    Row(
-                      children: [
-                        Text(_getBiomeEmoji(habitat.biomeType),
-                            style: const TextStyle(fontSize: 18)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            habitat.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E3A5A),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color:
-                                    const Color(0xFF38BDF8).withOpacity(0.4)),
-                          ),
-                          child: Text(
-                            'Reserve Lv ${habitat.level}',
-                            style: const TextStyle(
-                              color: Color(0xFF7DD3FC),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+                    // 2. Streamlined Habitat Header & Unified Operations Bar
+                    _buildHabitatHeader(
+                      context,
+                      state,
+                      habitat,
+                      controller,
+                      hasCompletedExpedition,
+                      hasClaimableMission,
                     ),
                     const SizedBox(height: 8),
 
@@ -152,219 +116,149 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     );
   }
 
-  Widget _buildTopActionBar(
+  Widget _buildHabitatHeader(
     BuildContext context,
     GameState state,
+    Habitat habitat,
     GameNotifier controller,
     bool hasExpeditionBadge,
     bool hasMissionBadge,
   ) {
-    return Row(
-      children: [
-        // World Map Button
-        InkWell(
-          onTap: () => _openSheet(
-            context,
-            WorldMapSheet(
-              state: state,
-              onSelectHabitat: (id) => controller.switchActiveHabitat(id),
-            ),
-          ),
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF162534),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF233B50)),
-            ),
-            child: Row(
+    final species = Species.fromId(habitat.speciesId);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF101C2B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF1C344E)),
+      ),
+      child: Row(
+        children: [
+          Text(_getBiomeEmoji(habitat.biomeType),
+              style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('🌎', style: TextStyle(fontSize: 13)),
-                const SizedBox(width: 4),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        habitat.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E3A5A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFF38BDF8).withOpacity(0.4)),
+                      ),
+                      child: Text(
+                        'Lv ${habitat.level}',
+                        style: const TextStyle(
+                          color: Color(0xFF7DD3FC),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
                 Text(
-                  'Map (${state.habitats.length})',
+                  '${species.iconEmoji} ${species.name} • Pop: ${habitat.population}',
                   style: const TextStyle(
-                    color: Color(0xFF38BDF8),
+                    color: Colors.white54,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        const SizedBox(width: 8),
 
-        // Expeditions Button
-        InkWell(
-          onTap: () => _openSheet(
-            context,
-            ExpeditionsSheet(
-              state: state,
-              onStartExpedition: (id) => controller.startExpedition(id),
-              onClaimExpedition: (id) => controller.claimExpedition(id),
+          // Sound Quick Toggle
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            icon: Icon(
+              state.soundEnabled ? Icons.volume_up : Icons.volume_off,
+              color: state.soundEnabled ? Colors.white70 : Colors.white24,
+              size: 18,
             ),
+            onPressed: () => controller.toggleSound(),
           ),
-          borderRadius: BorderRadius.circular(10),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF162534),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF233B50)),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🧭', style: TextStyle(fontSize: 13)),
-                    SizedBox(width: 4),
-                    Text(
-                      'Expeditions',
-                      style: TextStyle(
-                        color: Color(0xFFFBBF24),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (hasExpeditionBadge)
-                Positioned(
-                  top: -3,
-                  right: -3,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
-        // Missions Button
-        InkWell(
-          onTap: () => _openSheet(
-            context,
-            MissionsSheet(
-              state: state,
-              onClaimMission: (id) => controller.claimMissionReward(id),
-            ),
-          ),
-          borderRadius: BorderRadius.circular(10),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF162534),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF233B50)),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🎯', style: TextStyle(fontSize: 13)),
-                    SizedBox(width: 4),
-                    Text(
-                      'Directives',
-                      style: TextStyle(
-                        color: Color(0xFFA78BFA),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (hasMissionBadge)
-                Positioned(
-                  top: -3,
-                  right: -3,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF43F5E),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        const Spacer(),
-
-        // Ecosystem Restoration (Prestige) Button
-        InkWell(
-          onTap: () {
-            final activeHab =
-                state.habitats[state.activeHabitatId] ?? state.habitats.values.first;
-            showDialog(
-              context: context,
-              builder: (ctx) => RestorationModal(
+          // Operations Unified Menu Button
+          InkWell(
+            onTap: () => _openSheet(
+              context,
+              OperationsSheet(
                 state: state,
-                habitat: activeHab,
-                onConfirmRestore: () {
-                  controller.restoreEcosystem(activeHab.id);
-                  Navigator.of(ctx).pop();
-                },
-                onBuyPerk: (key) => controller.buyRestorationPerk(key),
+                controller: controller,
+                onOpenSubSheet: (sheet) => _openSheet(context, sheet),
               ),
-            );
-          },
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF047857).withOpacity(0.3),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
+            borderRadius: BorderRadius.circular(10),
+            child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                Text('🌿', style: TextStyle(fontSize: 13)),
-                SizedBox(width: 3),
-                Text(
-                  'Restore',
-                  style: TextStyle(
-                    color: Color(0xFF4ADE80),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF162A3E),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF2E537A)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('🛰️', style: TextStyle(fontSize: 13)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Operations',
+                        style: TextStyle(
+                          color: Color(0xFF38BDF8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                if (hasExpeditionBadge || hasMissionBadge)
+                  Positioned(
+                    top: -3,
+                    right: -3,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
-        ),
-        const SizedBox(width: 6),
-
-        // Sound Toggle Button
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-          icon: Icon(
-            state.soundEnabled ? Icons.volume_up : Icons.volume_off,
-            color: state.soundEnabled ? Colors.white70 : Colors.white24,
-            size: 18,
-          ),
-          onPressed: () => controller.toggleSound(),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

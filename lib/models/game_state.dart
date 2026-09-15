@@ -7,6 +7,9 @@ import 'staff.dart';
 import 'upgrade.dart';
 
 class GameState {
+  static const int currentSchemaVersion = 2;
+
+  final int schemaVersion;
   final double credits;
   final double dna;
   final double research;
@@ -23,12 +26,14 @@ class GameState {
   final Map<String, Mission> missions;
   final Map<String, int> restorationPerks;
   final List<String> unlockedSpeciesIds;
-  final int totalDodosBred;
+  final int totalAnimalsBred;
+  int get totalDodosBred => totalAnimalsBred;
   final int totalExpeditionsCompleted;
   final bool soundEnabled;
   final bool hapticsEnabled;
 
   const GameState({
+    this.schemaVersion = currentSchemaVersion,
     required this.credits,
     required this.dna,
     required this.research,
@@ -45,7 +50,7 @@ class GameState {
     required this.missions,
     required this.restorationPerks,
     required this.unlockedSpeciesIds,
-    this.totalDodosBred = 1,
+    this.totalAnimalsBred = 1,
     this.totalExpeditionsCompleted = 0,
     this.soundEnabled = true,
     this.hapticsEnabled = true,
@@ -209,7 +214,7 @@ class GameState {
         'expedition_boost': 0,
       },
       unlockedSpeciesIds: ['dodo'],
-      totalDodosBred: 1,
+      totalAnimalsBred: 1,
       totalExpeditionsCompleted: 0,
       soundEnabled: true,
       hapticsEnabled: true,
@@ -217,6 +222,7 @@ class GameState {
   }
 
   GameState copyWith({
+    int? schemaVersion,
     double? credits,
     double? dna,
     double? research,
@@ -233,12 +239,14 @@ class GameState {
     Map<String, Mission>? missions,
     Map<String, int>? restorationPerks,
     List<String>? unlockedSpeciesIds,
+    int? totalAnimalsBred,
     int? totalDodosBred,
     int? totalExpeditionsCompleted,
     bool? soundEnabled,
     bool? hapticsEnabled,
   }) {
     return GameState(
+      schemaVersion: schemaVersion ?? this.schemaVersion,
       credits: credits ?? this.credits,
       dna: dna ?? this.dna,
       research: research ?? this.research,
@@ -255,7 +263,7 @@ class GameState {
       missions: missions ?? this.missions,
       restorationPerks: restorationPerks ?? this.restorationPerks,
       unlockedSpeciesIds: unlockedSpeciesIds ?? this.unlockedSpeciesIds,
-      totalDodosBred: totalDodosBred ?? this.totalDodosBred,
+      totalAnimalsBred: totalAnimalsBred ?? totalDodosBred ?? this.totalAnimalsBred,
       totalExpeditionsCompleted:
           totalExpeditionsCompleted ?? this.totalExpeditionsCompleted,
       soundEnabled: soundEnabled ?? this.soundEnabled,
@@ -264,6 +272,7 @@ class GameState {
   }
 
   Map<String, dynamic> toJson() => {
+        'schemaVersion': currentSchemaVersion,
         'credits': credits,
         'dna': dna,
         'research': research,
@@ -281,14 +290,21 @@ class GameState {
         'missions': missions.map((k, v) => MapEntry(k, v.toJson())),
         'restorationPerks': restorationPerks,
         'unlockedSpeciesIds': unlockedSpeciesIds,
-        'totalDodosBred': totalDodosBred,
+        'totalAnimalsBred': totalAnimalsBred,
+        'totalDodosBred': totalAnimalsBred, // Backwards compatibility for v1
         'totalExpeditionsCompleted': totalExpeditionsCompleted,
         'soundEnabled': soundEnabled,
         'hapticsEnabled': hapticsEnabled,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
+    // Migration: If v1, totalAnimalsBred falls back to totalDodosBred
+    final totalBred = json['totalAnimalsBred'] as int? ??
+        json['totalDodosBred'] as int? ??
+        1;
+
     return GameState(
+      schemaVersion: json['schemaVersion'] as int? ?? 1,
       credits: (json['credits'] as num?)?.toDouble() ?? 60.0,
       dna: (json['dna'] as num?)?.toDouble() ?? 10.0,
       research: (json['research'] as num?)?.toDouble() ?? 0.0,
@@ -347,7 +363,7 @@ class GameState {
                   ?.map((e) => e.toString())
                   .toList() ??
               ['dodo'],
-      totalDodosBred: json['totalDodosBred'] as int? ?? 1,
+      totalAnimalsBred: totalBred,
       totalExpeditionsCompleted:
           json['totalExpeditionsCompleted'] as int? ?? 0,
       soundEnabled: json['soundEnabled'] as bool? ?? true,
