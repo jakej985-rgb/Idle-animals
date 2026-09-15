@@ -1,242 +1,386 @@
-# Extinction Sanctuary — Game Development Plan
+# Extinction Sanctuary — Updated Game Development Plan
 
-**Project:** Idle Animals
-**Working Title:** Extinction Sanctuary
-**Document:** Authoritative Product & Development Plan
-**Status:** Approved Direction
-**Last Updated:** 2026-09-14
-
----
-
-## 1. Game Vision
-
-Create a mobile-first idle/management game where the player builds the world's first sanctuary dedicated to restoring extinct animals.
-
-The core fantasy is:
-
-> **Bring extinct animals back to life, raise them, restore their habitats, discover ancient genetics, and rebuild lost ecosystems.**
-
-The game should take inspiration from the satisfying progression loops of idle/tycoon games such as Egg, Inc., Gold & Goblins, and Lumber Inc. while maintaining its own identity, systems, visuals, economy, and progression.
-
-The game is **not** about selling animals. Animals are the heart of the sanctuary, and progression is driven by conservation, research, discovery, and restoration.
+**Project:** Idle Animals  
+**Working Title:** Extinction Sanctuary  
+**Document:** Authoritative Product & Development Plan  
+**Status:** Active Development Blueprint  
+**Last Updated:** 2026-09-15  
 
 ---
 
-## 2. Core Design Pillars
+## 1. Vision
 
-### 2.1 Idle First
+Build a polished mobile-first idle management game inspired by the satisfying progression of **Egg, Inc., Gold & Goblins, and Lumber Inc.**, but with a distinct conservation/restoration identity.
 
-The sanctuary continues operating while the player is away.
+The player builds a sanctuary network that revives extinct species, raises healthy populations, restores habitats, researches ancient genetics, sends expeditions for discoveries, and eventually restores entire ecosystems.
 
-### 2.2 Meaningful Active Play
+**Core fantasy:**
 
-Opening the game should immediately present useful actions: collect rewards, upgrade habitats, improve staff, start expeditions, complete research, and unlock animals.
+> Bring extinct animals back, build a living sanctuary, restore lost ecosystems, and progress from recent extinctions to the prehistoric world.
 
-### 2.3 Visible Progression
-
-The sanctuary, habitats, buildings, workers, and animal populations should visibly improve as the player advances.
-
-### 2.4 Collection
-
-Players should want to discover and restore every extinct species.
-
-### 2.5 Exploration
-
-Fossil expeditions and new regions provide discovery-driven progression.
-
-### 2.6 Long-Term Progression
-
-Prestige/rebirth is represented as ecosystem restoration rather than a generic factory reset.
-
-### 2.7 Simple Interaction
-
-Every tap should have a useful purpose. Avoid unnecessary confirmation screens, repetitive menus, and excessive tapping.
-
-### 2.8 Relaxing Rather Than Punishing
-
-The sanctuary should feel rewarding. Early systems should avoid harsh animal death or failure mechanics.
+Animals are never treated as products to sell. The economy is driven by healthy populations, research, discoveries, habitat development, and restoration.
 
 ---
 
-# 3. Core Gameplay Loop
+# 2. Current Repository Direction
+
+The existing project already contains a useful idle-game foundation including simulation, offline progress, persistence, game state, species, habitats, staff, research, upgrades, and Riverpod state management.
+
+The immediate architectural goal is **not a rewrite**. Evolve the current prototype into a reusable, data-driven game engine.
+
+### Current prototype problem to eliminate
+
+The first playable area is heavily Dodo-specific. Logic such as `dodo_island`, `reviveDodo()`, and `petDodos()` must become generalized systems.
+
+### Target
+
+Adding a new species should primarily require **data/content**, not new gameplay code.
+
+For example:
 
 ```text
-        🧬 DNA / DISCOVERY
-                ↓
-          Revive Species
-                ↓
-          Build Habitat
-                ↓
-           Raise Animals
-                ↓
-       Feed / Water / Care
-                ↓
-        Breed Population
-                ↓
-        Generate Research
-                ↓
-        Upgrade Sanctuary
-                ↓
-       Unlock New Species
-                ↓
-         Explore New Region
-                ↓
-        Restore Ecosystem
-                ↓
-       Permanent Bonuses
-                ↓
-              Repeat
+SpeciesDefinition
+    ↓
+HabitatDefinition
+    ↓
+Simulation Rules
+    ↓
+Generic UI
+    ↓
+Dodo / Thylacine / Quagga / Mammoth / etc.
 ```
+
+No species-specific gameplay logic unless a future species genuinely has a unique mechanic.
 
 ---
 
-# 4. Primary Currencies
+# 3. Development Priorities
 
-Keep the initial economy intentionally small.
+Work in this order:
 
-## 4.1 Sanctuary Credits
+1. Stabilize the existing prototype.
+2. Generalize the simulation engine.
+3. Make all species/habitats data-driven.
+4. Build the complete Dodo Island vertical slice.
+5. Validate the idle economy and offline progression.
+6. Add generalized staff, research, expeditions, and missions.
+7. Add multiple species and regions.
+8. Add restoration/prestige.
+9. Add visual polish, audio, events, and long-term content.
 
-Primary progression currency.
+**Do not build every planned feature at once.** Each phase must produce a playable improvement.
+
+---
+
+# 4. Core Gameplay Loop
+
+```text
+Discover / Recover DNA
+        ↓
+Revive Species
+        ↓
+Build / Upgrade Habitat
+        ↓
+Raise Population
+        ↓
+Provide Food + Water + Enrichment
+        ↓
+Healthy Population Produces Research + DNA
+        ↓
+Upgrade Habitat / Staff / Research
+        ↓
+Unlock Discoveries
+        ↓
+Send Expeditions
+        ↓
+Unlock New Species / Regions
+        ↓
+Restore Ecosystem
+        ↓
+Earn Permanent Restoration Bonuses
+        ↓
+Repeat at a larger scale
+```
+
+The loop must work both:
+
+- actively while the player is present
+- passively while the player is away
+
+---
+
+# 5. MVP Definition
+
+The MVP is **Dodo Island as a complete vertical slice**, not the entire game.
+
+A player must be able to:
+
+- Start a sanctuary.
+- Unlock/revive the Dodo.
+- Build and upgrade its habitat.
+- Maintain food and water.
+- Grow a population.
+- Generate DNA and research.
+- Upgrade the habitat.
+- Hire at least basic staff.
+- Complete research.
+- Leave the game.
+- Return and receive deterministic offline progress.
+- Complete a simple mission chain.
+- Reach a meaningful island restoration milestone.
+- Save and load without losing progress.
+
+If this loop is fun and economically stable, expand it.
+
+---
+
+# 6. Economy
+
+Keep the economy small and understandable.
+
+## 6.1 Sanctuary Credits
+
+Primary construction/upgrade currency.
 
 Used for:
 
-- Habitat upgrades
-- Buildings
+- Habitats
+- Infrastructure
 - Staff
 - Food systems
 - Water systems
-- Infrastructure
-
-## 4.2 DNA
-
-Used for:
-
-- Genetic research
-- Species revival
-- Breeding upgrades
-- Advanced research
-
-## 4.3 Research Points
-
-Generated by sanctuary activity and discoveries.
-
-Used for:
-
-- Technology tree
-- Habitat improvements
 - Automation
-- New systems
 
-## 4.4 Restoration Points
+## 6.2 DNA
 
-Prestige currency.
+Genetic progression currency.
 
-Earned by restoring ecosystems.
+Used for:
 
-Used for permanent global bonuses.
+- Species revival
+- Genetic research
+- Breeding improvements
+- Advanced discoveries
 
-## 4.5 Premium Currency
+## 6.3 Research
 
-Optional future system. Do not build into the MVP.
+Technology progression currency.
+
+Used for:
+
+- Research tree
+- Automation
+- Habitat efficiency
+- Expedition technology
+
+## 6.4 Restoration Points
+
+Permanent progression currency earned by restoring ecosystems.
+
+Used for global bonuses.
+
+## 6.5 Premium Currency
+
+**Not part of MVP.** Do not allow monetization concerns to complicate the core economy during early development.
 
 ---
 
-# 5. First Playable Area — Dodo Island
+# 7. Data-Driven Game Model
 
-The first area should be small and highly polished.
+All gameplay definitions should be externalized from UI and simulation logic.
 
-### Species
+### SpeciesDefinition
 
-**Dodo**
+Minimum fields:
 
-### Habitat
+- id
+- name
+- scientificName
+- category
+- extinctionDateOrEra
+- habitatId
+- basePopulationCapacity
+- baseBreedingSeconds
+- baseFoodRequirement
+- baseWaterRequirement
+- baseHappiness
+- baseDnaRate
+- baseResearchRate
+- unlockRequirements
+- discoveryRequirements
+- rarity/variant data
+- art references
+- audio references
 
-**Tropical Island Sanctuary**
+### HabitatDefinition
 
-### First systems
+Minimum fields:
 
-- Habitat
+- id
+- name
+- regionId
+- habitatType
+- baseCapacity
+- foodCapacity
+- waterCapacity
+- climate
+- enrichment
+- upgradeDefinitions
+- visualLevelReferences
+
+### StaffDefinition
+
+- id
+- role
+- baseBonus
+- secondaryBonus
+- upgradeCurve
+- unlockRequirements
+
+### ResearchDefinition
+
+- id
+- branch
+- prerequisites
+- cost
+- effects
+- unlocks
+
+### ExpeditionDefinition
+
+- id
+- region
+- duration
+- cost
+- guaranteedRewards
+- discoveryPool
+- rareRewards
+- staffModifiers
+
+---
+
+# 8. Simulation Engine
+
+The simulation engine is the most important technical system.
+
+It must be:
+
+- deterministic
+- testable without Flutter UI
+- independent from widgets
+- safe across app restarts
+- capable of active and offline simulation
+
+Use elapsed time rather than frame counting for idle calculations.
+
+Conceptually:
+
+```text
+GameState + elapsedTime
+        ↓
+SimulationEngine
+        ↓
+Production / breeding / research / expeditions
+        ↓
+New GameState
+```
+
+The UI should display state, not own the game rules.
+
+---
+
+# 9. Offline Progress
+
+Offline progress must use the same rules as active simulation wherever practical.
+
+On launch:
+
+```text
+Last Save Time
+      ↓
+Current Time
+      ↓
+Elapsed Duration
+      ↓
+Offline Simulation
+      ↓
+Welcome Back Summary
+```
+
+Initial cap:
+
+- 2 hours base
+- 4 hours upgrade
+- 8 hours upgrade
+- 12 hours upgrade
+- 24 hours maximum early-game target
+
+Offline simulation must prevent exploits caused by negative time, clock changes, overflow, or repeated collection.
+
+---
+
+# 10. Save System
+
+Persistence must be reliable before major content expansion.
+
+Requirements:
+
+- Versioned save format.
+- Migration support.
+- Atomic writes where possible.
+- Safe recovery from corrupted data.
+- No factory data overwritten by player state.
+- User progress remains local/offline-first.
+
+The player must never lose meaningful progress because a new app version changed a model.
+
+---
+
+# 11. Animal Welfare
+
+Animal welfare should modify production/growth rather than create harsh failure loops.
+
+Track:
+
 - Food
 - Water
-- Animal population
-- Breeding
-- DNA generation
-- Research
-- Basic upgrades
-- Offline earnings
-- Save/load
-
-The player should be able to experience the complete idle loop using only this one animal.
-
----
-
-# 6. Animal System
-
-Every species should be data-driven.
-
-Each animal definition should contain at minimum:
-
-- Species ID
-- Name
-- Scientific name
-- Extinction era/date
-- Habitat type
-- Base population capacity
-- Base breeding time
-- Base food requirement
-- Base water requirement
-- Happiness factors
-- DNA generation
-- Research generation
-- Unlock requirements
-- Discovery requirements
-- Rarity/variant information
-- Art references
-
----
-
-# 7. Animal Needs
-
-Each habitat tracks core animal welfare systems:
-
-- 🍎 Food
-- 💧 Water
-- ❤️ Happiness
-- 🏡 Habitat suitability
-- 👶 Breeding
-- 🧬 Genetics
-
-Needs should primarily change production/growth rates instead of immediately causing catastrophic failure.
+- Happiness
+- Habitat suitability
+- Enrichment
+- Population capacity
+- Breeding availability
 
 Example:
 
 ```text
-Food       96%
-Water      91%
-Happiness  94%
+Food        96%
+Water       91%
+Happiness   94%
 Habitat    100%
 
-Population Growth: +18%
-DNA Production:    +12%
+Population Growth  +18%
+DNA Production     +12%
+Research           +10%
 ```
+
+Early gameplay should not kill animals because the player missed a collection window.
 
 ---
 
-# 8. Breeding System
+# 12. Breeding
 
-Animals reproduce on timers.
+Breeding is timer-based and predictable.
 
 Example:
 
 ```text
 Dodo
-
 Breeding: 00:18
-Eggs/offspring: 1
+Offspring: 1
 Population: 24 / 50
 ```
 
-Research can improve:
+Research/staff can improve:
 
 - Breeding speed
 - Offspring count
@@ -244,171 +388,103 @@ Research can improve:
 - Genetic quality
 - DNA output
 
-Avoid turning the system into a gambling mechanic.
+Do not turn breeding into paid gambling or loot-box mechanics.
 
 ---
 
-# 9. Habitat System
-
-Every species requires an appropriate habitat.
-
-Examples:
-
-- Dodo → Tropical Island
-- Thylacine → Australian Forest
-- Great Auk → Northern Coast
-- Quagga → African Grasslands
-- Woolly Mammoth → Ice Age Tundra
-- Cave Lion → Ice Age Plains
-- Triceratops → Cretaceous Plains
-- T-Rex → Cretaceous Valley
-
-Each habitat should have:
-
-- Population capacity
-- Food capacity
-- Water capacity
-- Space
-- Climate
-- Enrichment
-- Automation
-- Visual level
-
----
-
-# 10. Habitat Progression
-
-Habitats should visually evolve.
-
-### Level 1
-
-Small enclosure, minimal structures, few animals.
-
-### Mid Level
-
-Expanded terrain, staff facilities, feeders, water systems, additional animals.
-
-### High Level
-
-Large sanctuary with active staff, environmental details, habitat structures, and large visible populations.
-
-The environment should communicate progression without requiring a menu.
-
----
-
-# 11. Production / Generation Systems
-
-Animals are not sold directly.
+# 13. Production
 
 Animals generate progression resources through healthy sanctuary activity.
 
-Examples:
+Core relationships:
 
 ```text
-Animals → Research
-Animals → DNA
+Healthy Animals → Research
+Healthy Animals → DNA
+Fossils → DNA / Discovery
 Discoveries → Research
-Fossils → DNA
-Habitats → Research efficiency
+Habitat Quality → Production Efficiency
+Staff → Efficiency
+Research → Permanent/long-term improvements
 ```
 
-This preserves the conservation fantasy.
+Avoid a conventional factory chain where animals are consumed or sold.
 
 ---
 
-# 12. Staff System
+# 14. Habitat Progression
 
-Staff are the game's worker/management layer.
+Habitats should have visible progression.
+
+### Level 1
+
+Small enclosure, simple terrain, basic food/water.
+
+### Mid Level
+
+More terrain, enrichment, staff facilities, better infrastructure.
+
+### High Level
+
+Large natural-looking environment, larger visible population, advanced automation, environmental detail.
+
+Upgrading should change both numbers **and the visual state** where practical.
+
+---
+
+# 15. Staff
+
+Staff provide the management layer.
 
 Initial roles:
 
-### Keeper
+- Keeper — animal growth/happiness
+- Veterinarian — welfare/efficiency
+- Geneticist — DNA
+- Botanist — food
+- Researcher — research
+- Expedition Leader — expeditions
+- Director — late-game global bonus
 
-Improves animal growth and happiness.
+Staff progression:
 
-### Veterinarian
+```text
+Unlock → Hire → Level → Improve Bonus → Unlock Automation
+```
 
-Improves welfare and habitat efficiency.
-
-### Geneticist
-
-Improves DNA production.
-
-### Botanist
-
-Improves food production.
-
-### Researcher
-
-Improves Research generation.
-
-### Expedition Leader
-
-Improves expedition speed and discovery chances.
-
-### Director
-
-Late-game global sanctuary bonus.
-
-Staff should have:
-
-- Level
-- Role
-- Primary bonus
-- Secondary bonus
-- Upgrade cost
-- Visual representation
+Staff must use generic definitions rather than hard-coded role logic scattered through widgets.
 
 ---
 
-# 13. Automation
+# 16. Automation
 
-Automation is a major progression layer.
-
-Example progression:
+Automation is a major progression reward.
 
 ```text
 Manual Care
-    ↓
-Keeper Assigned
-    ↓
+   ↓
+Keeper
+   ↓
 Automated Feeder
-    ↓
-Automated Water System
-    ↓
+   ↓
+Automated Water
+   ↓
 Automated Habitat
-    ↓
+   ↓
 Smart Sanctuary
 ```
 
-Automation should remove repetitive manual work and increase the player's sense that they are building a self-running sanctuary.
+Automation should remove repetitive tapping, not simply add another currency.
 
 ---
 
-# 14. Research Tree
-
-Research is a major long-term progression system.
+# 17. Research Tree
 
 Initial branches:
 
-```text
-                    GENETICS
-                       │
-        ┌──────────────┼──────────────┐
-        ↓              ↓              ↓
-   Incubation       Breeding       Nutrition
-        │              │              │
-        └──────────┬───┴──────────────┘
-                   ↓
-           Advanced Genetics
-                   ↓
-            Ancient DNA
-                   ↓
-          Prehistoric Research
-```
-
-Additional branches can include:
-
+- Genetics
+- Breeding
+- Nutrition
 - Habitat Engineering
 - Veterinary Science
 - Conservation Biology
@@ -417,13 +493,15 @@ Additional branches can include:
 - Fossil Analysis
 - Climate Control
 
+Research nodes must be data-driven and have explicit prerequisites/effects.
+
 ---
 
-# 15. Fossil System
+# 18. Fossils & Expeditions
 
-Fossils are a discovery-based progression system.
+Expeditions provide the second major idle loop.
 
-Players send expeditions to locate:
+Players discover:
 
 - Bones
 - Teeth
@@ -436,70 +514,68 @@ Example:
 
 ```text
 ROCKY MOUNTAINS EXPEDITION
-
 Duration: 2h
 
-Possible Finds:
-🦴 Mammoth Bone
-🦷 Ancient Tooth
-🧬 DNA Fragment
-💎 Rare Fossil
+Guaranteed:
+Fossil Fragment
+
+Possible:
+Mammoth Bone
+Ancient Tooth
+DNA Fragment
+Rare Fossil
 ```
 
-Discoveries can unlock new species or research branches.
+Expeditions need:
+
+- duration
+- region
+- cost
+- guaranteed reward
+- discovery pool
+- rare reward
+- staff modifiers
+- completion state
 
 ---
 
-# 16. Expedition System
+# 19. Missions
 
-Expeditions provide an active/idle exploration mechanic.
+Missions teach progression naturally.
 
-World map progression:
+Example:
 
 ```text
-🌴 Tropical Island
-        ↓
-🌲 Forest
-        ↓
-🏜️ Fossil Basin
-        ↓
-❄️ Ice Age Valley
-        ↓
-🌋 Prehistoric Plains
-        ↓
-🦖 Cretaceous
-        ↓
-🌊 Ancient Ocean
+1. Build your first habitat
+2. Revive the Dodo
+3. Reach population 25
+4. Upgrade habitat 3 times
+5. Complete first research node
+6. Hire a Keeper
+7. Complete first expedition
+8. Restore Dodo Island
 ```
 
-Expeditions should have:
-
-- Duration
-- Cost
-- Region
-- Discovery pool
-- Guaranteed reward
-- Rare reward chance
-- Staff bonus
+Missions should never become mandatory repetitive chores.
 
 ---
 
-# 17. Species Progression
+# 20. Species Roadmap
 
-Species should progress from recent extinctions toward increasingly ancient life.
+Content should expand by progression tier.
 
-## Tier 1 — Recent Extinctions
+### Tier 1 — Recent Extinctions
 
 Initial examples:
 
 - Dodo
 - Thylacine
 - Great Auk
-- Aurochs
 - Quagga
+- Aurochs
 - Pyrenean Ibex
 
-## Tier 2 — Ice Age
+### Tier 2 — Ice Age
 
 Examples:
 
@@ -510,44 +586,62 @@ Examples:
 - Cave Bear
 - Irish Elk
 
-## Tier 3 — Prehistoric
+### Tier 3 — Prehistoric
 
 Examples:
 
 - Triceratops
 - Tyrannosaurus rex
-- Various sauropods
-- Prehistoric giant birds
+- Sauropods
+- Prehistoric birds
 - Ancient crocodilians
 
-The exact species list should be validated during content production, and scientific facts should not be invented.
+Scientific facts, extinction dates, habitats, and species claims must be validated during content production.
 
 ---
 
-# 18. Collection / Extinction Archive
+# 21. World / Region Progression
 
-Players should have a complete archive of species.
-
-Example:
+Long-term map:
 
 ```text
-EXTINCTION ARCHIVE
-
-MAMMALS
-✓ Thylacine
-✓ Aurochs
-✓ Quagga
-🔒 Woolly Mammoth
-🔒 Cave Lion
-🔒 Irish Elk
-
-BIRDS
-✓ Dodo
-✓ Great Auk
-🔒 Elephant Bird
+Dodo Island
+    ↓
+Australian Forest
+    ↓
+Northern Coast
+    ↓
+African Grasslands
+    ↓
+Fossil Basin
+    ↓
+Ice Age Valley
+    ↓
+Ancient Plains
+    ↓
+Cretaceous Valley
+    ↓
+Ancient Ocean
 ```
 
-Each species card should show:
+Each region can contain:
+
+- multiple habitats
+- multiple species
+- unique resources
+- expeditions
+- research
+- restoration milestones
+
+Do not build the entire map before the first region is proven fun.
+
+---
+
+# 22. Extinction Archive
+
+Create a collection system that makes every species feel meaningful.
+
+Each entry should contain:
 
 - Name
 - Scientific name
@@ -555,17 +649,49 @@ Each species card should show:
 - Habitat
 - Restoration status
 - Population
-- Research completion
+- Research progress
 - Discovery progress
-- Visual model/art
+- Art
 
-This is a major retention and collection mechanic.
+Locked species should show enough information to create curiosity without revealing everything.
 
 ---
 
-# 19. Rare Variants
+# 23. Ecosystem Restoration / Prestige
 
-Optional future progression layer.
+Prestige is called **Restoration**.
+
+Example:
+
+```text
+RESTORE DODO ISLAND
+
+Population: 10,284
+Restoration Score: ★★★★☆
+
+Reward:
++18 Restoration Points
+```
+
+Restoring a region resets appropriate local progression while preserving permanent global progress.
+
+Permanent bonuses can include:
+
+- Animal growth
+- Research
+- DNA
+- Offline earnings
+- Expedition speed
+- Discovery rates
+- Habitat efficiency
+
+The reset must feel like rebuilding a stronger ecosystem, not deleting progress.
+
+---
+
+# 24. Rare Variants
+
+Future system only.
 
 Possible variants:
 
@@ -575,250 +701,121 @@ Possible variants:
 - Ancient
 - Perfect
 
-Variants should primarily come from gameplay progression, research, exploration, or achievements rather than random paid gambling.
+Variants should come from gameplay, discoveries, achievements, research, or restoration—not paid random gambling.
 
 ---
 
-# 20. Ecosystem Restoration / Prestige
+# 25. Events
 
-Prestige should be framed as restoring an ecosystem.
-
-Example:
-
-```text
-RESTORE DODO ISLAND
-
-Current Population: 10,284
-Restoration Score: ★★★★☆
-
-Reward:
-+18 Restoration Points
-```
-
-Resetting a region grants permanent global progression.
+Future content layer.
 
 Examples:
 
-- +10% Animal Growth
-- +10% Research
-- +15% DNA
-- +25% Offline Earnings
-- Faster Expeditions
-- Better Discovery Rates
+- Dodo Migration
+- Fossil Rush
+- Ice Age Week
+- Breeding Festival
+- Ancient Discovery
 
-Prestige should feel like a meaningful conservation milestone rather than a generic reset.
-
----
-
-# 21. Offline Progress
-
-The game must calculate offline progress deterministically.
-
-The player should see a clear welcome-back summary.
-
-Example:
-
-```text
-WELCOME BACK
-
-Away for: 5h 42m
-
-🦤 Dodos Born       184
-🧬 DNA Recovered    1,482
-🔬 Research         842
-🌱 Food Produced    12,421
-
-TOTAL RESEARCH
-+3,842
-
-[COLLECT]
-```
-
-Offline progress should have a configurable cap.
-
-Initial target:
-
-- Base cap: 2 hours
-- Upgrades: 4h → 8h → 12h → 24h
+Events should be optional and rewarding, not exhausting daily chores.
 
 ---
 
-# 22. Events
+# 26. Daily Tasks
 
-Temporary events provide reasons to return.
+Future system.
+
+Keep them short and optional.
 
 Examples:
 
-### Dodo Migration
+- Produce research
+- Upgrade habitats
+- Complete an expedition
+- Collect offline earnings
 
-Large temporary population boost.
-
-### Ice Age Week
-
-Ice Age species generate additional DNA.
-
-### Fossil Rush
-
-Expeditions have increased discovery rewards.
-
-### Breeding Festival
-
-Breeding speed increased.
-
-### Ancient Discovery
-
-Temporary research bonus and special discovery.
-
-Events should add excitement without becoming mandatory chores.
+Rewards should supplement progression rather than gate the game.
 
 ---
 
-# 23. Missions
+# 27. Main Screen UX
 
-Missions provide guided progression.
-
-Example:
+The sanctuary itself is the home screen.
 
 ```text
-MISSION 01
-Build your first habitat
-Reward: Sanctuary Credits
-
-MISSION 02
-Reach population 25
-Reward: DNA
-
-MISSION 03
-Complete first research node
-Reward: Staff Token
-
-MISSION 04
-Complete first expedition
-Reward: Discovery Fragment
+┌───────────────────────────────┐
+│ Credits      DNA      Research│
+├───────────────────────────────┤
+│                               │
+│          SANCTUARY            │
+│                               │
+│      🦤     🦤      🦤        │
+│             💧                │
+│       🌱          🏡          │
+│                               │
+│ Population  24 / 50           │
+│ DNA         +12/min            │
+│                               │
+├───────────────────────────────┤
+│ 🏡  🐾  🧬  🦴  🗺️  ⚙️       │
+└───────────────────────────────┘
 ```
 
-Missions should teach the game naturally.
+Primary navigation should expose:
+
+- Sanctuary
+- Animals
+- Research
+- Expeditions
+- World/Map
+- Settings
+
+Important actions should be reachable with minimal taps.
 
 ---
 
-# 24. Daily Tasks
+# 28. UX Principles
 
-Optional short-term goals.
-
-Example:
-
-```text
-DAILY CONSERVATION TASKS
-
-☐ Produce 10,000 research
-☐ Upgrade 5 habitat levels
-☐ Complete 1 expedition
-☐ Collect offline earnings
-
-Reward: Restoration Tokens
-```
-
-Keep tasks simple and achievable.
+- Mobile-first.
+- Fast.
+- Minimal taps.
+- Large readable numbers.
+- Clear resource feedback.
+- Progress always visible.
+- Avoid unnecessary confirmation dialogs.
+- Avoid excessive animation.
+- Avoid menu depth.
+- Main screen should feel alive.
+- Never make the player repeatedly perform a task that automation has already unlocked.
 
 ---
 
-# 25. World Map
+# 29. Art Direction
 
-The sanctuary grows into a world-scale conservation network.
+Target:
 
-Possible regions:
-
-```text
-                    🌎 GLOBAL MAP
-
-          ❄️ ICE AGE VALLEY
-                   │
-🌲 AUSTRALIAN FOREST ── 🌴 DODO ISLAND
-                   │
-             🏜️ FOSSIL BASIN
-                   │
-             🌾 ANCIENT PLAINS
-                   │
-             🦖 CRETACEOUS
-                   │
-             🌊 ANCIENT OCEAN
-```
-
-Each region can contain multiple habitats, species, research chains, and expeditions.
-
----
-
-# 26. Main Screen UX
-
-The main sanctuary screen should be the player's home.
-
-Example layout:
-
-```text
-┌─────────────────────────────┐
-│ Credits       DNA     Research │
-├─────────────────────────────┤
-│                             │
-│        🌴 SANCTUARY         │
-│                             │
-│     🦤      🦤      🦤       │
-│          💧                 │
-│    🌱           🏡          │
-│                             │
-│ Population  24 / 50         │
-│ DNA        +12/min          │
-│                             │
-├─────────────────────────────┤
-│ 🏡   🐾   🧬   🦴   🗺️   ⚙️ │
-└─────────────────────────────┘
-```
-
-The player should see the sanctuary first, not a dashboard of menus.
-
----
-
-# 27. UI Principles
-
-- Mobile-first
-- Clear hierarchy
-- Large readable numbers
-- Minimal taps
-- Fast transitions
-- No unnecessary animations
-- Immediate feedback
-- Progress always visible
-- Important actions available from the main screen
-
-The game should feel polished without becoming visually cluttered.
-
----
-
-# 28. Art Direction
-
-Target style:
-
-- Stylized 3D or 2.5D
-- Friendly but not overly childish
-- Readable silhouettes
-- Strong environmental differentiation
-- Rich but lightweight animations
-- Distinct visual identity
-
-The goal is to make the sanctuary feel alive.
+- Stylized 3D or lightweight 2.5D.
+- Friendly but not overly childish.
+- Strong silhouettes.
+- Distinct environments.
+- Readable UI.
+- Lightweight animation.
 
 Animals should visibly:
 
-- Walk
-- Eat
-- Drink
-- Rest
-- Interact
-- Breed
-- Move through habitats
+- walk
+- eat
+- drink
+- rest
+- interact
+- breed
+- move through the habitat
+
+The visual quality should increase gradually; gameplay correctness comes first.
 
 ---
 
-# 29. Sound and Feedback
+# 30. Audio
 
 Future systems:
 
@@ -827,33 +824,24 @@ Future systems:
 - UI feedback
 - Upgrade sounds
 - Discovery sounds
-- Fossil reveal effects
+- Fossil reveals
 - Level-up sounds
-- Reward collection effects
+- Reward collection
 
-Audio should reinforce positive progression without becoming repetitive.
-
----
-
-# 30. Technical Direction
-
-Preferred platform direction:
-
-**Flutter / Dart** for the application layer.
-
-Potential supporting technology:
-
-- Riverpod for state management
-- Drift / SQLite for local persistence
-- Flame for 2D/2.5D game-world rendering and animation where appropriate
-
-Architecture should keep simulation/economy logic separate from UI rendering.
+Audio should support progression without becoming repetitive.
 
 ---
 
-# 31. Core Architecture
+# 31. Technical Architecture
 
-Suggested structure:
+Preferred stack:
+
+- Flutter / Dart
+- Riverpod
+- Drift / SQLite or the existing persistence approach where appropriate
+- Flame only where it materially improves game-world rendering/animation
+
+Recommended conceptual structure:
 
 ```text
 lib/
@@ -861,444 +849,335 @@ lib/
 │   ├── economy/
 │   ├── time/
 │   ├── simulation/
-│   ├── offline/
-│   ├── save/
-│   └── events/
+│   ├── persistence/
+│   ├── definitions/
+│   └── utilities/
 │
-├── game/
-│   ├── world/
+├── data/
+│   ├── species/
 │   ├── habitats/
-│   ├── animals/
+│   ├── research/
 │   ├── staff/
-│   ├── production/
-│   └── expeditions/
+│   ├── expeditions/
+│   └── missions/
 │
-├── progression/
-│   ├── upgrades/
-│   ├── research/
-│   ├── missions/
-│   └── restoration/
-│
-├── screens/
+├── features/
 │   ├── sanctuary/
-│   ├── habitats/
 │   ├── animals/
 │   ├── research/
-│   ├── archive/
 │   ├── expeditions/
-│   ├── world_map/
+│   ├── map/
+│   ├── restoration/
 │   └── settings/
 │
-├── models/
-├── providers/
-└── database/
+└── app/
 ```
+
+The exact folders can evolve; the key rule is separation between **definitions, simulation, persistence, state, and presentation**.
 
 ---
 
-# 32. Game Simulation
+# 32. Testing Strategy
 
-The simulation must not require the game to run continuously.
+The idle engine must be testable without rendering the application.
 
-Use timestamp-based calculations.
+Required tests:
 
-Example:
+### Economy
 
-```text
-Last Save: 13:00
-Current Time: 18:00
-Elapsed: 5 hours
+- Production rates
+- Upgrade costs
+- Scaling
+- Currency conservation
 
-Production Rate: 1,000/min
-Elapsed Minutes: 300
+### Time
 
-Base Production: 300,000
-```
+- Active elapsed time
+- Offline elapsed time
+- Maximum offline cap
+- Negative/invalid elapsed time
+- Clock manipulation protection
 
-Then apply:
+### Breeding
 
-- Habitat modifiers
-- Animal modifiers
+- Timers
+- Capacity
+- Offspring
+- Production modifiers
+
+### Research
+
+- Prerequisites
+- Costs
+- Effects
+- Unlocks
+
+### Expeditions
+
+- Start
+- Completion
+- Rewards
+- Duration
 - Staff modifiers
-- Research bonuses
-- Event modifiers
-- Restoration bonuses
-- Storage limits
-- Offline modifiers
 
-The same simulation logic should drive active and offline gameplay.
+### Save/Load
+
+- Round-trip serialization
+- Version migrations
+- Corruption recovery
+
+### Regression
+
+Every generalized system must preserve the existing Dodo gameplay behavior unless the change intentionally modifies balance.
 
 ---
 
-# 33. Save System
+# 33. Balancing Rules
 
-All important progression must persist locally.
+The game should use formulas rather than hundreds of hard-coded values.
 
-Minimum save state:
+Typical idle scaling should be predictable:
 
 ```text
-Player
-├── Credits
-├── DNA
-├── Research
-├── Restoration Points
-├── Regions
-├── Habitats
-├── Animals
-├── Staff
-├── Research Unlocks
-├── Expeditions
-├── Missions
-├── Archive Progress
-├── Events
-└── Last Played Timestamp
+Cost(n) = BaseCost × GrowthRate^n
+
+Production = BaseProduction
+           × HabitatMultiplier
+           × WelfareMultiplier
+           × StaffMultiplier
+           × ResearchMultiplier
+           × RestorationMultiplier
 ```
 
-Cloud save can be added later.
+Balance goals:
+
+- Frequent early upgrades.
+- Increasing but understandable upgrade costs.
+- Meaningful choices.
+- No single upgrade invalidates every other system.
+- Offline progress should feel valuable but not replace active play.
+
+Balance should be measured with simulation tests rather than guessed solely from UI play.
 
 ---
 
-# 34. Data-Driven Content
+# 34. Anti-Exploit / Reliability Requirements
 
-Animals, habitats, staff, upgrades, research nodes, missions, and events should be data-driven rather than hardcoded into UI screens.
+Protect against:
 
-This allows the content team to add new species and regions without rewriting core systems.
+- Negative elapsed time.
+- Impossible timestamps.
+- Duplicate reward collection.
+- Repeated expedition completion.
+- Integer/float overflow.
+- Save corruption.
+- Reset exploits.
+- Unlocking content without requirements.
 
----
-
-# 35. MVP Scope
-
-The MVP must remain intentionally small.
-
-## MVP Includes
-
-### One Region
-
-Dodo Island.
-
-### One Species
-
-Dodo.
-
-### One Habitat
-
-Tropical Island Sanctuary.
-
-### Systems
-
-- Animal population
-- Food
-- Water
-- Happiness
-- Breeding
-- DNA generation
-- Research generation
-- Credits
-- Habitat upgrades
-- Basic staff
-- Offline progress
-- Save/load
-- Basic tutorial
-- Basic collection entry
-
-### MVP Does NOT Include
-
-- Dinosaurs
-- Multiplayer
-- Online economy
-- Complex monetization
-- Large live events
-- Advanced genetics
-- Cloud saves
-- Dozens of currencies
-- Large-scale world map
+The simulation should clamp or reject invalid states safely.
 
 ---
 
-# 36. First Playable Experience
+# 35. Development Phases
 
-The first ten minutes should feel complete.
+## Phase 0 — Baseline Audit
 
-Target flow:
+- Run tests.
+- Run the application.
+- Identify current architecture.
+- Identify Dodo-specific logic.
+- Record current functionality.
+- Do not remove working systems without a reason.
+
+**Exit:** documented baseline and passing test suite.
+
+## Phase 1 — Generalize Core Models
+
+- Generalize Species.
+- Generalize Habitat.
+- Generalize production.
+- Generalize breeding.
+- Generalize unlocks.
+- Remove Dodo-only assumptions from core systems.
+
+**Exit:** a second dummy species can be added without new simulation code.
+
+## Phase 2 — Harden Simulation + Persistence
+
+- Deterministic simulation.
+- Offline calculations.
+- Save versioning.
+- Migration path.
+- Error handling.
+- Regression tests.
+
+**Exit:** closing/reopening cannot corrupt or duplicate progression.
+
+## Phase 3 — Complete Dodo Island Vertical Slice
+
+- Habitat progression.
+- Welfare.
+- Breeding.
+- DNA.
+- Research.
+- Staff.
+- Missions.
+- Offline welcome-back.
+- Restoration milestone.
+
+**Exit:** Dodo Island is a complete fun idle loop.
+
+## Phase 4 — First Expansion Species
+
+Add a small set of species, for example:
+
+- Thylacine
+- Quagga
+- Great Auk
+
+No new hard-coded gameplay systems should be necessary.
+
+**Exit:** multiple species coexist using the same engine.
+
+## Phase 5 — Expeditions + Discovery
+
+- World regions.
+- Expedition timers.
+- Fossils.
+- Discovery pools.
+- Unlock requirements.
+- Expedition Leader.
+
+**Exit:** exploration becomes a second meaningful idle loop.
+
+## Phase 6 — Research + Automation Expansion
+
+- Full research branches.
+- Automation progression.
+- Staff upgrades.
+- Habitat specialization.
+
+**Exit:** active play becomes less repetitive as the sanctuary matures.
+
+## Phase 7 — World Map + Restoration
+
+- Multiple regions.
+- Region progression.
+- Restoration milestones.
+- Permanent global bonuses.
+
+**Exit:** the player has a complete long-term progression loop.
+
+## Phase 8 — Collection + Content
+
+- Extinction Archive.
+- More species.
+- More habitats.
+- Scientific information.
+- Art assets.
+
+**Exit:** collection becomes a major retention system.
+
+## Phase 9 — Polish
+
+- Visual improvements.
+- Animations.
+- Sound.
+- Feedback.
+- Performance.
+- Accessibility.
+
+**Exit:** game feels like a polished product rather than a prototype.
+
+## Phase 10 — Optional Live Content
+
+Only after the core game is stable:
+
+- Events.
+- Daily tasks.
+- Rare variants.
+- Optional monetization.
+
+---
+
+# 36. Definition of Done
+
+A feature is not complete merely because its screen exists.
+
+A feature is complete when:
+
+- The underlying state exists.
+- Simulation logic works.
+- Persistence works.
+- Offline behavior works where applicable.
+- UI reflects the actual state.
+- Invalid states are handled.
+- Tests cover important behavior.
+- It works after app restart.
+- It does not depend on hard-coded Dodo assumptions.
+
+---
+
+# 37. Immediate Next Work
+
+After this plan is committed, perform another repository audit against it.
+
+### Specifically inspect:
+
+1. Dodo-specific code paths.
+2. Current Species model.
+3. Current Habitat model.
+4. SimulationEngine.
+5. OfflineManager.
+6. SaveService.
+7. GameState.
+8. Staff implementation.
+9. Research implementation.
+10. Upgrade implementation.
+11. Navigation/UI architecture.
+12. Tests and coverage.
+13. Data files/assets.
+14. Any duplicated state or business logic.
+15. Any systems already implemented that can be retained.
+
+Then produce a **Plan Compliance Report**:
 
 ```text
-Start Sanctuary
-    ↓
-Build Dodo Habitat
-    ↓
-Revive First Dodo
-    ↓
-Provide Food + Water
-    ↓
-Generate DNA
-    ↓
-Upgrade Habitat
-    ↓
-Breed Dodos
-    ↓
-Unlock Research
-    ↓
-Hire Keeper
-    ↓
-Enable Automation
-    ↓
-Close Game
-    ↓
-Return Later
-    ↓
-Collect Offline Progress
-    ↓
-Unlock Next Goal
+PLAN COMPLIANCE
+
+🟢 Complete
+🟡 Partial
+🔴 Missing
+
+Architecture:       __%
+Simulation:         __%
+Persistence:        __%
+Offline Progress:   __%
+Animal System:      __%
+Habitat System:     __%
+Staff:              __%
+Research:           __%
+Expeditions:        __%
+Missions:           __%
+UX:                 __%
+Content:             __%
+Testing:            __%
+
+Overall MVP Readiness: __%
 ```
 
-The player should finish the first session understanding why they want to continue.
+For every 🟡 or 🔴 item, identify the exact files/classes that need work and the smallest logical implementation step.
 
 ---
 
-# 37. Development Phases
+# 38. Guiding Rule
 
-## Phase 1 — Project Foundation
+**Build the engine before the content.**
 
-- Flutter project structure
-- State management
-- Core models
-- Local database
-- Save/load
-- Time service
-- Economy service
+If adding the next extinct animal requires writing a new gameplay class, the architecture is not finished.
 
-## Phase 2 — Simulation
+If adding the next extinct animal requires adding a data definition, art, balance values, and scientific metadata, the architecture is working.
 
-- Animal population simulation
-- Habitat modifiers
-- Resource generation
-- Breeding timers
-- Timestamp-based offline simulation
+The goal is not to make one excellent Dodo game.
 
-## Phase 3 — Sanctuary MVP
-
-- Dodo habitat
-- Basic environment
-- Animal entities
-- Food/water systems
-- Population display
-- Upgrades
-
-## Phase 4 — Staff
-
-- Keeper
-- Basic staff UI
-- Staff levels
-- Staff bonuses
-
-## Phase 5 — Research
-
-- Research tree
-- DNA
-- Research points
-- Unlock logic
-
-## Phase 6 — Offline Progress
-
-- Welcome-back screen
-- Offline calculations
-- Reward collection
-- Offline cap upgrades
-
-## Phase 7 — Exploration
-
-- Fossils
-- Expeditions
-- Discovery system
-
-## Phase 8 — Additional Species
-
-Add in controlled releases:
-
-1. Dodo
-2. Thylacine
-3. Great Auk
-4. Quagga
-5. Aurochs
-6. Woolly Mammoth
-7. Additional validated species
-
-## Phase 9 — World Map
-
-- Multiple regions
-- Region progression
-- Habitat unlocking
-
-## Phase 10 — Restoration / Prestige
-
-- Ecosystem restoration
-- Restoration Points
-- Permanent upgrades
-
-## Phase 11 — Events and Live Systems
-
-- Temporary events
-- Daily tasks
-- Rotating discoveries
-
-## Phase 12 — Polish
-
-- Animation
-- Audio
-- Haptics
-- Performance
-- Accessibility
-- UI polish
-
-## Phase 13 — Monetization
-
-Only after the game is fun and retention is proven.
-
-Potential systems:
-
-- Rewarded ads
-- Remove ads
-- Cosmetic purchases
-- Optional boosts
-- Event passes
-
-Avoid pay-to-win pressure.
-
----
-
-# 38. Economy Design Rules
-
-The economy should be designed around visible progression rather than arbitrary inflation.
-
-Every upgrade should answer at least one of these:
-
-- Does production increase?
-- Does animal welfare improve?
-- Does the player unlock something?
-- Does automation improve?
-- Does research speed improve?
-- Does offline value improve?
-
-Early game should have frequent upgrades.
-
-Later game should transition toward meaningful milestone upgrades.
-
----
-
-# 39. Balance Philosophy
-
-Target feeling:
-
-**Fast early progression → meaningful mid-game decisions → deep long-term optimization.**
-
-Avoid:
-
-- Extremely slow early game
-- Endless tapping
-- Excessive menus
-- Hard resets with no permanent benefit
-- Punishing failures
-- Excessive currency types
-
----
-
-# 40. Retention Philosophy
-
-Players should return because:
-
-- Animals grew
-- Research completed
-- An expedition returned
-- A habitat can be upgraded
-- A new species is close to unlocking
-- An ecosystem can be restored
-- A collection objective is unfinished
-
-The game should never depend on pressure or fear of losing progress.
-
----
-
-# 41. Future Content
-
-Potential future systems:
-
-- Genetic lineages
-- Habitat specialization
-- Animal personalities
-- Conservation achievements
-- Rare discoveries
-- Fossil galleries
-- Museum construction
-- Global sanctuary ranking
-- Seasonal regions
-- Photo mode
-- Animal interaction system
-- Cosmetic habitat themes
-- Community/global restoration goals
-
-These are post-MVP and should not delay the core game.
-
----
-
-# 42. Success Criteria
-
-The project succeeds when:
-
-1. A new player understands the objective in under one minute.
-2. The first ten minutes contain constant meaningful progression.
-3. The player wants to return after leaving the game.
-4. Offline progress feels rewarding but balanced.
-5. Unlocking a new species feels exciting.
-6. Habitat upgrades are visibly obvious.
-7. The collection archive encourages completion.
-8. Prestige feels like meaningful restoration rather than a punishment.
-9. The economy remains understandable.
-10. The game has a distinct identity separate from existing idle titles.
-
----
-
-# 43. Immediate Build Priorities
-
-The next implementation tasks should be:
-
-### Priority 1
-Create the core project architecture and data models.
-
-### Priority 2
-Implement timestamp-based simulation and save/load.
-
-### Priority 3
-Implement Credits, DNA, Research, and basic economy.
-
-### Priority 4
-Implement Dodo species data.
-
-### Priority 5
-Implement Dodo Island habitat.
-
-### Priority 6
-Implement population and breeding.
-
-### Priority 7
-Implement basic upgrades.
-
-### Priority 8
-Implement offline earnings.
-
-### Priority 9
-Implement first staff member: Keeper.
-
-### Priority 10
-Build the first polished playable loop before adding additional species.
-
----
-
-# 44. Non-Negotiable MVP Rule
-
-**Do not build the whole game before proving the first loop is fun.**
-
-The first milestone is:
-
-> **A player can raise Dodos, upgrade their island, leave the game, return later, collect meaningful offline progress, and immediately have another satisfying upgrade or goal.**
-
-Everything else comes after that foundation works.
+The goal is to build the reusable system that can support an entire **Extinction Sanctuary**.
