@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/habitat.dart';
+import '../models/species.dart';
 
 class HabitatViewport extends StatefulWidget {
   final Habitat habitat;
@@ -20,7 +21,7 @@ class _FloatingParticle {
   final Offset position;
   final String text;
   final Color color;
-  final double createdAt; // in seconds
+  final double createdAt;
 
   _FloatingParticle({
     required this.position,
@@ -30,17 +31,17 @@ class _FloatingParticle {
   });
 }
 
-class _AnimatedDodo {
-  double x; // 0.0 to 1.0 (relative to island bounds)
+class _AnimatedAnimal {
+  double x;
   double y;
   double targetX;
   double targetY;
   double speed;
   double stateTimer;
-  String activity; // 'pecking', 'drinking', 'resting', 'walking'
+  String activity;
   bool facingLeft;
 
-  _AnimatedDodo({
+  _AnimatedAnimal({
     required this.x,
     required this.y,
     required this.targetX,
@@ -54,7 +55,7 @@ class _AnimatedDodo {
 class _HabitatViewportState extends State<HabitatViewport>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
-  final List<_AnimatedDodo> _dodos = [];
+  final List<_AnimatedAnimal> _animals = [];
   final List<_FloatingParticle> _particles = [];
   final Random _rng = Random();
   double _elapsedTime = 0.0;
@@ -67,33 +68,33 @@ class _HabitatViewportState extends State<HabitatViewport>
       duration: const Duration(seconds: 10),
     )..addListener(_updateAnimation);
 
-    _syncDodos(widget.habitat.population);
+    _syncAnimals(widget.habitat.population);
     _animController.repeat();
   }
 
   @override
   void didUpdateWidget(HabitatViewport oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.habitat.population != widget.habitat.population) {
-      _syncDodos(widget.habitat.population);
+    if (oldWidget.habitat.population != widget.habitat.population ||
+        oldWidget.habitat.speciesId != widget.habitat.speciesId) {
+      _syncAnimals(widget.habitat.population);
     }
   }
 
-  void _syncDodos(int count) {
-    // Cap visual dodos to 18 for performance while representing large populations
+  void _syncAnimals(int count) {
     final visualCount = min(18, max(1, count));
-    while (_dodos.length < visualCount) {
-      _dodos.add(_createRandomDodo());
+    while (_animals.length < visualCount) {
+      _animals.add(_createRandomAnimal());
     }
-    while (_dodos.length > visualCount) {
-      _dodos.removeLast();
+    while (_animals.length > visualCount) {
+      _animals.removeLast();
     }
   }
 
-  _AnimatedDodo _createRandomDodo() {
+  _AnimatedAnimal _createRandomAnimal() {
     final x = 0.2 + (_rng.nextDouble() * 0.6);
     final y = 0.25 + (_rng.nextDouble() * 0.5);
-    return _AnimatedDodo(
+    return _AnimatedAnimal(
       x: x,
       y: y,
       targetX: x,
@@ -105,46 +106,40 @@ class _HabitatViewportState extends State<HabitatViewport>
   }
 
   void _updateAnimation() {
-    final dt = 0.016; // approximate ~60fps
+    const dt = 0.016;
     _elapsedTime += dt;
 
-    for (final dodo in _dodos) {
-      dodo.stateTimer -= dt;
-      if (dodo.stateTimer <= 0) {
-        // Pick new activity & destination
+    for (final animal in _animals) {
+      animal.stateTimer -= dt;
+      if (animal.stateTimer <= 0) {
         final activities = ['walking', 'pecking', 'drinking', 'resting'];
-        dodo.activity = activities[_rng.nextInt(activities.length)];
-        dodo.stateTimer = 2.5 + (_rng.nextDouble() * 3.5);
+        animal.activity = activities[_rng.nextInt(activities.length)];
+        animal.stateTimer = 2.5 + (_rng.nextDouble() * 3.5);
 
-        if (dodo.activity == 'drinking') {
-          // Water spring waypoint (near left shore)
-          dodo.targetX = 0.25 + (_rng.nextDouble() * 0.12);
-          dodo.targetY = 0.45 + (_rng.nextDouble() * 0.15);
-        } else if (dodo.activity == 'pecking') {
-          // Feeder waypoint (near center/right)
-          dodo.targetX = 0.55 + (_rng.nextDouble() * 0.15);
-          dodo.targetY = 0.35 + (_rng.nextDouble() * 0.15);
+        if (animal.activity == 'drinking') {
+          animal.targetX = 0.25 + (_rng.nextDouble() * 0.12);
+          animal.targetY = 0.45 + (_rng.nextDouble() * 0.15);
+        } else if (animal.activity == 'pecking') {
+          animal.targetX = 0.55 + (_rng.nextDouble() * 0.15);
+          animal.targetY = 0.35 + (_rng.nextDouble() * 0.15);
         } else {
-          // Random stroll on island
-          dodo.targetX = 0.20 + (_rng.nextDouble() * 0.60);
-          dodo.targetY = 0.25 + (_rng.nextDouble() * 0.50);
+          animal.targetX = 0.20 + (_rng.nextDouble() * 0.60);
+          animal.targetY = 0.25 + (_rng.nextDouble() * 0.50);
         }
       }
 
-      // Move toward target
-      final dx = dodo.targetX - dodo.x;
-      final dy = dodo.targetY - dodo.y;
+      final dx = animal.targetX - animal.x;
+      final dy = animal.targetY - animal.y;
       final dist = sqrt(dx * dx + dy * dy);
 
       if (dist > 0.01) {
-        final step = min(dist, dodo.speed * dt);
-        dodo.x += (dx / dist) * step;
-        dodo.y += (dy / dist) * step;
-        dodo.facingLeft = dx < 0;
+        final step = min(dist, animal.speed * dt);
+        animal.x += (dx / dist) * step;
+        animal.y += (dy / dist) * step;
+        animal.facingLeft = dx < 0;
       }
     }
 
-    // Clean up old particles
     _particles.removeWhere((p) => (_elapsedTime - p.createdAt) > 1.2);
 
     setState(() {});
@@ -181,47 +176,42 @@ class _HabitatViewportState extends State<HabitatViewport>
 
   @override
   Widget build(BuildContext context) {
+    final species = Species.fromId(widget.habitat.speciesId);
+
     return GestureDetector(
       onTapDown: _handleTapDown,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.0, -0.2),
-              radius: 1.2,
-              colors: [
-                Color(0xFF0F4C81), // Tropical lagoon blue
-                Color(0xFF072138), // Deep ocean
-              ],
-            ),
+          decoration: BoxDecoration(
+            gradient: _getBiomeGradient(widget.habitat.biomeType),
           ),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Custom Painted Island, waves, and environment
               CustomPaint(
-                painter: _IslandEnvironmentPainter(
+                painter: _BiomeEnvironmentPainter(
                   time: _elapsedTime,
+                  biomeType: widget.habitat.biomeType,
                   habitatLevel: widget.habitat.level,
                   hasAutoFeeder: widget.habitat.hasAutoFeeder,
                   hasAutoWater: widget.habitat.hasAutoWater,
                 ),
               ),
 
-              // Animated Dodos
-              ..._dodos.map((dodo) {
+              // Animated Habitat Animals
+              ..._animals.map((animal) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    final px = dodo.x * constraints.maxWidth;
-                    final py = dodo.y * constraints.maxHeight;
-                    final bobbing = sin((_elapsedTime * 6.0) + (dodo.x * 10)) * 2.5;
+                    final px = animal.x * constraints.maxWidth;
+                    final py = animal.y * constraints.maxHeight;
+                    final bobbing = sin((_elapsedTime * 6.0) + (animal.x * 10)) * 2.5;
 
                     return Positioned(
                       left: px - 20,
                       top: py - 20 + bobbing,
                       child: Transform.flip(
-                        flipX: dodo.facingLeft,
+                        flipX: animal.facingLeft,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -233,7 +223,7 @@ class _HabitatViewportState extends State<HabitatViewport>
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                _getActivityBadge(dodo.activity),
+                                _getActivityBadge(animal.activity),
                                 style: const TextStyle(
                                   fontSize: 8,
                                   color: Colors.white70,
@@ -241,9 +231,9 @@ class _HabitatViewportState extends State<HabitatViewport>
                               ),
                             ),
                             const SizedBox(height: 2),
-                            const Text(
-                              '🦤',
-                              style: TextStyle(fontSize: 28),
+                            Text(
+                              species.iconEmoji,
+                              style: const TextStyle(fontSize: 28),
                             ),
                           ],
                         ),
@@ -282,7 +272,6 @@ class _HabitatViewportState extends State<HabitatViewport>
                 );
               }),
 
-              // Quick hint in top corner
               Positioned(
                 bottom: 12,
                 left: 16,
@@ -300,7 +289,7 @@ class _HabitatViewportState extends State<HabitatViewport>
                       const Text('✨', style: TextStyle(fontSize: 12)),
                       const SizedBox(width: 4),
                       Text(
-                        'Tap island to care (+🪙 +🧬)',
+                        'Tap to care (+🪙 +🧬)',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 11,
@@ -318,6 +307,41 @@ class _HabitatViewportState extends State<HabitatViewport>
     );
   }
 
+  Gradient _getBiomeGradient(String biome) {
+    switch (biome) {
+      case 'australian_forest':
+        return const RadialGradient(
+          center: Alignment(0.0, -0.2),
+          radius: 1.2,
+          colors: [Color(0xFF2E4032), Color(0xFF131A15)],
+        );
+      case 'northern_coast':
+        return const RadialGradient(
+          center: Alignment(0.0, -0.2),
+          radius: 1.2,
+          colors: [Color(0xFF183852), Color(0xFF09141E)],
+        );
+      case 'african_grasslands':
+        return const RadialGradient(
+          center: Alignment(0.0, -0.2),
+          radius: 1.2,
+          colors: [Color(0xFF5B3F1B), Color(0xFF26190A)],
+        );
+      case 'ice_age_tundra':
+        return const RadialGradient(
+          center: Alignment(0.0, -0.2),
+          radius: 1.2,
+          colors: [Color(0xFF22516E), Color(0xFF0C1D29)],
+        );
+      default:
+        return const RadialGradient(
+          center: Alignment(0.0, -0.2),
+          radius: 1.2,
+          colors: [Color(0xFF0F4C81), Color(0xFF072138)],
+        );
+    }
+  }
+
   String _getActivityBadge(String act) {
     switch (act) {
       case 'pecking':
@@ -332,14 +356,16 @@ class _HabitatViewportState extends State<HabitatViewport>
   }
 }
 
-class _IslandEnvironmentPainter extends CustomPainter {
+class _BiomeEnvironmentPainter extends CustomPainter {
   final double time;
+  final String biomeType;
   final int habitatLevel;
   final bool hasAutoFeeder;
   final bool hasAutoWater;
 
-  _IslandEnvironmentPainter({
+  _BiomeEnvironmentPainter({
     required this.time,
+    required this.biomeType,
     required this.habitatLevel,
     required this.hasAutoFeeder,
     required this.hasAutoWater,
@@ -350,9 +376,42 @@ class _IslandEnvironmentPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
+    // Determine Biome Color Scheme
+    Color waterWaveColor = const Color(0xFF1E6F9F);
+    Color terrainBorderColor = const Color(0xFFE5C384);
+    Color terrainMainStart = const Color(0xFF2E8B57);
+    Color terrainMainEnd = const Color(0xFF1F633D);
+    Color springColor = const Color(0xFF38BDF8);
+
+    if (biomeType == 'australian_forest') {
+      waterWaveColor = const Color(0xFF2D5A46);
+      terrainBorderColor = const Color(0xFFB4532B); // Red outback soil
+      terrainMainStart = const Color(0xFF42633E);
+      terrainMainEnd = const Color(0xFF273F25);
+      springColor = const Color(0xFF4FA07B);
+    } else if (biomeType == 'northern_coast') {
+      waterWaveColor = const Color(0xFF163E5F);
+      terrainBorderColor = const Color(0xFF475569); // Granite cliffs
+      terrainMainStart = const Color(0xFF334155);
+      terrainMainEnd = const Color(0xFF1E293B);
+      springColor = const Color(0xFF38BDF8);
+    } else if (biomeType == 'african_grasslands') {
+      waterWaveColor = const Color(0xFF785B2D);
+      terrainBorderColor = const Color(0xFFD97706); // Golden savannah sand
+      terrainMainStart = const Color(0xFFB48325);
+      terrainMainEnd = const Color(0xFF785413);
+      springColor = const Color(0xFF38BDF8);
+    } else if (biomeType == 'ice_age_tundra') {
+      waterWaveColor = const Color(0xFF38BDF8);
+      terrainBorderColor = const Color(0xFF93C5FD); // Glacial ice edge
+      terrainMainStart = const Color(0xFFE2E8F0); // Snow permafrost
+      terrainMainEnd = const Color(0xFFCBD5E1);
+      springColor = const Color(0xFF67E8F9);
+    }
+
     // 1. Water waves effect
     final wavePaint = Paint()
-      ..color = const Color(0xFF1E6F9F).withOpacity(0.3)
+      ..color = waterWaveColor.withOpacity(0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -367,13 +426,13 @@ class _IslandEnvironmentPainter extends CustomPainter {
       canvas.drawPath(path, wavePaint);
     }
 
-    // 2. Island Sandy Shore
+    // 2. Terrain Shore / Border
     final islandCenter = Offset(w * 0.5, h * 0.52);
     final islandRadiusX = w * 0.42;
     final islandRadiusY = h * 0.36;
 
-    final sandPaint = Paint()
-      ..color = const Color(0xFFE5C384)
+    final borderPaint = Paint()
+      ..color = terrainBorderColor
       ..style = PaintingStyle.fill;
 
     canvas.drawOval(
@@ -382,17 +441,14 @@ class _IslandEnvironmentPainter extends CustomPainter {
         width: islandRadiusX * 2,
         height: islandRadiusY * 2,
       ),
-      sandPaint,
+      borderPaint,
     );
 
-    // 3. Lush Green Island Center
-    final grassGradient = const RadialGradient(
-      center: Alignment(0.0, -0.2),
+    // 3. Terrain Center
+    final grassGradient = RadialGradient(
+      center: const Alignment(0.0, -0.2),
       radius: 0.9,
-      colors: [
-        Color(0xFF2E8B57), // Lush sea green
-        Color(0xFF1F633D), // Forest green
-      ],
+      colors: [terrainMainStart, terrainMainEnd],
     ).createShader(Rect.fromCenter(
       center: islandCenter,
       width: islandRadiusX * 1.8,
@@ -410,9 +466,9 @@ class _IslandEnvironmentPainter extends CustomPainter {
       grassPaint,
     );
 
-    // 4. Freshwater Spring (Left side)
+    // 4. Freshwater / Glacial Spring
     final springCenter = Offset(w * 0.32, h * 0.50);
-    final springPaint = Paint()..color = const Color(0xFF38BDF8);
+    final springPaint = Paint()..color = springColor;
     canvas.drawOval(
       Rect.fromCenter(center: springCenter, width: 44, height: 26),
       springPaint,
@@ -425,7 +481,7 @@ class _IslandEnvironmentPainter extends CustomPainter {
       canvas.drawCircle(springCenter, 24, rimPaint);
     }
 
-    // 5. Feeding Trough (Right side)
+    // 5. Feeding Station
     final feederCenter = Offset(w * 0.68, h * 0.42);
     final feederPaint = Paint()..color = const Color(0xFF8D5B2E);
     canvas.drawRRect(
@@ -435,10 +491,11 @@ class _IslandEnvironmentPainter extends CustomPainter {
       ),
       feederPaint,
     );
-    // Fruit dots
+
     final fruitPaint = Paint()..color = const Color(0xFFEF4444);
     canvas.drawCircle(feederCenter + const Offset(-8, -2), 3.5, fruitPaint);
     canvas.drawCircle(feederCenter + const Offset(4, 1), 3.5, fruitPaint);
+
     if (hasAutoFeeder) {
       final rimPaint = Paint()
         ..color = const Color(0xFFFBBF24)
@@ -446,25 +503,12 @@ class _IslandEnvironmentPainter extends CustomPainter {
         ..strokeWidth = 2.5;
       canvas.drawCircle(feederCenter, 22, rimPaint);
     }
-
-    // 6. Nesting Site / Soft Moss
-    final nestCenter = Offset(w * 0.50, h * 0.68);
-    final nestPaint = Paint()..color = const Color(0xFFC29B38).withOpacity(0.85);
-    canvas.drawOval(
-      Rect.fromCenter(center: nestCenter, width: 50, height: 24),
-      nestPaint,
-    );
-    // Soft egg
-    final eggPaint = Paint()..color = Colors.white70;
-    canvas.drawOval(
-      Rect.fromCenter(center: nestCenter + const Offset(0, -2), width: 9, height: 12),
-      eggPaint,
-    );
   }
 
   @override
-  bool shouldRepaint(covariant _IslandEnvironmentPainter oldDelegate) {
+  bool shouldRepaint(covariant _BiomeEnvironmentPainter oldDelegate) {
     return oldDelegate.time != time ||
+        oldDelegate.biomeType != biomeType ||
         oldDelegate.habitatLevel != habitatLevel ||
         oldDelegate.hasAutoFeeder != hasAutoFeeder ||
         oldDelegate.hasAutoWater != hasAutoWater;

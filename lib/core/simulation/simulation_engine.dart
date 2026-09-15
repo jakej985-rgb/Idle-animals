@@ -1,6 +1,8 @@
 import 'dart:math';
+import '../../models/expedition.dart';
 import '../../models/game_state.dart';
 import '../../models/habitat.dart';
+import '../../models/mission.dart';
 import '../../models/species.dart';
 
 class SimulationResult {
@@ -8,14 +10,15 @@ class SimulationResult {
   final double creditsGenerated;
   final double dnaGenerated;
   final double researchGenerated;
-  final int dodosBorn;
+  final int animalsBorn;
+  int get dodosBorn => animalsBorn;
 
   const SimulationResult({
     required this.nextState,
     required this.creditsGenerated,
     required this.dnaGenerated,
     required this.researchGenerated,
-    required this.dodosBorn,
+    required this.animalsBorn,
   });
 }
 
@@ -32,14 +35,15 @@ class SimulationEngine {
         creditsGenerated: 0,
         dnaGenerated: 0,
         researchGenerated: 0,
-        dodosBorn: 0,
+        animalsBorn: 0,
       );
     }
 
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
     double totalCreditsGen = 0;
     double totalDnaGen = 0;
     double totalResearchGen = 0;
-    int totalNewDodos = 0;
+    int totalNewAnimals = 0;
 
     final updatedHabitats = Map<String, Habitat>.from(state.habitats);
 
@@ -69,15 +73,15 @@ class SimulationEngine {
     final ancientDnaResearch =
         state.researchNodes['ancient_dna']?.isUnlocked ?? false;
 
+    // 1. Simulate each habitat concurrently
     for (final entry in state.habitats.entries) {
       final habitatId = entry.key;
       var habitat = entry.value;
 
-      // Currently focusing on Dodo MVP
-      final species = Species.dodo;
+      final species = Species.fromId(habitat.speciesId);
       final pop = habitat.population;
 
-      // 1. Food & Water consumption
+      // Need consumption
       final foodRateMultiplier = nutritionResearch ? 0.5 : 1.0;
       final foodConsumed =
           species.baseFoodConsumptionPerSec * pop * foodRateMultiplier * dt;
@@ -87,37 +91,37 @@ class SimulationEngine {
       var currentWater = max(0.0, habitat.water - waterConsumed);
 
       // Automated systems or Keeper refill
-      if (hasAutoFeeder || (hasKeeper && currentFood < 20.0)) {
+      if (habitat.hasAutoFeeder || hasAutoFeeder || (hasKeeper && currentFood < 20.0)) {
         currentFood = habitat.maxFood;
       }
-      if (hasAutoWater || (hasKeeper && currentWater < 20.0)) {
+      if (habitat.hasAutoWater || hasAutoWater || (hasKeeper && currentWater < 20.0)) {
         currentWater = habitat.maxWater;
       }
 
-      // 2. Happiness calculation
+      // Happiness calculation
       var currentHappiness = habitat.happiness;
       final hasResources = currentFood > 0 && currentWater > 0;
 
       if (hasResources) {
-        // Drifts up towards 100%
         currentHappiness = min(100.0, currentHappiness + (4.0 * dt));
       } else {
-        // Drifts down to minimum 25% (conservation friendly, no death)
         final minHappiness = 25.0 + (keeperLevel * 5.0);
         currentHappiness = max(minHappiness, currentHappiness - (2.5 * dt));
       }
 
-      // 3. Breeding Progression
+      // Breeding Progression
       final happinessMult = (currentHappiness / 100.0).clamp(0.2, 1.4);
       final keeperBreedingMult = 1.0 + (keeperLevel * 0.15);
       final nestingBreedingMult = 1.0 + (nestingLevel * 0.15);
       final incubationMult = incubationResearch ? 1.25 : 1.0;
+      final globalGrowthMult = state.globalGrowthMultiplier;
 
       final breedingSpeedRate = (1.0 / species.baseBreedingSeconds) *
           happinessMult *
           keeperBreedingMult *
           nestingBreedingMult *
-          incubationMult;
+          incubationMult *
+          globalGrowthMult;
 
       var breedingProgress = habitat.breedingProgress + (breedingSpeedRate * dt);
       var currentPop = habitat.population;
@@ -130,14 +134,15 @@ class SimulationEngine {
       }
 
       if (currentPop >= habitat.capacity && breedingProgress > 1.0) {
-        breedingProgress = 1.0; // Maxed until expansion
+        breedingProgress = 1.0;
       }
 
-      totalNewDodos += habitatNewBorns;
+      totalNewAnimals += habitatNewBorns;
 
-      // 4. Resource Generation
-      final dnaMultiplier =
-          (1.0 + (dnaUpgradeLevel * 0.20)) * (ancientDnaResearch ? 1.5 : 1.0);
+      // Resource Generation
+      final dnaMultiplier = (1.0 + (dnaUpgradeLevel * 0.20)) *
+          (ancientDnaResearch ? 1.5 : 1.0) *
+          state.globalDnaMultiplier;
 
       final credsProduced =
           currentPop * species.baseCreditsRatePerSec * happinessMult * dt;
@@ -146,8 +151,11 @@ class SimulationEngine {
           happinessMult *
           dnaMultiplier *
           dt;
-      final resProduced =
-          currentPop * species.baseResearchRatePerSec * happinessMult * dt;
+      final resProduced = currentPop *
+          species.baseResearchRatePerSec *
+          happinessMult *
+          state.globalResearchMultiplier *
+          dt;
 
       totalCreditsGen += credsProduced;
       totalDnaGen += dnaProduced;
@@ -164,13 +172,52 @@ class SimulationEngine {
       );
     }
 
+    // 2. Advance active expeditions
+    final updatedExpeditions = Map<String, Expedition>.from(state.expeditions);
+    for (final expEntry in state.expeditions.entries) {
+      final exp = expEntry.value;
+      if (exp.isActive && !exp.isCompleted) {
+        if (exp.checkCompleted(nowMs)) {
+          updatedExpeditions[expEntry.key] = exp.copyWith(isCompleted: true);
+        }
+      }
+    }
+
+    // 3. Update Mission Progress
+    final updatedMissions = Map<String, Mission>.from(state.missions);
+    int totalPop = updatedHabitats.values.fold(0, (sum, h) => sum + h.population);
+
+    for (final mEntry in state.missions.entries) {
+      final m = mEntry.value;
+      if (!m.isCompleted) {
+        int current = m.currentProgress;
+        if (m.id == 'pop_5' || m.id == 'pop_30') {
+          current = totalPop;
+        } else if (m.id == 'first_expedition') {
+          current = state.totalExpeditionsCompleted;
+        } else if (m.id == 'keeper_upgrade') {
+          current = keeperLevel;
+        } else if (m.id == 'unlock_thylacine') {
+          current = state.unlockedSpeciesIds.contains('thylacine') ? 1 : 0;
+        }
+
+        final isDone = current >= m.targetCount;
+        updatedMissions[mEntry.key] = m.copyWith(
+          currentProgress: current,
+          isCompleted: isDone,
+        );
+      }
+    }
+
     final nextState = state.copyWith(
       credits: state.credits + totalCreditsGen,
       dna: state.dna + totalDnaGen,
       research: state.research + totalResearchGen,
       habitats: updatedHabitats,
-      totalDodosBred: state.totalDodosBred + totalNewDodos,
-      lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch,
+      expeditions: updatedExpeditions,
+      missions: updatedMissions,
+      totalDodosBred: state.totalDodosBred + totalNewAnimals,
+      lastSavedTimestamp: nowMs,
     );
 
     return SimulationResult(
@@ -178,7 +225,7 @@ class SimulationEngine {
       creditsGenerated: totalCreditsGen,
       dnaGenerated: totalDnaGen,
       researchGenerated: totalResearchGen,
-      dodosBorn: totalNewDodos,
+      animalsBorn: totalNewAnimals,
     );
   }
 }

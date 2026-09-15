@@ -1,4 +1,7 @@
+import 'expedition.dart';
+import 'fossil.dart';
 import 'habitat.dart';
+import 'mission.dart';
 import 'research_node.dart';
 import 'staff.dart';
 import 'upgrade.dart';
@@ -10,12 +13,20 @@ class GameState {
   final double restorationPoints;
   final int lastSavedTimestamp;
   final double offlineCapSeconds;
+  final String activeHabitatId;
   final Map<String, Habitat> habitats;
   final Map<String, StaffMember> staff;
   final Map<String, Upgrade> upgrades;
   final Map<String, ResearchNode> researchNodes;
+  final Map<String, Expedition> expeditions;
+  final Map<String, FossilItem> fossilInventory;
+  final Map<String, Mission> missions;
+  final Map<String, int> restorationPerks;
   final List<String> unlockedSpeciesIds;
   final int totalDodosBred;
+  final int totalExpeditionsCompleted;
+  final bool soundEnabled;
+  final bool hapticsEnabled;
 
   const GameState({
     required this.credits,
@@ -24,15 +35,39 @@ class GameState {
     required this.restorationPoints,
     required this.lastSavedTimestamp,
     this.offlineCapSeconds = 7200.0, // 2 hours base
+    this.activeHabitatId = 'dodo_island',
     required this.habitats,
     required this.staff,
     required this.upgrades,
     required this.researchNodes,
+    required this.expeditions,
+    required this.fossilInventory,
+    required this.missions,
+    required this.restorationPerks,
     required this.unlockedSpeciesIds,
     this.totalDodosBred = 1,
+    this.totalExpeditionsCompleted = 0,
+    this.soundEnabled = true,
+    this.hapticsEnabled = true,
   });
 
+  // Permanent restoration multipliers
+  double get globalGrowthMultiplier =>
+      1.0 + ((restorationPerks['growth_boost'] ?? 0) * 0.15);
+
+  double get globalDnaMultiplier =>
+      1.0 + ((restorationPerks['dna_boost'] ?? 0) * 0.20);
+
+  double get globalResearchMultiplier =>
+      1.0 + ((restorationPerks['research_boost'] ?? 0) * 0.20);
+
+  double get expeditionSpeedMultiplier =>
+      1.0 + ((restorationPerks['expedition_boost'] ?? 0) * 0.25);
+
   static GameState initial() {
+    final defaultExps = Expedition.defaultExpeditions();
+    final defaultMissionsList = Mission.defaultMissions();
+
     return GameState(
       credits: 60.0,
       dna: 10.0,
@@ -40,11 +75,13 @@ class GameState {
       restorationPoints: 0.0,
       lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch,
       offlineCapSeconds: 7200.0,
+      activeHabitatId: 'dodo_island',
       habitats: {
         'dodo_island': const Habitat(
           id: 'dodo_island',
           name: 'Dodo Island Sanctuary',
           speciesId: 'dodo',
+          biomeType: 'tropical_island',
           level: 1,
           population: 1,
           food: 100.0,
@@ -59,7 +96,7 @@ class GameState {
           id: 'keeper',
           name: 'Sarah the Keeper',
           role: StaffRole.keeper,
-          level: 0, // Not hired yet
+          level: 0,
           title: 'Habitat Caretaker',
           description:
               'Maintains habitat feeders, comforts animals, and increases breeding speed by +10% per level.',
@@ -70,7 +107,7 @@ class GameState {
         'habitat_expansion': const Upgrade(
           id: 'habitat_expansion',
           title: 'Expand Island Reserve',
-          description: 'Increases habitat population capacity by +10 and habitat level.',
+          description: 'Increases active habitat capacity by +10 and habitat level.',
           type: UpgradeType.habitatLevel,
           currency: UpgradeCurrency.credits,
           baseCost: 50.0,
@@ -110,7 +147,7 @@ class GameState {
         'dna_sequencer': const Upgrade(
           id: 'dna_sequencer',
           title: 'Portable DNA Sampler',
-          description: 'Boosts passive DNA harvested per happy Dodo by +20%.',
+          description: 'Boosts passive DNA harvested per happy animal by +20%.',
           type: UpgradeType.dnaExtraction,
           currency: UpgradeCurrency.research,
           baseCost: 20.0,
@@ -133,7 +170,7 @@ class GameState {
         'incubation': const ResearchNode(
           id: 'incubation',
           title: 'Accelerated Incubation',
-          description: 'Shortens egg hatching cycles by 20%.',
+          description: 'Shortens egg hatching and birth cycles by 20%.',
           cost: 15.0,
           icon: '🥚',
         ),
@@ -153,9 +190,29 @@ class GameState {
           prerequisites: ['nutrition'],
           icon: '🧬',
         ),
+        'expedition_radar': const ResearchNode(
+          id: 'expedition_radar',
+          title: 'Ground-Penetrating Radar',
+          description: 'Cuts all expedition travel times by 30%.',
+          cost: 110.0,
+          prerequisites: ['ancient_dna'],
+          icon: '📡',
+        ),
+      },
+      expeditions: {for (var e in defaultExps) e.id: e},
+      fossilInventory: {},
+      missions: {for (var m in defaultMissionsList) m.id: m},
+      restorationPerks: {
+        'growth_boost': 0,
+        'dna_boost': 0,
+        'research_boost': 0,
+        'expedition_boost': 0,
       },
       unlockedSpeciesIds: ['dodo'],
       totalDodosBred: 1,
+      totalExpeditionsCompleted: 0,
+      soundEnabled: true,
+      hapticsEnabled: true,
     );
   }
 
@@ -166,12 +223,20 @@ class GameState {
     double? restorationPoints,
     int? lastSavedTimestamp,
     double? offlineCapSeconds,
+    String? activeHabitatId,
     Map<String, Habitat>? habitats,
     Map<String, StaffMember>? staff,
     Map<String, Upgrade>? upgrades,
     Map<String, ResearchNode>? researchNodes,
+    Map<String, Expedition>? expeditions,
+    Map<String, FossilItem>? fossilInventory,
+    Map<String, Mission>? missions,
+    Map<String, int>? restorationPerks,
     List<String>? unlockedSpeciesIds,
     int? totalDodosBred,
+    int? totalExpeditionsCompleted,
+    bool? soundEnabled,
+    bool? hapticsEnabled,
   }) {
     return GameState(
       credits: credits ?? this.credits,
@@ -180,12 +245,21 @@ class GameState {
       restorationPoints: restorationPoints ?? this.restorationPoints,
       lastSavedTimestamp: lastSavedTimestamp ?? this.lastSavedTimestamp,
       offlineCapSeconds: offlineCapSeconds ?? this.offlineCapSeconds,
+      activeHabitatId: activeHabitatId ?? this.activeHabitatId,
       habitats: habitats ?? this.habitats,
       staff: staff ?? this.staff,
       upgrades: upgrades ?? this.upgrades,
       researchNodes: researchNodes ?? this.researchNodes,
+      expeditions: expeditions ?? this.expeditions,
+      fossilInventory: fossilInventory ?? this.fossilInventory,
+      missions: missions ?? this.missions,
+      restorationPerks: restorationPerks ?? this.restorationPerks,
       unlockedSpeciesIds: unlockedSpeciesIds ?? this.unlockedSpeciesIds,
       totalDodosBred: totalDodosBred ?? this.totalDodosBred,
+      totalExpeditionsCompleted:
+          totalExpeditionsCompleted ?? this.totalExpeditionsCompleted,
+      soundEnabled: soundEnabled ?? this.soundEnabled,
+      hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
     );
   }
 
@@ -196,12 +270,21 @@ class GameState {
         'restorationPoints': restorationPoints,
         'lastSavedTimestamp': lastSavedTimestamp,
         'offlineCapSeconds': offlineCapSeconds,
+        'activeHabitatId': activeHabitatId,
         'habitats': habitats.map((k, v) => MapEntry(k, v.toJson())),
         'staff': staff.map((k, v) => MapEntry(k, v.toJson())),
         'upgrades': upgrades.map((k, v) => MapEntry(k, v.toJson())),
         'researchNodes': researchNodes.map((k, v) => MapEntry(k, v.toJson())),
+        'expeditions': expeditions.map((k, v) => MapEntry(k, v.toJson())),
+        'fossilInventory':
+            fossilInventory.map((k, v) => MapEntry(k, v.toJson())),
+        'missions': missions.map((k, v) => MapEntry(k, v.toJson())),
+        'restorationPerks': restorationPerks,
         'unlockedSpeciesIds': unlockedSpeciesIds,
         'totalDodosBred': totalDodosBred,
+        'totalExpeditionsCompleted': totalExpeditionsCompleted,
+        'soundEnabled': soundEnabled,
+        'hapticsEnabled': hapticsEnabled,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
@@ -215,6 +298,8 @@ class GameState {
           DateTime.now().millisecondsSinceEpoch,
       offlineCapSeconds:
           (json['offlineCapSeconds'] as num?)?.toDouble() ?? 7200.0,
+      activeHabitatId:
+          json['activeHabitatId'] as String? ?? 'dodo_island',
       habitats: (json['habitats'] as Map<String, dynamic>?)?.map(
             (k, v) => MapEntry(k, Habitat.fromJson(v as Map<String, dynamic>)),
           ) ??
@@ -233,12 +318,40 @@ class GameState {
                 MapEntry(k, ResearchNode.fromJson(v as Map<String, dynamic>)),
           ) ??
           {},
+      expeditions: (json['expeditions'] as Map<String, dynamic>?)?.map(
+            (k, v) =>
+                MapEntry(k, Expedition.fromJson(v as Map<String, dynamic>)),
+          ) ??
+          {for (var e in Expedition.defaultExpeditions()) e.id: e},
+      fossilInventory:
+          (json['fossilInventory'] as Map<String, dynamic>?)?.map(
+                (k, v) =>
+                    MapEntry(k, FossilItem.fromJson(v as Map<String, dynamic>)),
+              ) ??
+              {},
+      missions: (json['missions'] as Map<String, dynamic>?)?.map(
+            (k, v) =>
+                MapEntry(k, Mission.fromJson(v as Map<String, dynamic>)),
+          ) ??
+          {for (var m in Mission.defaultMissions()) m.id: m},
+      restorationPerks: (json['restorationPerks'] as Map<String, dynamic>?)
+              ?.map((k, v) => MapEntry(k, v as int)) ??
+          {
+            'growth_boost': 0,
+            'dna_boost': 0,
+            'research_boost': 0,
+            'expedition_boost': 0,
+          },
       unlockedSpeciesIds:
           (json['unlockedSpeciesIds'] as List<dynamic>?)
                   ?.map((e) => e.toString())
                   .toList() ??
               ['dodo'],
       totalDodosBred: json['totalDodosBred'] as int? ?? 1,
+      totalExpeditionsCompleted:
+          json['totalExpeditionsCompleted'] as int? ?? 0,
+      soundEnabled: json['soundEnabled'] as bool? ?? true,
+      hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
     );
   }
 }

@@ -1,0 +1,346 @@
+import 'package:flutter/material.dart';
+import '../models/expedition.dart';
+import '../models/fossil.dart';
+import '../models/game_state.dart';
+
+class ExpeditionsSheet extends StatelessWidget {
+  final GameState state;
+  final Function(String) onStartExpedition;
+  final Function(String) onClaimExpedition;
+
+  const ExpeditionsSheet({
+    super.key,
+    required this.state,
+    required this.onStartExpedition,
+    required this.onClaimExpedition,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final exps = state.expeditions.values.toList();
+    final fossils = state.fossilInventory.values.toList();
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF131D2A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFF284860),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Text('🧭', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              const Text(
+                'Fossil Expeditions',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '🪙 ${state.credits.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  color: Color(0xFFFBBF24),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Dispatch archeological field teams to discover preserved bones, amber, and ancient species genomes.',
+            style: TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
+          ),
+          const SizedBox(height: 14),
+
+          // Fossil Inventory Quick Summary Bar
+          if (fossils.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0C141D),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF1E3142)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🦴 Discoveries: ',
+                      style: TextStyle(
+                          color: Color(0xFFCBD5E1),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: fossils.map((f) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Chip(
+                              padding: EdgeInsets.zero,
+                              labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 0),
+                              visualDensity: VisualDensity.compact,
+                              backgroundColor: const Color(0xFF162534),
+                              avatar: Text(f.iconEmoji,
+                                  style: const TextStyle(fontSize: 12)),
+                              label: Text('${f.name} (x${f.count})',
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.white70)),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          Expanded(
+            child: ListView(
+              children: exps.map((exp) {
+                return _buildExpeditionCard(context, exp, nowMs);
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpeditionCard(
+      BuildContext context, Expedition exp, int nowMs) {
+    final canAfford = state.credits >= exp.creditsCost;
+    final isDone = exp.isCompleted || exp.checkCompleted(nowMs);
+    final remainingSec = exp.getRemainingSeconds(nowMs);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C141D),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : (exp.isActive
+                  ? const Color(0xFF0284C7)
+                  : const Color(0xFF1E3142)),
+          width: (isDone || exp.isActive) ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF15222E),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Center(
+                  child: Text(exp.iconEmoji,
+                      style: const TextStyle(fontSize: 24)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          exp.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        if (exp.unlocksSpeciesId != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              '🧬 SPECIES',
+                              style: TextStyle(
+                                color: Color(0xFFA78BFA),
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${exp.region} • ${exp.durationSeconds.toStringAsFixed(0)}s travel',
+                      style: const TextStyle(
+                        color: Color(0xFF8BA3B8),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            exp.description,
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+          ),
+          const SizedBox(height: 10),
+
+          // Potential Finds Chips
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: exp.possibleFinds.map((find) {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF131F2A),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Text(
+                  '${find.iconEmoji} ${find.name}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: _getRarityColor(find.rarity),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+
+          // Active Timer or Dispatch Button
+          if (exp.isActive && !isDone) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: 1.0 - (remainingSec / exp.durationSeconds),
+                minHeight: 6,
+                backgroundColor: const Color(0xFF1B2B3A),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Color(0xFF0284C7)),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Team surveying terrain... ${remainingSec.toStringAsFixed(0)}s remaining',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF38BDF8),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ] else if (isDone) ...[
+            ElevatedButton(
+              onPressed: () => onClaimExpedition(exp.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('🎁', style: TextStyle(fontSize: 14)),
+                  SizedBox(width: 6),
+                  Text(
+                    'CLAIM EXPEDITION DISCOVERIES',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            ElevatedButton(
+              onPressed: canAfford ? () => onStartExpedition(exp.id) : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFF1B2B3A),
+                disabledForegroundColor: Colors.white24,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🧭', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Dispatch Team (🪙 ${exp.creditsCost.toStringAsFixed(0)})',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Color _getRarityColor(FossilRarity rarity) {
+    switch (rarity) {
+      case FossilRarity.uncommon:
+        return const Color(0xFF4ADE80);
+      case FossilRarity.rare:
+        return const Color(0xFF38BDF8);
+      case FossilRarity.legendary:
+        return const Color(0xFFFBBF24);
+      default:
+        return const Color(0xFFCBD5E1);
+    }
+  }
+}

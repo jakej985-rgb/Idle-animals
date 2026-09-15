@@ -6,7 +6,8 @@ class OfflineReport {
   final double secondsAway;
   final double simulatedSeconds;
   final bool wasCapped;
-  final int dodosBorn;
+  final int animalsBorn;
+  int get dodosBorn => animalsBorn;
   final double creditsEarned;
   final double dnaRecovered;
   final double researchGathered;
@@ -16,7 +17,7 @@ class OfflineReport {
     required this.secondsAway,
     required this.simulatedSeconds,
     required this.wasCapped,
-    required this.dodosBorn,
+    required this.animalsBorn,
     required this.creditsEarned,
     required this.dnaRecovered,
     required this.researchGathered,
@@ -71,14 +72,14 @@ class OfflineManager {
       totalCredits += res.creditsGenerated;
       totalDna += res.dnaGenerated;
       totalResearch += res.researchGenerated;
-      totalDodosBorn += res.dodosBorn;
+      totalDodosBorn += res.animalsBorn;
     }
 
     return OfflineReport(
       secondsAway: elapsedSec,
       simulatedSeconds: simSec,
       wasCapped: wasCapped,
-      dodosBorn: totalDodosBorn,
+      animalsBorn: totalDodosBorn,
       creditsEarned: totalCredits,
       dnaRecovered: totalDna,
       researchGathered: totalResearch,

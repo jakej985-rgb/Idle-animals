@@ -12,9 +12,7 @@ class ArchiveSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dodo = Species.dodo;
-    final habitat = state.habitats['dodo_island'];
-    final currentPop = habitat?.population ?? 0;
+    final allSpecies = Species.registry.values.toList();
 
     return Container(
       decoration: const BoxDecoration(
@@ -50,165 +48,161 @@ class ArchiveSheet extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 6),
+          Text(
+            'Species restored: ${state.unlockedSpeciesIds.length} / ${allSpecies.length}',
+            style: const TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
+          ),
           const SizedBox(height: 16),
           Expanded(
             child: ListView(
-              children: [
-                // Unlocked Dodo Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF1B3147),
-                        const Color(0xFF101D2C),
+              children: allSpecies.map((species) {
+                final isUnlocked =
+                    state.unlockedSpeciesIds.contains(species.id);
+
+                if (isUnlocked) {
+                  return _buildUnlockedCard(species);
+                } else {
+                  return _buildLockedCard(species);
+                }
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnlockedCard(Species species) {
+    int currentPop = 0;
+    for (final hab in state.habitats.values) {
+      if (hab.speciesId == species.id) {
+        currentPop += hab.population;
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1B3147),
+            Color(0xFF101D2C),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF10B981).withOpacity(0.6),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F1E2E),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: const Color(0xFF10B981), width: 1.5),
+                ),
+                child: Center(
+                  child: Text(species.iconEmoji,
+                      style: const TextStyle(fontSize: 28)),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          species.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'RESTORED',
+                            style: TextStyle(
+                              color: Color(0xFF4ADE80),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF10B981).withOpacity(0.6),
-                      width: 1.5,
+                    const SizedBox(height: 2),
+                    Text(
+                      species.scientificName,
+                      style: const TextStyle(
+                        color: Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0F1E2E),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                  color: const Color(0xFF10B981), width: 1.5),
-                            ),
-                            child: Center(
-                              child: Text(dodo.iconEmoji,
-                                  style: const TextStyle(fontSize: 32)),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      dodo.name,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF10B981)
-                                            .withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Text(
-                                        'RESTORED',
-                                        style: TextStyle(
-                                          color: Color(0xFF4ADE80),
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  dodo.scientificName,
-                                  style: const TextStyle(
-                                    color: Color(0xFF38BDF8),
-                                    fontSize: 12,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Extinction: ${dodo.extinctionEra}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 2),
+                    Text(
+                      'Extinction: ${species.extinctionEra}',
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 10,
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        dodo.description,
-                        style: const TextStyle(
-                          color: Color(0xFFCBD5E1),
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0B141E),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildMiniStat(
-                              label: 'Current Population',
-                              value: '$currentPop 🦤',
-                              color: const Color(0xFF4ADE80),
-                            ),
-                            Container(
-                                width: 1,
-                                height: 24,
-                                color: const Color(0xFF1E3142)),
-                            _buildMiniStat(
-                              label: 'Total Bred in Reserve',
-                              value: '${state.totalDodosBred}',
-                              color: const Color(0xFF38BDF8),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                // Locked teaser cards
-                _buildLockedSpeciesCard(
-                  emoji: '🐺',
-                  name: 'Thylacine (Tasmanian Tiger)',
-                  era: 'c. 1936 (Tasmania)',
-                  habitat: 'Australian Forest',
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            species.description,
+            style: const TextStyle(
+              color: Color(0xFFCBD5E1),
+              fontSize: 11,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0B141E),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildMiniStat(
+                  label: 'Sanctuary Population',
+                  value: '$currentPop ${species.iconEmoji}',
+                  color: const Color(0xFF4ADE80),
                 ),
-                const SizedBox(height: 10),
-                _buildLockedSpeciesCard(
-                  emoji: '🐧',
-                  name: 'Great Auk',
-                  era: 'c. 1852 (North Atlantic)',
-                  habitat: 'Northern Coast',
-                ),
-                const SizedBox(height: 10),
-                _buildLockedSpeciesCard(
-                  emoji: '🦣',
-                  name: 'Woolly Mammoth',
-                  era: 'c. 4000 BP (Wrangel Island)',
-                  habitat: 'Ice Age Tundra',
+                Container(width: 1, height: 24, color: const Color(0xFF1E3142)),
+                _buildMiniStat(
+                  label: 'Base Breeding Cycle',
+                  value: '${species.baseBreedingSeconds.toStringAsFixed(0)}s',
+                  color: const Color(0xFF38BDF8),
                 ),
               ],
             ),
@@ -218,40 +212,9 @@ class ArchiveSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniStat({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF8BA3B8),
-            fontSize: 10,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLockedSpeciesCard({
-    required String emoji,
-    required String name,
-    required String era,
-    required String habitat,
-  }) {
+  Widget _buildLockedCard(Species species) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF0C141D).withOpacity(0.6),
@@ -269,8 +232,9 @@ class ArchiveSheet extends StatelessWidget {
             ),
             child: Center(
               child: Opacity(
-                opacity: 0.3,
-                child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                opacity: 0.35,
+                child: Text(species.iconEmoji,
+                    style: const TextStyle(fontSize: 24)),
               ),
             ),
           ),
@@ -280,7 +244,7 @@ class ArchiveSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  species.name,
                   style: const TextStyle(
                     color: Colors.white54,
                     fontSize: 13,
@@ -288,8 +252,17 @@ class ArchiveSheet extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '$era • $habitat',
-                  style: const TextStyle(color: Colors.white30, fontSize: 11),
+                  '${species.extinctionEra} • ${species.scientificName}',
+                  style: const TextStyle(color: Colors.white30, fontSize: 10),
+                ),
+                const SizedBox(height: 3),
+                const Text(
+                  'Discover fossil DNA fragments on expeditions to restore',
+                  style: TextStyle(
+                    color: Color(0xFFFBBF24),
+                    fontSize: 9,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ],
             ),
@@ -297,6 +270,33 @@ class ArchiveSheet extends StatelessWidget {
           const Text('🔒', style: TextStyle(fontSize: 14)),
         ],
       ),
+    );
+  }
+
+  Widget _buildMiniStat({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF8BA3B8),
+            fontSize: 9,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -3,7 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/offline/offline_manager.dart';
 import '../core/save/save_service.dart';
 import '../core/simulation/simulation_engine.dart';
+import '../models/expedition.dart';
+import '../models/fossil.dart';
 import '../models/game_state.dart';
+import '../models/habitat.dart';
+import '../models/mission.dart';
+import '../models/research_node.dart';
+import '../models/staff.dart';
 import '../models/upgrade.dart';
 
 class GameNotifier extends Notifier<GameState> {
@@ -40,7 +46,7 @@ class GameNotifier extends Notifier<GameState> {
       );
 
       if (report != null &&
-          (report.dodosBorn > 0 ||
+          (report.animalsBorn > 0 ||
               report.creditsEarned > 5.0 ||
               report.dnaRecovered > 1.0)) {
         pendingOfflineReport = report;
@@ -76,59 +82,62 @@ class GameNotifier extends Notifier<GameState> {
     state = res.nextState;
   }
 
+  // Active Habitat Switcher (World Map)
+  void switchActiveHabitat(String habitatId) {
+    if (state.habitats.containsKey(habitatId)) {
+      state = state.copyWith(activeHabitatId: habitatId);
+    }
+  }
+
   // Active Care Actions
   bool feedHabitat(String habitatId) {
     final habitat = state.habitats[habitatId];
     if (habitat == null) return false;
-    final cost = 5.0;
+    const cost = 5.0;
     if (state.credits < cost && state.credits > 0) {
-      // Allow feeding even if low on credits to prevent soft-locks
+      // Prevent soft-lock if very low
     } else if (state.credits >= cost) {
       state = state.copyWith(credits: state.credits - cost);
     }
-    final updatedHabitats = Map<String, dynamic>.from(state.habitats);
+    final updatedHabitats = Map<String, Habitat>.from(state.habitats);
     updatedHabitats[habitatId] = habitat.copyWith(
       food: habitat.maxFood,
       happiness: (habitat.happiness + 8.0).clamp(0.0, 100.0),
     );
-    state = state.copyWith(
-      habitats: updatedHabitats.cast(),
-    );
+    state = state.copyWith(habitats: updatedHabitats);
     return true;
   }
 
   bool waterHabitat(String habitatId) {
     final habitat = state.habitats[habitatId];
     if (habitat == null) return false;
-    final updatedHabitats = Map<String, dynamic>.from(state.habitats);
+    final updatedHabitats = Map<String, Habitat>.from(state.habitats);
     updatedHabitats[habitatId] = habitat.copyWith(
       water: habitat.maxWater,
       happiness: (habitat.happiness + 8.0).clamp(0.0, 100.0),
     );
-    state = state.copyWith(
-      habitats: updatedHabitats.cast(),
-    );
+    state = state.copyWith(habitats: updatedHabitats);
     return true;
   }
 
-  bool petDodos(String habitatId) {
+  bool petAnimals(String habitatId) {
     final habitat = state.habitats[habitatId];
     if (habitat == null) return false;
-    final updatedHabitats = Map<String, dynamic>.from(state.habitats);
+    final updatedHabitats = Map<String, Habitat>.from(state.habitats);
     updatedHabitats[habitatId] = habitat.copyWith(
       happiness: (habitat.happiness + 10.0).clamp(0.0, 100.0),
     );
-    // Rewarding tapping: grants instant +0.5 DNA and +1 credit
+    // Rewarding tapping: grants instant bonus
     state = state.copyWith(
       dna: state.dna + 0.5,
       credits: state.credits + 1.0,
-      habitats: updatedHabitats.cast(),
+      habitats: updatedHabitats,
     );
     return true;
   }
 
-  // Revive an extra Dodo directly with DNA
-  bool reviveDodo(String habitatId) {
+  // Revive an animal directly with DNA
+  bool reviveSpecies(String habitatId) {
     final habitat = state.habitats[habitatId];
     if (habitat == null) return false;
     if (habitat.population >= habitat.capacity) return false;
@@ -136,14 +145,14 @@ class GameNotifier extends Notifier<GameState> {
     const dnaCost = 15.0;
     if (state.dna < dnaCost) return false;
 
-    final updatedHabitats = Map<String, dynamic>.from(state.habitats);
+    final updatedHabitats = Map<String, Habitat>.from(state.habitats);
     updatedHabitats[habitatId] = habitat.copyWith(
       population: habitat.population + 1,
     );
 
     state = state.copyWith(
       dna: state.dna - dnaCost,
-      habitats: updatedHabitats.cast(),
+      habitats: updatedHabitats,
       totalDodosBred: state.totalDodosBred + 1,
     );
     return true;
@@ -178,25 +187,20 @@ class GameNotifier extends Notifier<GameState> {
     final updatedUpgrades = Map<String, Upgrade>.from(state.upgrades);
     updatedUpgrades[upgradeId] = upg.copyWith(currentLevel: newLevel);
 
-    var updatedHabitats = Map<String, dynamic>.from(state.habitats);
+    var updatedHabitats = Map<String, Habitat>.from(state.habitats);
     double updatedOfflineCap = state.offlineCapSeconds;
 
-    // Apply specific upgrade effects
-    if (upg.type == UpgradeType.habitatLevel) {
-      final h = updatedHabitats['dodo_island'];
-      if (h != null) {
-        updatedHabitats['dodo_island'] = h.copyWith(level: h.level + 1);
-      }
-    } else if (upg.type == UpgradeType.autoFeeder) {
-      final h = updatedHabitats['dodo_island'];
-      if (h != null) {
-        updatedHabitats['dodo_island'] = h.copyWith(hasAutoFeeder: true);
-      }
-    } else if (upg.type == UpgradeType.autoWater) {
-      final h = updatedHabitats['dodo_island'];
-      if (h != null) {
-        updatedHabitats['dodo_island'] = h.copyWith(hasAutoWater: true);
-      }
+    // Apply specific upgrade effects to active habitat
+    final currentHab = updatedHabitats[state.activeHabitatId];
+    if (upg.type == UpgradeType.habitatLevel && currentHab != null) {
+      updatedHabitats[state.activeHabitatId] =
+          currentHab.copyWith(level: currentHab.level + 1);
+    } else if (upg.type == UpgradeType.autoFeeder && currentHab != null) {
+      updatedHabitats[state.activeHabitatId] =
+          currentHab.copyWith(hasAutoFeeder: true);
+    } else if (upg.type == UpgradeType.autoWater && currentHab != null) {
+      updatedHabitats[state.activeHabitatId] =
+          currentHab.copyWith(hasAutoWater: true);
     } else if (upg.type == UpgradeType.offlineCap) {
       updatedOfflineCap += 7200.0; // +2 hours
     }
@@ -206,7 +210,7 @@ class GameNotifier extends Notifier<GameState> {
       dna: newDna,
       research: newResearch,
       upgrades: updatedUpgrades,
-      habitats: updatedHabitats.cast(),
+      habitats: updatedHabitats,
       offlineCapSeconds: updatedOfflineCap,
     );
 
@@ -222,12 +226,12 @@ class GameNotifier extends Notifier<GameState> {
     final cost = staff.upgradeCost;
     if (state.credits < cost) return false;
 
-    final updatedStaff = Map<String, dynamic>.from(state.staff);
+    final updatedStaff = Map<String, StaffMember>.from(state.staff);
     updatedStaff[staffId] = staff.copyWith(level: staff.level + 1);
 
     state = state.copyWith(
       credits: state.credits - cost,
-      staff: updatedStaff.cast(),
+      staff: updatedStaff,
     );
 
     _saveService.saveGame(state);
@@ -239,7 +243,6 @@ class GameNotifier extends Notifier<GameState> {
     final node = state.researchNodes[nodeId];
     if (node == null || node.isUnlocked) return false;
 
-    // Check prerequisites
     for (final prereq in node.prerequisites) {
       final pNode = state.researchNodes[prereq];
       if (pNode == null || !pNode.isUnlocked) return false;
@@ -247,16 +250,238 @@ class GameNotifier extends Notifier<GameState> {
 
     if (state.research < node.cost) return false;
 
-    final updatedResearch = Map<String, dynamic>.from(state.researchNodes);
+    final updatedResearch = Map<String, ResearchNode>.from(state.researchNodes);
     updatedResearch[nodeId] = node.copyWith(isUnlocked: true);
 
     state = state.copyWith(
       research: state.research - node.cost,
-      researchNodes: updatedResearch.cast(),
+      researchNodes: updatedResearch,
     );
 
     _saveService.saveGame(state);
     return true;
+  }
+
+  // Expedition Actions (Phase 7 Exploration)
+  bool startExpedition(String expeditionId) {
+    final exp = state.expeditions[expeditionId];
+    if (exp == null || exp.isActive) return false;
+
+    if (state.credits < exp.creditsCost) return false;
+
+    // Apply radar research or restoration perks to duration
+    final radarUnlocked =
+        state.researchNodes['expedition_radar']?.isUnlocked ?? false;
+    final speedMult =
+        state.expeditionSpeedMultiplier * (radarUnlocked ? 1.4 : 1.0);
+    final effectiveDuration = exp.durationSeconds / speedMult;
+
+    final updatedExp = exp.copyWith(
+      isActive: true,
+      startedTimestampMs: DateTime.now().millisecondsSinceEpoch,
+      isCompleted: false,
+      durationSeconds: effectiveDuration,
+    );
+
+    final updatedMap = Map<String, Expedition>.from(state.expeditions);
+    updatedMap[expeditionId] = updatedExp;
+
+    state = state.copyWith(
+      credits: state.credits - exp.creditsCost,
+      expeditions: updatedMap,
+    );
+
+    _saveService.saveGame(state);
+    return true;
+  }
+
+  bool claimExpedition(String expeditionId) {
+    final exp = state.expeditions[expeditionId];
+    if (exp == null || !exp.isCompleted) return false;
+
+    double bonusDna = 0;
+    double bonusResearch = 0;
+    final updatedInventory = Map<String, FossilItem>.from(state.fossilInventory);
+
+    for (final find in exp.possibleFinds) {
+      bonusDna += find.dnaBonus;
+      bonusResearch += find.researchBonus;
+
+      final existing = updatedInventory[find.id];
+      if (existing != null) {
+        updatedInventory[find.id] =
+            existing.copyWith(count: existing.count + find.count);
+      } else {
+        updatedInventory[find.id] = find;
+      }
+    }
+
+    final updatedSpecies = List<String>.from(state.unlockedSpeciesIds);
+    final updatedHabitats = Map<String, Habitat>.from(state.habitats);
+
+    // If expedition unlocks a new species, unlock and create its regional habitat!
+    if (exp.unlocksSpeciesId != null &&
+        !updatedSpecies.contains(exp.unlocksSpeciesId)) {
+      final sId = exp.unlocksSpeciesId!;
+      updatedSpecies.add(sId);
+
+      if (sId == 'thylacine' && !updatedHabitats.containsKey('tasman_forest')) {
+        updatedHabitats['tasman_forest'] = const Habitat(
+          id: 'tasman_forest',
+          name: 'Tasmanian Forest Reserve',
+          speciesId: 'thylacine',
+          biomeType: 'australian_forest',
+          level: 1,
+          population: 1,
+        );
+      } else if (sId == 'great_auk' &&
+          !updatedHabitats.containsKey('north_coast')) {
+        updatedHabitats['north_coast'] = const Habitat(
+          id: 'north_coast',
+          name: 'Northern Skerries Reserve',
+          speciesId: 'great_auk',
+          biomeType: 'northern_coast',
+          level: 1,
+          population: 1,
+        );
+      } else if (sId == 'quagga' &&
+          !updatedHabitats.containsKey('karoo_reserve')) {
+        updatedHabitats['karoo_reserve'] = const Habitat(
+          id: 'karoo_reserve',
+          name: 'Karoo Plains Reserve',
+          speciesId: 'quagga',
+          biomeType: 'african_grasslands',
+          level: 1,
+          population: 1,
+        );
+      } else if (sId == 'woolly_mammoth' &&
+          !updatedHabitats.containsKey('siberia_tundra')) {
+        updatedHabitats['siberia_tundra'] = const Habitat(
+          id: 'siberia_tundra',
+          name: 'Ice Age Glacial Reserve',
+          speciesId: 'woolly_mammoth',
+          biomeType: 'ice_age_tundra',
+          level: 1,
+          population: 1,
+        );
+      }
+    }
+
+    // Reset expedition for future runs
+    final updatedExpeditions = Map<String, Expedition>.from(state.expeditions);
+    updatedExpeditions[expeditionId] = exp.copyWith(
+      isActive: false,
+      isCompleted: false,
+      startedTimestampMs: null,
+    );
+
+    state = state.copyWith(
+      dna: state.dna + bonusDna,
+      research: state.research + bonusResearch,
+      fossilInventory: updatedInventory,
+      unlockedSpeciesIds: updatedSpecies,
+      habitats: updatedHabitats,
+      expeditions: updatedExpeditions,
+      totalExpeditionsCompleted: state.totalExpeditionsCompleted + 1,
+    );
+
+    _saveService.saveGame(state);
+    return true;
+  }
+
+  // Ecosystem Restoration (Prestige - Phase 10)
+  bool restoreEcosystem(String habitatId) {
+    final habitat = state.habitats[habitatId];
+    if (habitat == null) return false;
+
+    final earnedPoints = habitat.calculateRestorationPoints();
+
+    final updatedHabitats = Map<String, Habitat>.from(state.habitats);
+    updatedHabitats[habitatId] = habitat.copyWith(
+      level: 1,
+      population: 1,
+      breedingProgress: 0.0,
+      happiness: 100.0,
+      food: 100.0,
+      water: 100.0,
+      timesRestored: habitat.timesRestored + 1,
+    );
+
+    state = state.copyWith(
+      restorationPoints: state.restorationPoints + earnedPoints,
+      habitats: updatedHabitats,
+    );
+
+    _saveService.saveGame(state);
+    return true;
+  }
+
+  // Restoration Perks Purchase
+  bool buyRestorationPerk(String perkKey) {
+    final currentLevel = state.restorationPerks[perkKey] ?? 0;
+    final cost = (currentLevel + 1) * 5; // 5, 10, 15, 20...
+    if (state.restorationPoints < cost) return false;
+
+    final updatedPerks = Map<String, int>.from(state.restorationPerks);
+    updatedPerks[perkKey] = currentLevel + 1;
+
+    state = state.copyWith(
+      restorationPoints: state.restorationPoints - cost,
+      restorationPerks: updatedPerks,
+    );
+
+    _saveService.saveGame(state);
+    return true;
+  }
+
+  // Mission Rewards Claim (Phase 11)
+  bool claimMissionReward(String missionId) {
+    final mission = state.missions[missionId];
+    if (mission == null || !mission.isCompleted || mission.isClaimed) {
+      return false;
+    }
+
+    double newCredits = state.credits;
+    double newDna = state.dna;
+    double newResearch = state.research;
+    double newRestoration = state.restorationPoints;
+
+    switch (mission.rewardType) {
+      case MissionRewardType.credits:
+        newCredits += mission.rewardAmount;
+        break;
+      case MissionRewardType.dna:
+        newDna += mission.rewardAmount;
+        break;
+      case MissionRewardType.research:
+        newResearch += mission.rewardAmount;
+        break;
+      case MissionRewardType.restorationPoints:
+        newRestoration += mission.rewardAmount;
+        break;
+    }
+
+    final updatedMissions = Map<String, Mission>.from(state.missions);
+    updatedMissions[missionId] = mission.copyWith(isClaimed: true);
+
+    state = state.copyWith(
+      credits: newCredits,
+      dna: newDna,
+      research: newResearch,
+      restorationPoints: newRestoration,
+      missions: updatedMissions,
+    );
+
+    _saveService.saveGame(state);
+    return true;
+  }
+
+  void toggleSound() {
+    state = state.copyWith(soundEnabled: !state.soundEnabled);
+  }
+
+  void toggleHaptics() {
+    state = state.copyWith(hapticsEnabled: !state.hapticsEnabled);
   }
 
   Future<void> resetGame() async {
