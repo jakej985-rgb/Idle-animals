@@ -249,41 +249,29 @@ class _HabitatViewportState extends State<HabitatViewport>
 
   List<Widget> _buildAnimals(Species species) {
     return _animals.map((animal) {
-      return Positioned(
-        left: (animal.x * 100) - 10,
-        top: (animal.y * 100) - 12,
-        width: 20,
-        height: 32,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final dx = animal.x * constraints.maxWidth * 5;
-            final dy = animal.y * constraints.maxHeight * 5;
-            return Align(
-              alignment: Alignment(
-                (animal.x * 2) - 1,
-                (animal.y * 2) - 1,
-              ),
-              child: Transform.translate(
-                offset: Offset(animal.left ? -2 : 2, animal.jump),
-                child: Transform.scale(
-                  scale: animal.jump < -2 ? 1.08 : 1,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        _activityIcon(animal.activity),
-                        style: const TextStyle(fontSize: 8),
-                      ),
-                      Text(
-                        species.iconEmoji,
-                        style: const TextStyle(fontSize: 28),
-                      ),
-                    ],
-                  ),
+      return Align(
+        alignment: Alignment(
+          (animal.x * 2) - 1,
+          (animal.y * 2) - 1,
+        ),
+        child: Transform.translate(
+          offset: Offset(animal.left ? -2 : 2, animal.jump),
+          child: Transform.scale(
+            scale: animal.jump < -2 ? 1.08 : 1,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  _activityIcon(animal.activity),
+                  style: const TextStyle(fontSize: 8),
                 ),
-              ),
-            );
-          },
+                Text(
+                  species.iconEmoji,
+                  style: const TextStyle(fontSize: 28),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }).toList();
