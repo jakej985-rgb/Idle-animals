@@ -208,8 +208,6 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             onTap: () => _openSheet(
               context,
               OperationsSheet(
-                state: state,
-                controller: controller,
                 onOpenSubSheet: (sheet) => _openSheet(context, sheet),
               ),
             ),
@@ -295,10 +293,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             label: 'Upgrades',
             onTap: () => _openSheet(
               context,
-              UpgradesSheet(
-                state: state,
-                onBuyUpgrade: (id) => controller.buyUpgrade(id),
-              ),
+              const UpgradesSheet(),
             ),
           ),
           _buildDockButton(
@@ -306,10 +301,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             label: 'Staff',
             onTap: () => _openSheet(
               context,
-              StaffSheet(
-                state: state,
-                onHireOrUpgrade: (id) => controller.hireOrUpgradeStaff(id),
-              ),
+              const StaffSheet(),
             ),
           ),
           _buildDockButton(
@@ -317,10 +309,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             label: 'Research',
             onTap: () => _openSheet(
               context,
-              ResearchSheet(
-                state: state,
-                onUnlockResearch: (id) => controller.unlockResearch(id),
-              ),
+              const ResearchSheet(),
             ),
           ),
           _buildDockButton(
@@ -328,7 +317,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             label: 'Archive',
             onTap: () => _openSheet(
               context,
-              ArchiveSheet(state: state),
+              const ArchiveSheet(),
             ),
           ),
         ],

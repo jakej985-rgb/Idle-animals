@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/habitat.dart';
+import '../models/species.dart';
 
 class NeedsPanel extends StatelessWidget {
   final Habitat habitat;
@@ -35,6 +36,7 @@ class NeedsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final species = Species.fromId(habitat.speciesId);
     final bool canRevive = dna >= 15.0 && habitat.population < habitat.capacity;
     final bool isAtCapacity = habitat.population >= habitat.capacity;
 
@@ -64,7 +66,7 @@ class NeedsPanel extends StatelessWidget {
                   color: const Color(0xFF1B3147),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text('🦤', style: TextStyle(fontSize: 22)),
+                child: Text(species.iconEmoji, style: const TextStyle(fontSize: 22)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -74,9 +76,9 @@ class NeedsPanel extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Dodo Population',
-                          style: TextStyle(
+                        Text(
+                          '${species.name} Population',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -112,8 +114,8 @@ class NeedsPanel extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       isAtCapacity
-                          ? 'Capacity reached. Expand island in Upgrades!'
-                          : 'Next Dodo breeding: ${(habitat.breedingProgress * 100).toStringAsFixed(0)}%',
+                          ? 'Capacity reached. Expand reserve in Upgrades!'
+                          : 'Next ${species.name} breeding: ${(habitat.breedingProgress * 100).toStringAsFixed(0)}%',
                       style: TextStyle(
                         color: isAtCapacity
                             ? const Color(0xFFFBBF24)

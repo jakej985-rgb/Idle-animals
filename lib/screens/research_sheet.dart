@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/research_node.dart';
+import '../providers/game_notifier.dart';
 
-class ResearchSheet extends StatelessWidget {
-  final GameState state;
-  final Function(String) onUnlockResearch;
+class ResearchSheet extends ConsumerWidget {
+  final GameState? state;
+  final Function(String)? onUnlockResearch;
 
   const ResearchSheet({
     super.key,
-    required this.state,
-    required this.onUnlockResearch,
+    this.state,
+    this.onUnlockResearch,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF131D2A),
@@ -48,7 +52,7 @@ class ResearchSheet extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '🔬 ${state.research.toStringAsFixed(1)}',
+                '🔬 ${activeState.research.toStringAsFixed(1)}',
                 style: const TextStyle(
                   color: Color(0xFFA78BFA),
                   fontSize: 14,
@@ -60,8 +64,9 @@ class ResearchSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: ListView(
-              children: state.researchNodes.values.map((node) {
-                return _buildResearchNodeCard(context, node);
+              children: activeState.researchNodes.values.map((node) {
+                return _buildResearchNodeCard(
+                    context, node, activeState, controller);
               }).toList(),
             ),
           ),
@@ -70,20 +75,22 @@ class ResearchSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildResearchNodeCard(BuildContext context, ResearchNode node) {
+  Widget _buildResearchNodeCard(BuildContext context, ResearchNode node,
+      GameState activeState, GameNotifier controller) {
     final isUnlocked = node.isUnlocked;
 
     // Check prerequisites
     bool prereqsMet = true;
     for (final prereqId in node.prerequisites) {
-      final pNode = state.researchNodes[prereqId];
+      final pNode = activeState.researchNodes[prereqId];
       if (pNode == null || !pNode.isUnlocked) {
         prereqsMet = false;
         break;
       }
     }
 
-    final canAfford = state.research >= node.cost && prereqsMet && !isUnlocked;
+    final canAfford =
+        activeState.research >= node.cost && prereqsMet && !isUnlocked;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -173,7 +180,15 @@ class ResearchSheet extends StatelessWidget {
           const SizedBox(width: 12),
           if (!isUnlocked)
             ElevatedButton(
-              onPressed: canAfford ? () => onUnlockResearch(node.id) : null,
+              onPressed: canAfford
+                  ? () {
+                      if (onUnlockResearch != null) {
+                        onUnlockResearch!(node.id);
+                      } else {
+                        controller.unlockResearch(node.id);
+                      }
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7C3AED),
                 foregroundColor: Colors.white,

@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/upgrade.dart';
+import '../providers/game_notifier.dart';
 
-class UpgradesSheet extends StatelessWidget {
-  final GameState state;
-  final Function(String) onBuyUpgrade;
+class UpgradesSheet extends ConsumerWidget {
+  final GameState? state;
+  final Function(String)? onBuyUpgrade;
 
   const UpgradesSheet({
     super.key,
-    required this.state,
-    required this.onBuyUpgrade,
+    this.state,
+    this.onBuyUpgrade,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF131D2A),
@@ -48,7 +52,7 @@ class UpgradesSheet extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '🪙 ${state.credits.toStringAsFixed(0)}',
+                '🪙 ${activeState.credits.toStringAsFixed(0)}',
                 style: const TextStyle(
                   color: Color(0xFFFBBF24),
                   fontSize: 14,
@@ -60,8 +64,8 @@ class UpgradesSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: ListView(
-              children: state.upgrades.values.map((upg) {
-                return _buildUpgradeCard(context, upg);
+              children: activeState.upgrades.values.map((upg) {
+                return _buildUpgradeCard(context, upg, activeState, controller);
               }).toList(),
             ),
           ),
@@ -70,7 +74,8 @@ class UpgradesSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildUpgradeCard(BuildContext context, Upgrade upg) {
+  Widget _buildUpgradeCard(BuildContext context, Upgrade upg,
+      GameState activeState, GameNotifier controller) {
     final cost = upg.currentCost;
     bool canAfford = false;
     String currencyIcon = '🪙';
@@ -78,17 +83,17 @@ class UpgradesSheet extends StatelessWidget {
 
     switch (upg.currency) {
       case UpgradeCurrency.credits:
-        canAfford = state.credits >= cost;
+        canAfford = activeState.credits >= cost;
         currencyIcon = '🪙';
         currencyColor = const Color(0xFFFBBF24);
         break;
       case UpgradeCurrency.dna:
-        canAfford = state.dna >= cost;
+        canAfford = activeState.dna >= cost;
         currencyIcon = '🧬';
         currencyColor = const Color(0xFF38BDF8);
         break;
       case UpgradeCurrency.research:
-        canAfford = state.research >= cost;
+        canAfford = activeState.research >= cost;
         currencyIcon = '🔬';
         currencyColor = const Color(0xFFA78BFA);
         break;
@@ -174,7 +179,13 @@ class UpgradesSheet extends StatelessWidget {
           const SizedBox(width: 12),
           ElevatedButton(
             onPressed: (!isMaxed && canAfford)
-                ? () => onBuyUpgrade(upg.id)
+                ? () {
+                    if (onBuyUpgrade != null) {
+                      onBuyUpgrade!(upg.id);
+                    } else {
+                      controller.buyUpgrade(upg.id);
+                    }
+                  }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0284C7),

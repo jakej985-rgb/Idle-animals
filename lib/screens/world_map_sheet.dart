@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
+import '../providers/game_notifier.dart';
 
-class WorldMapSheet extends StatelessWidget {
-  final GameState state;
-  final Function(String) onSelectHabitat;
+class WorldMapSheet extends ConsumerWidget {
+  final GameState? state;
+  final Function(String)? onSelectHabitat;
 
   const WorldMapSheet({
     super.key,
-    required this.state,
-    required this.onSelectHabitat,
+    this.state,
+    this.onSelectHabitat,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
     // Define the full canonical list of regional sanctuaries
     final regions = [
       {
@@ -99,9 +103,9 @@ class WorldMapSheet extends StatelessWidget {
                 final habitatId = r['habitatId'] as String;
                 final speciesId = r['speciesId'] as String;
                 final species = Species.fromId(speciesId);
-                final habitat = state.habitats[habitatId];
+                final habitat = activeState.habitats[habitatId];
                 final isUnlocked = habitat != null;
-                final isActive = state.activeHabitatId == habitatId;
+                final isActive = activeState.activeHabitatId == habitatId;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -215,7 +219,11 @@ class WorldMapSheet extends StatelessWidget {
                       if (isUnlocked && !isActive)
                         ElevatedButton(
                           onPressed: () {
-                            onSelectHabitat(habitatId);
+                            if (onSelectHabitat != null) {
+                              onSelectHabitat!(habitatId);
+                            } else {
+                              controller.switchActiveHabitat(habitatId);
+                            }
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(

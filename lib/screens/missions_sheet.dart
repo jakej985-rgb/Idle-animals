@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/mission.dart';
+import '../providers/game_notifier.dart';
 
-class MissionsSheet extends StatelessWidget {
-  final GameState state;
-  final Function(String) onClaimMission;
+class MissionsSheet extends ConsumerWidget {
+  final GameState? state;
+  final Function(String)? onClaimMission;
 
   const MissionsSheet({
     super.key,
-    required this.state,
-    required this.onClaimMission,
+    this.state,
+    this.onClaimMission,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final missions = state.missions.values.toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
+    final missions = activeState.missions.values.toList();
 
     return Container(
       decoration: const BoxDecoration(
@@ -59,7 +63,7 @@ class MissionsSheet extends StatelessWidget {
           Expanded(
             child: ListView(
               children: missions.map((m) {
-                return _buildMissionCard(context, m);
+                return _buildMissionCard(context, m, controller);
               }).toList(),
             ),
           ),
@@ -68,7 +72,8 @@ class MissionsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildMissionCard(BuildContext context, Mission m) {
+  Widget _buildMissionCard(
+      BuildContext context, Mission m, GameNotifier controller) {
     final isDone = m.isCompleted;
     final isClaimed = m.isClaimed;
     final progressVal =
@@ -172,7 +177,13 @@ class MissionsSheet extends StatelessWidget {
                 style: TextStyle(color: Colors.white38, fontSize: 11))
           else if (isDone)
             ElevatedButton(
-              onPressed: () => onClaimMission(m.id),
+              onPressed: () {
+                if (onClaimMission != null) {
+                  onClaimMission!(m.id);
+                } else {
+                  controller.claimMissionReward(m.id);
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,

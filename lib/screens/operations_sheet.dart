@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
@@ -7,28 +8,40 @@ import 'expeditions_sheet.dart';
 import 'missions_sheet.dart';
 import 'world_map_sheet.dart';
 
-class OperationsSheet extends StatelessWidget {
-  final GameState state;
-  final GameNotifier controller;
-  final void Function(Widget sheet) onOpenSubSheet;
+class OperationsSheet extends ConsumerWidget {
+  final GameState? state;
+  final GameNotifier? controller;
+  final void Function(Widget sheet)? onOpenSubSheet;
 
   const OperationsSheet({
     super.key,
-    required this.state,
-    required this.controller,
-    required this.onOpenSubSheet,
+    this.state,
+    this.controller,
+    this.onOpenSubSheet,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier activeController = controller ?? ref.read(gameProvider.notifier);
+    final openSub = onOpenSubSheet ??
+        (Widget sheet) {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => sheet,
+          );
+        };
+
     final activeHabitat =
-        state.habitats[state.activeHabitatId] ?? state.habitats.values.first;
+        activeState.habitats[activeState.activeHabitatId] ?? activeState.habitats.values.first;
     final activeSpecies = Species.fromId(activeHabitat.speciesId);
 
     final hasCompletedExpedition =
-        state.expeditions.values.any((e) => e.isCompleted);
+        activeState.expeditions.values.any((e) => e.isCompleted);
     final hasClaimableMission =
-        state.missions.values.any((m) => m.isCompleted && !m.isClaimed);
+        activeState.missions.values.any((m) => m.isCompleted && !m.isClaimed);
 
     return Container(
       decoration: const BoxDecoration(
@@ -82,16 +95,16 @@ class OperationsSheet extends StatelessWidget {
                 _buildCard(
                   icon: '🌎',
                   title: 'Global Reserve Map',
-                  subtitle: '${state.habitats.length} Habitats Active • Travel & Expand',
+                  subtitle: '${activeState.habitats.length} Habitats Active • Travel & Expand',
                   accentColor: const Color(0xFF38BDF8),
                   badge: null,
                   onTap: () {
                     Navigator.of(context).pop();
-                    onOpenSubSheet(
+                    openSub(
                       WorldMapSheet(
                         state: state,
                         onSelectHabitat: (id) =>
-                            controller.switchActiveHabitat(id),
+                            activeController.switchActiveHabitat(id),
                       ),
                     );
                   },
@@ -106,13 +119,13 @@ class OperationsSheet extends StatelessWidget {
                   badgeColor: const Color(0xFF10B981),
                   onTap: () {
                     Navigator.of(context).pop();
-                    onOpenSubSheet(
+                    openSub(
                       ExpeditionsSheet(
                         state: state,
                         onStartExpedition: (id) =>
-                            controller.startExpedition(id),
+                            activeController.startExpedition(id),
                         onClaimExpedition: (id) =>
-                            controller.claimExpedition(id),
+                            activeController.claimExpedition(id),
                       ),
                     );
                   },
@@ -127,11 +140,11 @@ class OperationsSheet extends StatelessWidget {
                   badgeColor: const Color(0xFFF43F5E),
                   onTap: () {
                     Navigator.of(context).pop();
-                    onOpenSubSheet(
+                    openSub(
                       MissionsSheet(
                         state: state,
                         onClaimMission: (id) =>
-                            controller.claimMissionReward(id),
+                            activeController.claimMissionReward(id),
                       ),
                     );
                   },
@@ -152,10 +165,10 @@ class OperationsSheet extends StatelessWidget {
                         state: state,
                         habitat: activeHabitat,
                         onConfirmRestore: () {
-                          controller.restoreEcosystem(activeHabitat.id);
+                          activeController.restoreEcosystem(activeHabitat.id);
                           Navigator.of(ctx).pop();
                         },
-                        onBuyPerk: (key) => controller.buyRestorationPerk(key),
+                        onBuyPerk: (key) => activeController.buyRestorationPerk(key),
                       ),
                     );
                   },
@@ -204,9 +217,9 @@ class OperationsSheet extends StatelessWidget {
                             ],
                           ),
                           Switch(
-                            value: state.soundEnabled,
+                            value: activeState.soundEnabled,
                             activeColor: const Color(0xFF38BDF8),
-                            onChanged: (_) => controller.toggleSound(),
+                            onChanged: (_) => activeController.toggleSound(),
                           ),
                         ],
                       ),
@@ -227,7 +240,7 @@ class OperationsSheet extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'Save v${state.schemaVersion}',
+                              'Save v${activeState.schemaVersion}',
                               style: const TextStyle(
                                 color: Color(0xFF38BDF8),
                                 fontSize: 11,

@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/expedition.dart';
 import '../models/fossil.dart';
 import '../models/game_state.dart';
+import '../providers/game_notifier.dart';
 
-class ExpeditionsSheet extends StatelessWidget {
-  final GameState state;
-  final Function(String) onStartExpedition;
-  final Function(String) onClaimExpedition;
+class ExpeditionsSheet extends ConsumerWidget {
+  final GameState? state;
+  final Function(String)? onStartExpedition;
+  final Function(String)? onClaimExpedition;
 
   const ExpeditionsSheet({
     super.key,
-    required this.state,
-    required this.onStartExpedition,
-    required this.onClaimExpedition,
+    this.state,
+    this.onStartExpedition,
+    this.onClaimExpedition,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
     final nowMs = DateTime.now().millisecondsSinceEpoch;
-    final exps = state.expeditions.values.toList();
-    final fossils = state.fossilInventory.values.toList();
+    final exps = activeState.expeditions.values.toList();
+    final fossils = activeState.fossilInventory.values.toList();
 
     return Container(
       decoration: const BoxDecoration(
@@ -55,7 +59,7 @@ class ExpeditionsSheet extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '🪙 ${state.credits.toStringAsFixed(0)}',
+                '🪙 ${activeState.credits.toStringAsFixed(0)}',
                 style: const TextStyle(
                   color: Color(0xFFFBBF24),
                   fontSize: 14,
@@ -120,7 +124,8 @@ class ExpeditionsSheet extends StatelessWidget {
           Expanded(
             child: ListView(
               children: exps.map((exp) {
-                return _buildExpeditionCard(context, exp, nowMs);
+                return _buildExpeditionCard(
+                    context, exp, nowMs, activeState, controller);
               }).toList(),
             ),
           ),
@@ -129,9 +134,9 @@ class ExpeditionsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildExpeditionCard(
-      BuildContext context, Expedition exp, int nowMs) {
-    final canAfford = state.credits >= exp.creditsCost;
+  Widget _buildExpeditionCard(BuildContext context, Expedition exp, int nowMs,
+      GameState activeState, GameNotifier controller) {
+    final canAfford = activeState.credits >= exp.creditsCost;
     final isDone = exp.isCompleted || exp.checkCompleted(nowMs);
     final remainingSec = exp.getRemainingSeconds(nowMs);
 
@@ -272,7 +277,13 @@ class ExpeditionsSheet extends StatelessWidget {
             ),
           ] else if (isDone) ...[
             ElevatedButton(
-              onPressed: () => onClaimExpedition(exp.id),
+              onPressed: () {
+                if (onClaimExpedition != null) {
+                  onClaimExpedition!(exp.id);
+                } else {
+                  controller.claimExpedition(exp.id);
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
@@ -299,7 +310,15 @@ class ExpeditionsSheet extends StatelessWidget {
             ),
           ] else ...[
             ElevatedButton(
-              onPressed: canAfford ? () => onStartExpedition(exp.id) : null,
+              onPressed: canAfford
+                  ? () {
+                      if (onStartExpedition != null) {
+                        onStartExpedition!(exp.id);
+                      } else {
+                        controller.startExpedition(exp.id);
+                      }
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0284C7),
                 foregroundColor: Colors.white,

@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/staff.dart';
+import '../providers/game_notifier.dart';
 
-class StaffSheet extends StatelessWidget {
-  final GameState state;
-  final Function(String) onHireOrUpgrade;
+class StaffSheet extends ConsumerWidget {
+  final GameState? state;
+  final Function(String)? onHireOrUpgrade;
 
   const StaffSheet({
     super.key,
-    required this.state,
-    required this.onHireOrUpgrade,
+    this.state,
+    this.onHireOrUpgrade,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final keeper = state.staff['keeper'];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
+    final keeper = activeState.staff['keeper'];
 
     return Container(
       decoration: const BoxDecoration(
@@ -50,7 +54,7 @@ class StaffSheet extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '🪙 ${state.credits.toStringAsFixed(0)}',
+                '🪙 ${activeState.credits.toStringAsFixed(0)}',
                 style: const TextStyle(
                   color: Color(0xFFFBBF24),
                   fontSize: 14,
@@ -60,7 +64,8 @@ class StaffSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (keeper != null) _buildKeeperCard(context, keeper),
+          if (keeper != null)
+            _buildKeeperCard(context, keeper, activeState, controller),
           const SizedBox(height: 14),
           // Preview of upcoming staff roles
           _buildUpcomingRole(
@@ -79,9 +84,10 @@ class StaffSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildKeeperCard(BuildContext context, StaffMember keeper) {
+  Widget _buildKeeperCard(BuildContext context, StaffMember keeper,
+      GameState activeState, GameNotifier controller) {
     final cost = keeper.upgradeCost;
-    final canAfford = state.credits >= cost;
+    final canAfford = activeState.credits >= cost;
     final isHired = keeper.isHired;
 
     return Container(
@@ -197,7 +203,7 @@ class StaffSheet extends StatelessWidget {
                   style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 12),
                 ),
                 Text(
-                  '+${(keeper.level * 10)}% Speed & Auto-Feed',
+                  '+${(keeper.level * 15)}% Speed & Auto-Feed',
                   style: const TextStyle(
                     color: Color(0xFF4ADE80),
                     fontSize: 12,
@@ -209,7 +215,15 @@ class StaffSheet extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           ElevatedButton(
-            onPressed: canAfford ? () => onHireOrUpgrade(keeper.id) : null,
+            onPressed: canAfford
+                ? () {
+                    if (onHireOrUpgrade != null) {
+                      onHireOrUpgrade!(keeper.id);
+                    } else {
+                      controller.hireOrUpgradeStaff(keeper.id);
+                    }
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,

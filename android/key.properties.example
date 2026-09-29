@@ -1,0 +1,4 @@
+storePassword=extinction2026
+keyPassword=extinction2026
+keyAlias=upload
+storeFile=upload-keystore.jks

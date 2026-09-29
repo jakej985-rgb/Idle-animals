@@ -1,0 +1,114 @@
+name: Release Android APK
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+
+      - name: Verify Flutter Installation
+        run: flutter doctor -v
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code analyzer
+        run: flutter analyze
+
+      - name: Run unit tests
+        run: flutter test
+
+      - name: Configure Android Signing Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Restoring keystore from GitHub Actions secrets..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            echo "storePassword=${KEYSTORE_PASSWORD:-extinction2026}" > android/key.properties
+            echo "keyPassword=${KEY_PASSWORD:-extinction2026}" >> android/key.properties
+            echo "keyAlias=${KEY_ALIAS:-upload}" >> android/key.properties
+            echo "storeFile=upload-keystore.jks" >> android/key.properties
+          elif [ -f android/app/upload-keystore.jks ] && [ -f android/key.properties ]; then
+            echo "Using keystore present in repository."
+          else
+            echo "::warning ::No keystore secret or local file found. The build will fall back to debug signing."
+          fi
+
+      - name: Build Android Release APK
+        run: flutter build apk --release
+
+      - name: Determine Release Tag & Version
+        id: release_info
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ' | cut -d '+' -f 1)
+          BUILD_NUM=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ' | cut -d '+' -f 2)
+          
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+            RELEASE_NAME="Extinction Sanctuary $TAG_NAME"
+          else
+            TAG_NAME="v${VERSION}+${BUILD_NUM}.${{ github.run_number }}"
+            RELEASE_NAME="Extinction Sanctuary v${VERSION} (Build #${{ github.run_number }})"
+          fi
+          
+          # Copy APK with clear versioned name for the release
+          cp build/app/outputs/flutter-apk/app-release.apk "extinction-sanctuary-${TAG_NAME}.apk"
+          
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+          echo "apk_path=extinction-sanctuary-${TAG_NAME}.apk" >> $GITHUB_OUTPUT
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extinction-sanctuary-release-apk
+          path: ${{ steps.release_info.outputs.apk_path }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_info.outputs.tag_name }}
+          name: ${{ steps.release_info.outputs.release_name }}
+          files: |
+            ${{ steps.release_info.outputs.apk_path }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

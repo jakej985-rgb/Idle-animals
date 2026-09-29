@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
+import '../providers/game_notifier.dart';
 
-class ArchiveSheet extends StatelessWidget {
-  final GameState state;
+class ArchiveSheet extends ConsumerWidget {
+  final GameState? state;
 
   const ArchiveSheet({
     super.key,
-    required this.state,
+    this.state,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
     final allSpecies = Species.registry.values.toList();
 
     return Container(
@@ -50,7 +53,7 @@ class ArchiveSheet extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Species restored: ${state.unlockedSpeciesIds.length} / ${allSpecies.length}',
+            'Species restored: ${activeState.unlockedSpeciesIds.length} / ${allSpecies.length}',
             style: const TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
           ),
           const SizedBox(height: 16),
@@ -58,10 +61,10 @@ class ArchiveSheet extends StatelessWidget {
             child: ListView(
               children: allSpecies.map((species) {
                 final isUnlocked =
-                    state.unlockedSpeciesIds.contains(species.id);
+                    activeState.unlockedSpeciesIds.contains(species.id);
 
                 if (isUnlocked) {
-                  return _buildUnlockedCard(species);
+                  return _buildUnlockedCard(species, activeState);
                 } else {
                   return _buildLockedCard(species);
                 }
@@ -73,9 +76,9 @@ class ArchiveSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildUnlockedCard(Species species) {
+  Widget _buildUnlockedCard(Species species, GameState activeState) {
     int currentPop = 0;
-    for (final hab in state.habitats.values) {
+    for (final hab in activeState.habitats.values) {
       if (hab.speciesId == species.id) {
         currentPop += hab.population;
       }

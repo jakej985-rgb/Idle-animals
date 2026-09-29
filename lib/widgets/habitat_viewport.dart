@@ -265,9 +265,12 @@ class _HabitatViewportState extends State<HabitatViewport>
                   _activityIcon(animal.activity),
                   style: const TextStyle(fontSize: 8),
                 ),
-                Text(
-                  species.iconEmoji,
-                  style: const TextStyle(fontSize: 28),
+                Transform.scale(
+                  scaleX: animal.left ? -1.0 : 1.0,
+                  child: Text(
+                    species.iconEmoji,
+                    style: const TextStyle(fontSize: 28),
+                  ),
                 ),
               ],
             ),

@@ -24,19 +24,29 @@ class CurrencyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Estimate current rates per second based on current habitat population & happiness
-    final habitat = state.habitats['dodo_island'];
-    final pop = habitat?.population ?? 1;
-    final happyMult = ((habitat?.happiness ?? 100.0) / 100.0).clamp(0.2, 1.4);
-    final species = Species.dodo;
-
     final dnaUpgradeLevel = state.upgrades['dna_sequencer']?.currentLevel ?? 0;
     final ancientDna = state.researchNodes['ancient_dna']?.isUnlocked ?? false;
-    final dnaMult = (1.0 + (dnaUpgradeLevel * 0.20)) * (ancientDna ? 1.5 : 1.0);
+    final dnaMultiplier = (1.0 + (dnaUpgradeLevel * 0.20)) *
+        (ancientDna ? 1.5 : 1.0) *
+        state.globalDnaMultiplier;
 
-    final credsRate = pop * species.baseCreditsRatePerSec * happyMult;
-    final dnaRate = pop * species.baseDnaRatePerSec * happyMult * dnaMult;
-    final resRate = pop * species.baseResearchRatePerSec * happyMult;
+    double credsRate = 0;
+    double dnaRate = 0;
+    double resRate = 0;
+
+    for (final hab in state.habitats.values) {
+      final species = Species.fromId(hab.speciesId);
+      final happyMult = (hab.happiness / 100.0).clamp(0.2, 1.4);
+      credsRate += hab.population * species.baseCreditsRatePerSec * happyMult;
+      dnaRate += hab.population *
+          species.baseDnaRatePerSec *
+          happyMult *
+          dnaMultiplier;
+      resRate += hab.population *
+          species.baseResearchRatePerSec *
+          happyMult *
+          state.globalResearchMultiplier;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

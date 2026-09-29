@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/habitat.dart';
+import '../providers/game_notifier.dart';
 
-class RestorationModal extends StatelessWidget {
-  final GameState state;
-  final Habitat habitat;
-  final VoidCallback onConfirmRestore;
-  final Function(String) onBuyPerk;
+class RestorationModal extends ConsumerWidget {
+  final GameState? state;
+  final Habitat? habitat;
+  final VoidCallback? onConfirmRestore;
+  final Function(String)? onBuyPerk;
 
   const RestorationModal({
     super.key,
-    required this.state,
-    required this.habitat,
-    required this.onConfirmRestore,
-    required this.onBuyPerk,
+    this.state,
+    this.habitat,
+    this.onConfirmRestore,
+    this.onBuyPerk,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final earnedPoints = habitat.calculateRestorationPoints();
-    final canRestore = habitat.population >= 10 || habitat.level >= 2;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GameState activeState = state ?? ref.watch(gameProvider);
+    final GameNotifier controller = ref.read(gameProvider.notifier);
+    final activeHabitat = habitat ??
+        activeState.habitats[activeState.activeHabitatId] ??
+        activeState.habitats.values.first;
+    final earnedPoints = activeHabitat.calculateRestorationPoints();
+    final canRestore = activeHabitat.population >= 10 || activeHabitat.level >= 2;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -69,7 +76,7 @@ class RestorationModal extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'RESTORE ${habitat.name.toUpperCase()}',
+                'RESTORE ${activeHabitat.name.toUpperCase()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
@@ -97,9 +104,9 @@ class RestorationModal extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatCol('Population', '${habitat.population}', const Color(0xFF4ADE80)),
+                    _buildStatCol('Population', '${activeHabitat.population}', const Color(0xFF4ADE80)),
                     Container(width: 1, height: 28, color: const Color(0xFF1E3142)),
-                    _buildStatCol('Reserve Level', 'Lv ${habitat.level}', const Color(0xFF38BDF8)),
+                    _buildStatCol('Reserve Level', 'Lv ${activeHabitat.level}', const Color(0xFF38BDF8)),
                     Container(width: 1, height: 28, color: const Color(0xFF1E3142)),
                     _buildStatCol('Reward', '+$earnedPoints ⭐', const Color(0xFFFBBF24)),
                   ],
@@ -109,7 +116,16 @@ class RestorationModal extends StatelessWidget {
 
               // Restore Button
               ElevatedButton(
-                onPressed: canRestore ? onConfirmRestore : null,
+                onPressed: canRestore
+                    ? () {
+                        if (onConfirmRestore != null) {
+                          onConfirmRestore!();
+                        } else {
+                          controller.restoreEcosystem(activeHabitat.id);
+                          Navigator.of(context).pop();
+                        }
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
@@ -133,16 +149,19 @@ class RestorationModal extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Permanent Global Perks',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  const Expanded(
+                    child: Text(
+                      'Permanent Global Perks',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
-                    'Available: ${state.restorationPoints.toStringAsFixed(0)} ⭐',
+                    'Available: ${activeState.restorationPoints.toStringAsFixed(0)} ⭐',
                     style: const TextStyle(
                       color: Color(0xFFFBBF24),
                       fontSize: 12,
@@ -154,24 +173,32 @@ class RestorationModal extends StatelessWidget {
               const SizedBox(height: 8),
 
               _buildPerkRow(
+                activeState: activeState,
+                controller: controller,
                 icon: '👶',
                 title: 'Species Growth Boost',
                 desc: '+15% breeding speed across all reserves',
                 perkKey: 'growth_boost',
               ),
               _buildPerkRow(
+                activeState: activeState,
+                controller: controller,
                 icon: '🧬',
                 title: 'Ancient DNA Synthesis',
                 desc: '+20% DNA harvested from all animals',
                 perkKey: 'dna_boost',
               ),
               _buildPerkRow(
+                activeState: activeState,
+                controller: controller,
                 icon: '🔬',
                 title: 'Conservation Research Lab',
                 desc: '+20% research production across all reserves',
                 perkKey: 'research_boost',
               ),
               _buildPerkRow(
+                activeState: activeState,
+                controller: controller,
                 icon: '🧭',
                 title: 'Field Radar Vehicles',
                 desc: '+25% faster expedition travel times',
@@ -205,14 +232,16 @@ class RestorationModal extends StatelessWidget {
   }
 
   Widget _buildPerkRow({
+    required GameState activeState,
+    required GameNotifier controller,
     required String icon,
     required String title,
     required String desc,
     required String perkKey,
   }) {
-    final lvl = state.restorationPerks[perkKey] ?? 0;
+    final lvl = activeState.restorationPerks[perkKey] ?? 0;
     final cost = (lvl + 1) * 5;
-    final canAfford = state.restorationPoints >= cost;
+    final canAfford = activeState.restorationPoints >= cost;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -232,12 +261,15 @@ class RestorationModal extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -260,7 +292,15 @@ class RestorationModal extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: canAfford ? () => onBuyPerk(perkKey) : null,
+            onPressed: canAfford
+                ? () {
+                    if (onBuyPerk != null) {
+                      onBuyPerk!(perkKey);
+                    } else {
+                      controller.buyRestorationPerk(perkKey);
+                    }
+                  }
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0284C7),
               foregroundColor: Colors.white,
