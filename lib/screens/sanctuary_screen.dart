@@ -17,7 +17,10 @@ import 'operations_sheet.dart';
 import 'world_map_sheet.dart';
 
 class SanctuaryScreen extends ConsumerStatefulWidget {
-  const SanctuaryScreen({super.key});
+  /// Forwarded to [HabitatViewport] so golden tests can freeze the animation.
+  final int? viewportSeed;
+
+  const SanctuaryScreen({super.key, this.viewportSeed});
 
   @override
   ConsumerState<SanctuaryScreen> createState() => _SanctuaryScreenState();
@@ -90,6 +93,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             );
             final viewport = HabitatViewport(
               habitat: habitat,
+              seed: widget.viewportSeed,
               onTap: () => controller.petAnimals(habitat.id),
             );
             final needs = NeedsPanel(
