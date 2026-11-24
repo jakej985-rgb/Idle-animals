@@ -433,7 +433,9 @@ class NeedsPanel extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isAuto ? AppColors.textSecondary : color,
+                    color: (isAuto || !enabled)
+                        ? AppColors.textSubdued
+                        : color,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),

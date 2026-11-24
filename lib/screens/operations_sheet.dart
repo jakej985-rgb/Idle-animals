@@ -185,7 +185,7 @@ class OperationsSheet extends ConsumerWidget {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: const Color(0xFF132030),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                     border: Border.all(color: const Color(0xFF20364F)),
                   ),
                   child: Column(
@@ -336,12 +336,12 @@ class OperationsSheet extends ConsumerWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: const Color(0xFF132030),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           border: Border.all(color: accentColor.withOpacity(0.25)),
         ),
         child: Row(

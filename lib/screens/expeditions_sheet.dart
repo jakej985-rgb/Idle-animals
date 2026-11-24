@@ -124,7 +124,7 @@ class ExpeditionsSheet extends ConsumerWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFF0C141D),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isDone
               ? const Color(0xFF10B981)

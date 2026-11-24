@@ -29,10 +29,8 @@ abstract final class AppColors {
   static const emerald = Color(0xFF10B981);
   static const success = Color(0xFF4ADE80);
   static const amber = Color(0xFFFBBF24);
-  static const pink = Color(0xFFF43F5E);
   static const quince = Color(0xFFF97316);
   static const purple = Color(0xFFA78BFA);
-  static const pine = Color(0xFF059669);
   static const danger = Color(0xFFF87171);
 }
 
