@@ -10,6 +10,9 @@ abstract final class AppColors {
   static const surface = Color(0xFF101924);
   static const surfaceAlt = Color(0xFF0C141D);
   static const surfaceRaised = Color(0xFF132030);
+  static const surfaceHighlight = Color(0xFF19273A);
+
+  static const bottom = Color(0xFF0A1320);
   static const sheet = Color(0xFF131D2A);
 
   static const border = Color(0xFF1E3142);
@@ -19,14 +22,17 @@ abstract final class AppColors {
   static const textPrimary = Color(0xFFF8FAFC);
   static const textSecondary = Color(0xFF94A3B8);
   static const textMuted = Color(0xFF8BA3B8);
+  static const textSubdued = Color(0xFF64748B);
 
   static const primary = Color(0xFF0284C7);
   static const accent = Color(0xFF38BDF8);
   static const emerald = Color(0xFF10B981);
   static const success = Color(0xFF4ADE80);
   static const amber = Color(0xFFFBBF24);
+  static const pink = Color(0xFFF43F5E);
+  static const quince = Color(0xFFF97316);
   static const purple = Color(0xFFA78BFA);
-  static const orange = Color(0xFFF97316);
+  static const pine = Color(0xFF059669);
   static const danger = Color(0xFFF87171);
 }
 
@@ -44,6 +50,8 @@ abstract final class AppRadius {
   static const lg = 16.0;
   static const xl = 20.0;
   static const sheet = 24.0;
+  static const card = 16.0;
+  static const pill = 8.0;
 }
 
 /// Shared text roles. The app intentionally uses a compact type ramp, but the
@@ -165,7 +173,7 @@ ThemeData buildAppTheme() {
     tooltipTheme: const TooltipThemeData(
       decoration: BoxDecoration(
         color: AppColors.surfaceRaised,
-        borderRadius: BorderRadius.all(Radius.circular(AppRadius.sm)),
+        borderRadius: BorderRadius.all(Radius.circular(AppRadius.pill)),
       ),
       textStyle: TextStyle(color: AppColors.textPrimary, fontSize: 12),
     ),
