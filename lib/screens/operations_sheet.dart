@@ -387,8 +387,8 @@ class OperationsSheet extends ConsumerWidget {
                           ),
                           child: Text(
                             badge,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: AppColors.onFill(badgeColor ?? accentColor),
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.5,

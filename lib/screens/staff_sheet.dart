@@ -239,7 +239,7 @@ class StaffSheet extends ConsumerWidget {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.emerald,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onFill(AppColors.emerald),
               disabledBackgroundColor: AppColors.track,
               disabledForegroundColor: Colors.white24,
               padding: const EdgeInsets.symmetric(vertical: 12),

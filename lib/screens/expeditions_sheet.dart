@@ -269,7 +269,7 @@ class ExpeditionsSheet extends ConsumerWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emerald,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onFill(AppColors.emerald),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -304,7 +304,7 @@ class ExpeditionsSheet extends ConsumerWidget {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onFill(AppColors.primary),
                 disabledBackgroundColor: AppColors.track,
                 disabledForegroundColor: Colors.white24,
                 padding: const EdgeInsets.symmetric(vertical: 10),

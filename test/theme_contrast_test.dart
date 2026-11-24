@@ -34,8 +34,9 @@ const _surfaces = <String, Color>{
   'bottom': AppColors.bottom,
 };
 
-/// Tokens used to paint text. `AppColors.primary` is deliberately absent: it is
-/// a fill token (progress bars, button backgrounds), not a text color.
+/// Tokens used to paint text on a surface. `AppColors.primary` is absent here
+/// because it is a fill, not a text color; fills that carry text are covered by
+/// the on-fill group below.
 const _textTokens = <String, Color>{
   'textPrimary': AppColors.textPrimary,
   'textSecondary': AppColors.textSecondary,
@@ -47,6 +48,19 @@ const _textTokens = <String, Color>{
   'emerald': AppColors.emerald,
   'purple': AppColors.purple,
   'quince': AppColors.quince,
+};
+
+/// Fills that carry text: badges, chips and button backgrounds. Their
+/// foreground comes from `AppColors.onFill`, never a hardcoded white.
+const _fillTokens = <String, Color>{
+  'primary': AppColors.primary,
+  'accent': AppColors.accent,
+  'emerald': AppColors.emerald,
+  'success': AppColors.success,
+  'amber': AppColors.amber,
+  'quince': AppColors.quince,
+  'purple': AppColors.purple,
+  'danger': AppColors.danger,
 };
 
 /// Tokens used as indicators (badges, bars, borders, icons). These are
@@ -67,9 +81,10 @@ void main() {
       // Sanity check the arithmetic every other assertion depends on.
       expect(_contrastRatio(Colors.white, Colors.black), closeTo(21.0, 0.01));
       expect(_contrastRatio(Colors.white, Colors.white), closeTo(1.0, 0.001));
+      // Neutral mid-grey against white: 4.48:1, the usual AA boundary probe.
       expect(
-        _contrastRatio(const Color(0xFFF8FAFC), AppColors.background),
-        closeTo(18.51, 0.05),
+        _contrastRatio(const Color(0xFF777777), Colors.white),
+        closeTo(4.48, 0.01),
       );
     });
 
@@ -92,6 +107,38 @@ void main() {
         reason: 'Text colors must stay AA-readable on every surface. A color '
             'that cannot reach 4.5:1 is a disabled/inactive-only tier and '
             'belongs in AppColors.textSubdued, not in this list.',
+      );
+    });
+
+    test('text on filled badges, chips and buttons clears 4.5:1', () {
+      // Badge labels run as small as 9px, so even the bold ones are "normal"
+      // text under WCAG 1.4.3. AppColors.onFill must beat a flat white on every
+      // fill, and the winner has to actually pass.
+      final failures = <String>[];
+      for (final fill in _fillTokens.entries) {
+        final foreground = AppColors.onFill(fill.value);
+        final ratio = _contrastRatio(foreground, fill.value);
+        final whiteRatio = _contrastRatio(Colors.white, fill.value);
+        final darkRatio = _contrastRatio(AppColors.background, fill.value);
+
+        if (ratio < 4.5) {
+          failures.add(
+            '${fill.key} needs 4.5:1 but onFill only reaches '
+            '${ratio.toStringAsFixed(2)}:1',
+          );
+        }
+        if (ratio < math.max(whiteRatio, darkRatio) - 0.001) {
+          failures.add(
+            '${fill.key} picked a worse foreground than the best candidate',
+          );
+        }
+      }
+
+      expect(
+        failures,
+        isEmpty,
+        reason: 'A fill that cannot carry either white or background text at '
+            '4.5:1 needs a darker or lighter token, not a hardcoded white label.',
       );
     });
 

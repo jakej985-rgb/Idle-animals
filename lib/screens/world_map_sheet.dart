@@ -150,10 +150,11 @@ class WorldMapSheet extends ConsumerWidget {
                                       color: AppColors.primary,
                                       borderRadius: BorderRadius.circular(6),
                                     ),
-                                    child: const Text(
+                                    child: Text(
                                       'ACTIVE',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: AppColors.onFill(
+                                            AppColors.primary),
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -206,7 +207,8 @@ class WorldMapSheet extends ConsumerWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
+                            foregroundColor:
+                                AppColors.onFill(AppColors.primary),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 8),
                             shape: RoundedRectangleBorder(

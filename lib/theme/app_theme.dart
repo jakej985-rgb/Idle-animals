@@ -32,6 +32,19 @@ abstract final class AppColors {
   static const quince = Color(0xFFF97316);
   static const purple = Color(0xFFA78BFA);
   static const danger = Color(0xFFF87171);
+
+  /// Readable foreground for text or icons painted on a saturated [fill].
+  ///
+  /// White is the obvious choice on the darker fills, but the light ones
+  /// (`danger`, `emerald`, `quince`) cannot carry white above 3:1. Badge labels
+  /// run as small as 9px, so this returns whichever of [background] and white
+  /// has the higher contrast against [fill] instead of assuming white works.
+  static Color onFill(Color fill) {
+    final luminance = fill.computeLuminance();
+    final onWhite = (1.0 + 0.05) / (luminance + 0.05);
+    final onDark = (luminance + 0.05) / (background.computeLuminance() + 0.05);
+    return onDark >= onWhite ? background : Colors.white;
+  }
 }
 
 abstract final class AppSpacing {
@@ -105,9 +118,9 @@ ThemeData buildAppTheme() {
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.background,
-    colorScheme: const ColorScheme.dark(
+    colorScheme: ColorScheme.dark(
       primary: AppColors.primary,
-      onPrimary: Colors.white,
+      onPrimary: AppColors.onFill(AppColors.primary),
       secondary: AppColors.success,
       onSecondary: AppColors.background,
       surface: AppColors.surface,
@@ -128,7 +141,7 @@ ThemeData buildAppTheme() {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onFill(AppColors.primary),
         disabledBackgroundColor: AppColors.surfaceAlt,
         disabledForegroundColor: AppColors.textSecondary,
         minimumSize: const Size(48, 44),

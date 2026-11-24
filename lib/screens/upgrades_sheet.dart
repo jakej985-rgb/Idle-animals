@@ -172,7 +172,7 @@ class UpgradesSheet extends ConsumerWidget {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onFill(AppColors.primary),
               disabledBackgroundColor: const Color(0xFF162534),
               disabledForegroundColor: Colors.white24,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

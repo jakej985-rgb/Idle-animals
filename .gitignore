@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Golden test diffs written by flutter_test when a golden mismatches
+/test/failures/
+
 # Symbolication related
 app.*.symbols
 

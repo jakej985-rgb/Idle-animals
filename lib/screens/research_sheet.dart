@@ -174,7 +174,7 @@ class ResearchSheet extends ConsumerWidget {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7C3AED),
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onFill(const Color(0xFF7C3AED)),
                 disabledBackgroundColor: const Color(0xFF1E293B),
                 disabledForegroundColor: Colors.white24,
                 padding:

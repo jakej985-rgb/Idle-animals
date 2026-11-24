@@ -164,7 +164,7 @@ class MissionsSheet extends ConsumerWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emerald,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onFill(AppColors.emerald),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 shape: RoundedRectangleBorder(
