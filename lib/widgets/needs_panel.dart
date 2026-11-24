@@ -52,7 +52,7 @@ class NeedsPanel extends StatelessWidget {
         dna >= reviveDnaCost && habitat.population < habitat.capacity;
     final bool bothAutomated = habitat.hasAutoFeeder && habitat.hasAutoWater;
 
-    final body = bothAutomated && !compact
+    final body = bothAutomated
         ? _buildAutomationSummary()
         : compact
             ? _buildCompactBody(species, canRevive)
@@ -365,7 +365,6 @@ class NeedsPanel extends StatelessWidget {
       container: true,
       label: '$label: ${(percent * 100).toStringAsFixed(0)} percent'
           '${isAuto ? ', automated' : ''}',
-      excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -376,7 +375,8 @@ class NeedsPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            ExcludeSemantics(
+              child: Row(
               children: [
                 Text(icon, style: const TextStyle(fontSize: 14)),
                 const SizedBox(width: 6),
@@ -407,8 +407,11 @@ class NeedsPanel extends StatelessWidget {
                   ),
               ],
             ),
+            ),
             const SizedBox(height: 6),
-            _AnimatedBar(value: percent, color: color, height: 6),
+            ExcludeSemantics(
+              child: _AnimatedBar(value: percent, color: color, height: 6),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 44,
@@ -456,7 +459,6 @@ class NeedsPanel extends StatelessWidget {
       container: true,
       label: '$label: ${(percent * 100).toStringAsFixed(0)} percent'
           '${isAuto ? ', automated' : ''}',
-      excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
@@ -467,7 +469,8 @@ class NeedsPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            ExcludeSemantics(
+              child: Row(
               children: [
                 Text(icon, style: const TextStyle(fontSize: 13)),
                 const SizedBox(width: 5),
@@ -494,16 +497,19 @@ class NeedsPanel extends StatelessWidget {
                 ),
               ],
             ),
+            ),
             const SizedBox(height: 5),
-            _AnimatedBar(value: percent, color: color, height: 5),
+            ExcludeSemantics(
+              child: _AnimatedBar(value: percent, color: color, height: 5),
+            ),
             const SizedBox(height: 6),
             SizedBox(
-              height: 36,
+              height: 48,
               child: TextButton(
                 onPressed: isAuto || !enabled ? null : onAction,
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
-                  minimumSize: const Size(48, 36),
+                  minimumSize: const Size(48, 48),
                   foregroundColor: color,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.sm),

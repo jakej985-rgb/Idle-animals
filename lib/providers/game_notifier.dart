@@ -515,6 +515,7 @@ class GameNotifier extends Notifier<GameState> {
 
   void toggleHaptics() {
     state = state.copyWith(hapticsEnabled: !state.hapticsEnabled);
+    _saveService.saveGame(state);
   }
 
   Future<void> resetGame() async {

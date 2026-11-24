@@ -224,6 +224,12 @@ class _HabitatViewportState extends State<HabitatViewport>
       button: true,
       label: '${habitat.name}: ${habitat.population} ${species.name} in the '
           '${_biomeLabel(habitat.biomeType)}. Activate to care for the animals.',
+      onTap: () {
+        final size = context.size;
+        _handleTap(
+          size == null ? Offset.zero : size.center(Offset.zero),
+        );
+      },
       child: ExcludeSemantics(
         child: RepaintBoundary(
           child: GestureDetector(

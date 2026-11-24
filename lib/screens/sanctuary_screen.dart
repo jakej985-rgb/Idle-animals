@@ -25,6 +25,17 @@ class SanctuaryScreen extends ConsumerStatefulWidget {
 
 class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
   bool _offlineModalShown = false;
+  final GlobalKey _viewportKey = GlobalKey();
+
+  void _revealViewport() {
+    final ctx = _viewportKey.currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +125,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
                             habitatHeader,
                             const SizedBox(height: 8),
                             SizedBox(
+                              key: _viewportKey,
                               height: math.max(
                                 210,
                                 constraints.maxHeight * 0.34,
@@ -323,7 +335,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             icon: '🏝️',
             label: 'Reserve',
             isSelected: true,
-            onTap: () {},
+            onTap: _revealViewport,
           ),
           _buildDockButton(
             icon: '🧭',
@@ -452,7 +464,12 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
           alignment: Alignment.bottomCenter,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 640),
-            child: sheet,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.paddingOf(ctx).bottom,
+              ),
+              child: sheet,
+            ),
           ),
         ),
       ),
