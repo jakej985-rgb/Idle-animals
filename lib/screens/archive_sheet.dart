@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
+import '../widgets/sheet_header.dart';
 
 class ArchiveSheet extends ConsumerWidget {
   final GameState? state;
@@ -26,37 +27,13 @@ class ArchiveSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+          SheetHeader(
+            icon: '📜',
+            title: 'Extinction Archive',
+            subtitle:
+                'Species restored: ${activeState.unlockedSpeciesIds.length} / ${allSpecies.length}',
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: const [
-              Text('📜', style: TextStyle(fontSize: 22)),
-              SizedBox(width: 8),
-              Text(
-                'Extinction Archive',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Species restored: ${activeState.unlockedSpeciesIds.length} / ${allSpecies.length}',
-            style: const TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Expanded(
             child: ListView(
               children: allSpecies.map((species) {
@@ -128,12 +105,16 @@ class ArchiveSheet extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          species.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                        Flexible(
+                          child: Text(
+                            species.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -281,25 +262,34 @@ class ArchiveSheet extends ConsumerWidget {
     required String value,
     required Color color,
   }) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
+    return Expanded(
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF8BA3B8),
-            fontSize: 9,
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF8BA3B8),
+              fontSize: 9,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
