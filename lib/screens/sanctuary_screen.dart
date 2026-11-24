@@ -333,42 +333,47 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _buildDockButton(
-            icon: '🏝️',
-            label: 'Reserve',
-            isSelected: true,
-            onTap: _revealViewport,
-          ),
-          _buildDockButton(
-            icon: '🧭',
-            label: 'Expeditions',
-            badge: hasExpeditionBadge,
-            onTap: () => _openSheet(context, const ExpeditionsSheet()),
-          ),
-          _buildDockButton(
-            icon: '🎯',
-            label: 'Directives',
-            badge: hasMissionBadge,
-            onTap: () => _openSheet(context, const MissionsSheet()),
-          ),
-          _buildDockButton(
-            icon: '⚙️',
-            label: 'Operations',
-            onTap: () => _openSheet(
-              context,
-              OperationsSheet(
-                onOpenSubSheet: (sheet) => _openSheet(context, sheet),
+      // The dock surface is painted by this container, so ink effects need a
+      // Material above it to be visible.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Row(
+          children: [
+            _buildDockButton(
+              icon: '🏝️',
+              label: 'Reserve',
+              isSelected: true,
+              onTap: _revealViewport,
+            ),
+            _buildDockButton(
+              icon: '🧭',
+              label: 'Expeditions',
+              badge: hasExpeditionBadge,
+              onTap: () => _openSheet(context, const ExpeditionsSheet()),
+            ),
+            _buildDockButton(
+              icon: '🎯',
+              label: 'Directives',
+              badge: hasMissionBadge,
+              onTap: () => _openSheet(context, const MissionsSheet()),
+            ),
+            _buildDockButton(
+              icon: '⚙️',
+              label: 'Operations',
+              onTap: () => _openSheet(
+                context,
+                OperationsSheet(
+                  onOpenSubSheet: (sheet) => _openSheet(context, sheet),
+                ),
               ),
             ),
-          ),
-          _buildDockButton(
-            icon: '🌎',
-            label: 'Map',
-            onTap: () => _openSheet(context, const WorldMapSheet()),
-          ),
-        ],
+            _buildDockButton(
+              icon: '🌎',
+              label: 'Map',
+              onTap: () => _openSheet(context, const WorldMapSheet()),
+            ),
+          ],
+        ),
       ),
     );
   }
