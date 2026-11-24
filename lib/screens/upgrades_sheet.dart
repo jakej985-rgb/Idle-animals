@@ -23,7 +23,7 @@ class UpgradesSheet extends ConsumerWidget {
     final GameNotifier controller = ref.read(gameProvider.notifier);
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -62,23 +62,23 @@ class UpgradesSheet extends ConsumerWidget {
     final cost = upg.currentCost;
     bool canAfford = false;
     String currencyIcon = '🪙';
-    Color currencyColor = const Color(0xFFFBBF24);
+    Color currencyColor = AppColors.amber;
 
     switch (upg.currency) {
       case UpgradeCurrency.credits:
         canAfford = activeState.credits >= cost;
         currencyIcon = '🪙';
-        currencyColor = const Color(0xFFFBBF24);
+        currencyColor = AppColors.amber;
         break;
       case UpgradeCurrency.dna:
         canAfford = activeState.dna >= cost;
         currencyIcon = '🧬';
-        currencyColor = const Color(0xFF38BDF8);
+        currencyColor = AppColors.accent;
         break;
       case UpgradeCurrency.research:
         canAfford = activeState.research >= cost;
         currencyIcon = '🔬';
-        currencyColor = const Color(0xFFA78BFA);
+        currencyColor = AppColors.purple;
         break;
     }
 
@@ -88,12 +88,12 @@ class UpgradesSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isMaxed
-              ? const Color(0xFF10B981).withOpacity(0.4)
-              : const Color(0xFF1E3142),
+              ? AppColors.emerald.withOpacity(0.4)
+              : AppColors.border,
         ),
       ),
       child: Row(
@@ -131,7 +131,7 @@ class UpgradesSheet extends ConsumerWidget {
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: isMaxed
-                            ? const Color(0xFF10B981).withOpacity(0.2)
+                            ? AppColors.emerald.withOpacity(0.2)
                             : const Color(0xFF1B3147),
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -139,8 +139,8 @@ class UpgradesSheet extends ConsumerWidget {
                         isMaxed ? 'MAX' : 'Lv ${upg.currentLevel}',
                         style: TextStyle(
                           color: isMaxed
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFF8BA3B8),
+                              ? AppColors.success
+                              : AppColors.textMuted,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -152,7 +152,7 @@ class UpgradesSheet extends ConsumerWidget {
                 Text(
                   upg.description,
                   style: const TextStyle(
-                    color: Color(0xFF8BA3B8),
+                    color: AppColors.textMuted,
                     fontSize: 11,
                   ),
                 ),
@@ -171,8 +171,8 @@ class UpgradesSheet extends ConsumerWidget {
                   }
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0284C7),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onFill(AppColors.primary),
               disabledBackgroundColor: const Color(0xFF162534),
               disabledForegroundColor: Colors.white24,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
 import '../widgets/sheet_header.dart';
 
 class ArchiveSheet extends ConsumerWidget {
@@ -20,7 +21,7 @@ class ArchiveSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -75,7 +76,7 @@ class ArchiveSheet extends ConsumerWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.6),
+          color: AppColors.emerald.withOpacity(0.6),
           width: 1.5,
         ),
       ),
@@ -91,7 +92,7 @@ class ArchiveSheet extends ConsumerWidget {
                   color: const Color(0xFF0F1E2E),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: const Color(0xFF10B981), width: 1.5),
+                      color: AppColors.emerald, width: 1.5),
                 ),
                 child: Center(
                   child: Text(species.iconEmoji,
@@ -122,13 +123,13 @@ class ArchiveSheet extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.2),
+                            color: AppColors.emerald.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
                             'RESTORED',
                             style: TextStyle(
-                              color: Color(0xFF4ADE80),
+                              color: AppColors.success,
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
@@ -140,7 +141,7 @@ class ArchiveSheet extends ConsumerWidget {
                     Text(
                       species.scientificName,
                       style: const TextStyle(
-                        color: Color(0xFF38BDF8),
+                        color: AppColors.accent,
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
                       ),
@@ -149,7 +150,7 @@ class ArchiveSheet extends ConsumerWidget {
                     Text(
                       'Extinction: ${species.extinctionEra}',
                       style: const TextStyle(
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textSecondary,
                         fontSize: 10,
                       ),
                     ),
@@ -180,13 +181,13 @@ class ArchiveSheet extends ConsumerWidget {
                 _buildMiniStat(
                   label: 'Sanctuary Population',
                   value: '$currentPop ${species.iconEmoji}',
-                  color: const Color(0xFF4ADE80),
+                  color: AppColors.success,
                 ),
-                Container(width: 1, height: 24, color: const Color(0xFF1E3142)),
+                Container(width: 1, height: 24, color: AppColors.border),
                 _buildMiniStat(
                   label: 'Base Breeding Cycle',
                   value: '${species.baseBreedingSeconds.toStringAsFixed(0)}s',
-                  color: const Color(0xFF38BDF8),
+                  color: AppColors.accent,
                 ),
               ],
             ),
@@ -201,7 +202,7 @@ class ArchiveSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D).withOpacity(0.6),
+        color: AppColors.surfaceAlt.withOpacity(0.6),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF182534)),
       ),
@@ -243,7 +244,7 @@ class ArchiveSheet extends ConsumerWidget {
                 const Text(
                   'Discover fossil DNA fragments on expeditions to restore',
                   style: TextStyle(
-                    color: Color(0xFFFBBF24),
+                    color: AppColors.amber,
                     fontSize: 9,
                     fontStyle: FontStyle.italic,
                   ),
@@ -284,7 +285,7 @@ class ArchiveSheet extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFF8BA3B8),
+              color: AppColors.textMuted,
               fontSize: 9,
             ),
           ),

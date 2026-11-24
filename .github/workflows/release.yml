@@ -32,7 +32,10 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          # Pinned to the version that generated test/goldens/*.png. Bumping
+          # Flutter changes rasterization and fails every golden test, so bump
+          # this and regenerate the goldens in the same commit.
+          flutter-version: '3.50.1'
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
 

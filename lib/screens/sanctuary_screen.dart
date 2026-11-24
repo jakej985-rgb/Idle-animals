@@ -17,7 +17,10 @@ import 'operations_sheet.dart';
 import 'world_map_sheet.dart';
 
 class SanctuaryScreen extends ConsumerStatefulWidget {
-  const SanctuaryScreen({super.key});
+  /// Forwarded to [HabitatViewport] so golden tests can freeze the animation.
+  final int? viewportSeed;
+
+  const SanctuaryScreen({super.key, this.viewportSeed});
 
   @override
   ConsumerState<SanctuaryScreen> createState() => _SanctuaryScreenState();
@@ -90,6 +93,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
             );
             final viewport = HabitatViewport(
               habitat: habitat,
+              seed: widget.viewportSeed,
               onTap: () => controller.petAnimals(habitat.id),
             );
             final needs = NeedsPanel(
@@ -318,7 +322,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.bottom,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: AppColors.border),
         boxShadow: [
@@ -329,42 +333,47 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _buildDockButton(
-            icon: '🏝️',
-            label: 'Reserve',
-            isSelected: true,
-            onTap: _revealViewport,
-          ),
-          _buildDockButton(
-            icon: '🧭',
-            label: 'Expeditions',
-            badge: hasExpeditionBadge,
-            onTap: () => _openSheet(context, const ExpeditionsSheet()),
-          ),
-          _buildDockButton(
-            icon: '🎯',
-            label: 'Directives',
-            badge: hasMissionBadge,
-            onTap: () => _openSheet(context, const MissionsSheet()),
-          ),
-          _buildDockButton(
-            icon: '⚙️',
-            label: 'Operations',
-            onTap: () => _openSheet(
-              context,
-              OperationsSheet(
-                onOpenSubSheet: (sheet) => _openSheet(context, sheet),
+      // The dock surface is painted by this container, so ink effects need a
+      // Material above it to be visible.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Row(
+          children: [
+            _buildDockButton(
+              icon: '🏝️',
+              label: 'Reserve',
+              isSelected: true,
+              onTap: _revealViewport,
+            ),
+            _buildDockButton(
+              icon: '🧭',
+              label: 'Expeditions',
+              badge: hasExpeditionBadge,
+              onTap: () => _openSheet(context, const ExpeditionsSheet()),
+            ),
+            _buildDockButton(
+              icon: '🎯',
+              label: 'Directives',
+              badge: hasMissionBadge,
+              onTap: () => _openSheet(context, const MissionsSheet()),
+            ),
+            _buildDockButton(
+              icon: '⚙️',
+              label: 'Operations',
+              onTap: () => _openSheet(
+                context,
+                OperationsSheet(
+                  onOpenSubSheet: (sheet) => _openSheet(context, sheet),
+                ),
               ),
             ),
-          ),
-          _buildDockButton(
-            icon: '🌎',
-            label: 'Map',
-            onTap: () => _openSheet(context, const WorldMapSheet()),
-          ),
-        ],
+            _buildDockButton(
+              icon: '🌎',
+              label: 'Map',
+              onTap: () => _openSheet(context, const WorldMapSheet()),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -391,29 +400,37 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 2,
-                    vertical: 6,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(icon, style: const TextStyle(fontSize: 18)),
-                      const SizedBox(height: 2),
-                      Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 10,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w500,
+                Ink(
+                  decoration: isSelected
+                      ? BoxDecoration(
+                          color: AppColors.surfaceHighlight,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        )
+                      : null,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 6,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(icon, style: const TextStyle(fontSize: 18)),
+                        const SizedBox(height: 2),
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 10,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 if (badge)

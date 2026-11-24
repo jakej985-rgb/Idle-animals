@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/offline/offline_manager.dart';
+import '../theme/app_theme.dart';
 
 class OfflineModal extends StatelessWidget {
   final OfflineReport report;
@@ -144,7 +145,7 @@ class OfflineModal extends StatelessWidget {
               onPressed: onCollect,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onFill(const Color(0xFF10B981)),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),

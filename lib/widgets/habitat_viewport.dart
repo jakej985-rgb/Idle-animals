@@ -16,10 +16,15 @@ class HabitatViewport extends StatefulWidget {
   final Habitat habitat;
   final VoidCallback onTap;
 
+  /// Fixes the visual jitter so tests can render a reproducible frame.
+  /// Null in production, where the generator is seeded from the clock.
+  final int? seed;
+
   const HabitatViewport({
     super.key,
     required this.habitat,
     required this.onTap,
+    this.seed,
   });
 
   @override
@@ -68,7 +73,7 @@ class _CareParticle {
 class _HabitatViewportState extends State<HabitatViewport>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
-  final Random _random = Random();
+  late final Random _random = Random(widget.seed);
   final List<_AnimalVisual> _animals = <_AnimalVisual>[];
   final List<_CareParticle> _particles = <_CareParticle>[];
   final ValueNotifier<double> _clock = ValueNotifier<double>(0);

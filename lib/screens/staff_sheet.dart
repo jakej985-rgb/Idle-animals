@@ -25,7 +25,7 @@ class StaffSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -103,7 +103,7 @@ class StaffSheet extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isHired
-              ? const Color(0xFF38BDF8).withOpacity(0.5)
+              ? AppColors.accent.withOpacity(0.5)
               : const Color(0xFF223A50),
           width: 1.5,
         ),
@@ -119,7 +119,7 @@ class StaffSheet extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F1E2E),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF38BDF8), width: 2),
+                  border: Border.all(color: AppColors.accent, width: 2),
                 ),
                 child: Center(
                   child: Text(keeper.avatarEmoji,
@@ -151,7 +151,7 @@ class StaffSheet extends ConsumerWidget {
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: isHired
-                                ? const Color(0xFF10B981).withOpacity(0.2)
+                                ? AppColors.emerald.withOpacity(0.2)
                                 : const Color(0xFF334155),
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -159,7 +159,7 @@ class StaffSheet extends ConsumerWidget {
                             isHired ? 'Level ${keeper.level}' : 'Not Hired',
                             style: TextStyle(
                               color: isHired
-                                  ? const Color(0xFF4ADE80)
+                                  ? AppColors.success
                                   : Colors.white60,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -172,7 +172,7 @@ class StaffSheet extends ConsumerWidget {
                     Text(
                       keeper.title,
                       style: const TextStyle(
-                        color: Color(0xFF38BDF8),
+                        color: AppColors.accent,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -186,7 +186,7 @@ class StaffSheet extends ConsumerWidget {
           Text(
             keeper.description,
             style: const TextStyle(
-              color: Color(0xFF94A3B8),
+              color: AppColors.textSecondary,
               fontSize: 12,
               height: 1.3,
             ),
@@ -217,7 +217,7 @@ class StaffSheet extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.right,
                     style: const TextStyle(
-                      color: Color(0xFF4ADE80),
+                      color: AppColors.success,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -238,9 +238,9 @@ class StaffSheet extends ConsumerWidget {
                   }
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: const Color(0xFF1B2B3A),
+              backgroundColor: AppColors.emerald,
+              foregroundColor: AppColors.onFill(AppColors.emerald),
+              disabledBackgroundColor: AppColors.track,
               disabledForegroundColor: Colors.white24,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -267,7 +267,7 @@ class StaffSheet extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D).withOpacity(0.6),
+        color: AppColors.surfaceAlt.withOpacity(0.6),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF182534)),
       ),

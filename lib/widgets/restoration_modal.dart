@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/habitat.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
 
 class RestorationModal extends ConsumerWidget {
   final GameState? state;
@@ -128,7 +129,7 @@ class RestorationModal extends ConsumerWidget {
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.onFill(const Color(0xFF10B981)),
                   disabledBackgroundColor: const Color(0xFF162534),
                   disabledForegroundColor: Colors.white24,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -312,7 +313,7 @@ class RestorationModal extends ConsumerWidget {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0284C7),
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onFill(const Color(0xFF0284C7)),
               disabledBackgroundColor: const Color(0xFF162534),
               disabledForegroundColor: Colors.white24,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

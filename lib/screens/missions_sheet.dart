@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/mission.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
 import '../widgets/sheet_header.dart';
 
 class MissionsSheet extends ConsumerWidget {
@@ -23,7 +24,7 @@ class MissionsSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -57,23 +58,23 @@ class MissionsSheet extends ConsumerWidget {
         (m.currentProgress / m.targetCount).clamp(0.0, 1.0);
 
     String rewardIcon = '🪙';
-    Color rewardColor = const Color(0xFFFBBF24);
+    Color rewardColor = AppColors.amber;
     switch (m.rewardType) {
       case MissionRewardType.credits:
         rewardIcon = '🪙';
-        rewardColor = const Color(0xFFFBBF24);
+        rewardColor = AppColors.amber;
         break;
       case MissionRewardType.dna:
         rewardIcon = '🧬';
-        rewardColor = const Color(0xFF38BDF8);
+        rewardColor = AppColors.accent;
         break;
       case MissionRewardType.research:
         rewardIcon = '🔬';
-        rewardColor = const Color(0xFFA78BFA);
+        rewardColor = AppColors.purple;
         break;
       case MissionRewardType.restorationPoints:
         rewardIcon = '⭐';
-        rewardColor = const Color(0xFF4ADE80);
+        rewardColor = AppColors.success;
         break;
     }
 
@@ -81,12 +82,12 @@ class MissionsSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D),
+        color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isClaimed
               ? const Color(0xFF1E293B)
-              : (isDone ? const Color(0xFF10B981) : const Color(0xFF1E3142)),
+              : (isDone ? AppColors.emerald : AppColors.border),
           width: isDone && !isClaimed ? 1.5 : 1.0,
         ),
       ),
@@ -96,7 +97,7 @@ class MissionsSheet extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isClaimed ? const Color(0xFF121B24) : const Color(0xFF1B2B3A),
+              color: isClaimed ? const Color(0xFF121B24) : AppColors.track,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
@@ -120,7 +121,7 @@ class MissionsSheet extends ConsumerWidget {
                 Text(
                   m.description,
                   style: TextStyle(
-                    color: isClaimed ? Colors.white24 : const Color(0xFF8BA3B8),
+                    color: isClaimed ? Colors.white24 : AppColors.textMuted,
                     fontSize: 11,
                   ),
                 ),
@@ -132,7 +133,7 @@ class MissionsSheet extends ConsumerWidget {
                     minHeight: 5,
                     backgroundColor: const Color(0xFF182635),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isDone ? const Color(0xFF10B981) : const Color(0xFF0284C7),
+                      isDone ? AppColors.emerald : AppColors.primary,
                     ),
                   ),
                 ),
@@ -140,7 +141,7 @@ class MissionsSheet extends ConsumerWidget {
                 Text(
                   '${m.currentProgress} / ${m.targetCount}',
                   style: TextStyle(
-                    color: isClaimed ? Colors.white24 : const Color(0xFF64748B),
+                    color: isClaimed ? Colors.white24 : AppColors.textSubdued,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -162,8 +163,8 @@ class MissionsSheet extends ConsumerWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.emerald,
+                foregroundColor: AppColors.onFill(AppColors.emerald),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 shape: RoundedRectangleBorder(
