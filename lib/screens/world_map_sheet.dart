@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
 import '../widgets/sheet_header.dart';
 
 class WorldMapSheet extends ConsumerWidget {
@@ -60,7 +61,7 @@ class WorldMapSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -90,13 +91,13 @@ class WorldMapSheet extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: isActive
                         ? const Color(0xFF1B3852)
-                        : const Color(0xFF0C141D),
+                        : AppColors.surfaceAlt,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isActive
-                          ? const Color(0xFF38BDF8)
+                          ? AppColors.accent
                           : (isUnlocked
-                              ? const Color(0xFF1E3142)
+                              ? AppColors.border
                               : const Color(0xFF162330)),
                       width: isActive ? 1.5 : 1.0,
                     ),
@@ -111,7 +112,7 @@ class WorldMapSheet extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: isUnlocked
-                                ? const Color(0xFF38BDF8).withOpacity(0.3)
+                                ? AppColors.accent.withOpacity(0.3)
                                 : Colors.white12,
                           ),
                         ),
@@ -146,7 +147,7 @@ class WorldMapSheet extends ConsumerWidget {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF0284C7),
+                                      color: AppColors.primary,
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
@@ -164,7 +165,7 @@ class WorldMapSheet extends ConsumerWidget {
                             Text(
                               r['region'] as String,
                               style: const TextStyle(
-                                color: Color(0xFF8BA3B8),
+                                color: AppColors.textMuted,
                                 fontSize: 11,
                               ),
                             ),
@@ -173,7 +174,7 @@ class WorldMapSheet extends ConsumerWidget {
                               Text(
                                 '${habitat.population} ${species.name}s • Lv ${habitat.level} Reserve',
                                 style: const TextStyle(
-                                  color: Color(0xFF4ADE80),
+                                  color: AppColors.success,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -183,7 +184,7 @@ class WorldMapSheet extends ConsumerWidget {
                               const Text(
                                 'Discover species fossils on expedition to unlock',
                                 style: TextStyle(
-                                  color: Color(0xFFFBBF24),
+                                  color: AppColors.amber,
                                   fontSize: 10,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -204,7 +205,7 @@ class WorldMapSheet extends ConsumerWidget {
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0284C7),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 8),

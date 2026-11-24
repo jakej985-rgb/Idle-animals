@@ -23,7 +23,7 @@ class ResearchSheet extends ConsumerWidget {
     final GameNotifier controller = ref.read(gameProvider.notifier);
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -79,12 +79,12 @@ class ResearchSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D),
+        color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isUnlocked
-              ? const Color(0xFF10B981).withOpacity(0.5)
-              : (prereqsMet ? const Color(0xFF8B5CF6).withOpacity(0.4) : const Color(0xFF1E3142)),
+              ? AppColors.emerald.withOpacity(0.5)
+              : (prereqsMet ? const Color(0xFF8B5CF6).withOpacity(0.4) : AppColors.border),
         ),
       ),
       child: Row(
@@ -124,13 +124,13 @@ class ResearchSheet extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.2),
+                          color: AppColors.emerald.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
                           'RESEARCHED',
                           style: TextStyle(
-                            color: Color(0xFF4ADE80),
+                            color: AppColors.success,
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
                           ),
@@ -142,7 +142,7 @@ class ResearchSheet extends ConsumerWidget {
                 Text(
                   node.description,
                   style: const TextStyle(
-                    color: Color(0xFF8BA3B8),
+                    color: AppColors.textMuted,
                     fontSize: 11,
                   ),
                 ),

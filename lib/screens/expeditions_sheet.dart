@@ -30,7 +30,7 @@ class ExpeditionsSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF131D2A),
+        color: AppColors.sheet,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -59,9 +59,9 @@ class ExpeditionsSheet extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF0C141D),
+                color: AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF1E3142)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 children: [
@@ -123,14 +123,14 @@ class ExpeditionsSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D),
+        color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isDone
-              ? const Color(0xFF10B981)
+              ? AppColors.emerald
               : (exp.isActive
-                  ? const Color(0xFF0284C7)
-                  : const Color(0xFF1E3142)),
+                  ? AppColors.primary
+                  : AppColors.border),
           width: (isDone || exp.isActive) ? 1.5 : 1.0,
         ),
       ),
@@ -182,7 +182,7 @@ class ExpeditionsSheet extends ConsumerWidget {
                             child: const Text(
                               '🧬 SPECIES',
                               style: TextStyle(
-                                color: Color(0xFFA78BFA),
+                                color: AppColors.purple,
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -194,7 +194,7 @@ class ExpeditionsSheet extends ConsumerWidget {
                     Text(
                       '${exp.region} • ${exp.durationSeconds.toStringAsFixed(0)}s travel',
                       style: const TextStyle(
-                        color: Color(0xFF8BA3B8),
+                        color: AppColors.textMuted,
                         fontSize: 11,
                       ),
                     ),
@@ -206,7 +206,7 @@ class ExpeditionsSheet extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(
             exp.description,
-            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
           ),
           const SizedBox(height: 10),
 
@@ -243,9 +243,9 @@ class ExpeditionsSheet extends ConsumerWidget {
               child: LinearProgressIndicator(
                 value: 1.0 - (remainingSec / exp.durationSeconds),
                 minHeight: 6,
-                backgroundColor: const Color(0xFF1B2B3A),
+                backgroundColor: AppColors.track,
                 valueColor:
-                    const AlwaysStoppedAnimation<Color>(Color(0xFF0284C7)),
+                    const AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
             ),
             const SizedBox(height: 6),
@@ -253,7 +253,7 @@ class ExpeditionsSheet extends ConsumerWidget {
               'Team surveying terrain... ${remainingSec.toStringAsFixed(0)}s remaining',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFF38BDF8),
+                color: AppColors.accent,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
               ),
@@ -268,7 +268,7 @@ class ExpeditionsSheet extends ConsumerWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: AppColors.emerald,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
@@ -303,9 +303,9 @@ class ExpeditionsSheet extends ConsumerWidget {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFF1B2B3A),
+                disabledBackgroundColor: AppColors.track,
                 disabledForegroundColor: Colors.white24,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
@@ -336,11 +336,11 @@ class ExpeditionsSheet extends ConsumerWidget {
   Color _getRarityColor(FossilRarity rarity) {
     switch (rarity) {
       case FossilRarity.uncommon:
-        return const Color(0xFF4ADE80);
+        return AppColors.success;
       case FossilRarity.rare:
-        return const Color(0xFF38BDF8);
+        return AppColors.accent;
       case FossilRarity.legendary:
-        return const Color(0xFFFBBF24);
+        return AppColors.amber;
       default:
         return const Color(0xFFCBD5E1);
     }

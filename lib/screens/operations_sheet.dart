@@ -101,7 +101,7 @@ class OperationsSheet extends ConsumerWidget {
                   icon: '🌎',
                   title: 'Global Reserve Map',
                   subtitle: '${activeState.habitats.length} Habitats Active • Travel & Expand',
-                  accentColor: const Color(0xFF38BDF8),
+                  accentColor: AppColors.accent,
                   badge: null,
                   onTap: () {
                     Navigator.of(context).pop();
@@ -119,9 +119,9 @@ class OperationsSheet extends ConsumerWidget {
                   icon: '🧭',
                   title: 'Field Expeditions',
                   subtitle: 'Deploy teams to gather DNA, fossil keys & credits',
-                  accentColor: const Color(0xFFFBBF24),
+                  accentColor: AppColors.amber,
                   badge: hasCompletedExpedition ? 'READY' : null,
-                  badgeColor: const Color(0xFF10B981),
+                  badgeColor: AppColors.emerald,
                   onTap: () {
                     Navigator.of(context).pop();
                     openSub(
@@ -140,9 +140,9 @@ class OperationsSheet extends ConsumerWidget {
                   icon: '🎯',
                   title: 'Directives & Objectives',
                   subtitle: 'Daily conservation goals & resource bounties',
-                  accentColor: const Color(0xFFA78BFA),
+                  accentColor: AppColors.purple,
                   badge: hasClaimableMission ? 'CLAIM' : null,
-                  badgeColor: const Color(0xFFF43F5E),
+                  badgeColor: AppColors.danger,
                   onTap: () {
                     Navigator.of(context).pop();
                     openSub(
@@ -159,7 +159,7 @@ class OperationsSheet extends ConsumerWidget {
                   icon: '🌿',
                   title: 'Ecosystem Restoration',
                   subtitle: 'Prestige active habitat to earn Restoration Seeds & Perks',
-                  accentColor: const Color(0xFF4ADE80),
+                  accentColor: AppColors.success,
                   badge: 'PRESTIGE',
                   badgeColor: const Color(0xFF047857),
                   onTap: () {
@@ -184,7 +184,7 @@ class OperationsSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF132030),
+                    color: AppColors.surfaceRaised,
                     borderRadius: BorderRadius.circular(AppRadius.card),
                     border: Border.all(color: const Color(0xFF20364F)),
                   ),
@@ -193,7 +193,7 @@ class OperationsSheet extends ConsumerWidget {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.tune, color: Color(0xFF94A3B8), size: 16),
+                          Icon(Icons.tune, color: AppColors.textSecondary, size: 16),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -201,7 +201,7 @@ class OperationsSheet extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: Color(0xFF94A3B8),
+                                color: AppColors.textSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.4,
@@ -255,7 +255,7 @@ class OperationsSheet extends ConsumerWidget {
                             child: Text(
                               'Save v${activeState.schemaVersion}',
                               style: const TextStyle(
-                                color: Color(0xFF38BDF8),
+                                color: AppColors.accent,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -340,7 +340,7 @@ class OperationsSheet extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF132030),
+          color: AppColors.surfaceRaised,
           borderRadius: BorderRadius.circular(AppRadius.card),
           border: Border.all(color: accentColor.withOpacity(0.25)),
         ),
