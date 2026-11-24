@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../models/habitat.dart';
 import '../models/species.dart';
+import '../theme/app_theme.dart';
 
 /// The visual centerpiece of a habitat.
 ///
@@ -65,21 +67,19 @@ class _CareParticle {
 
 class _HabitatViewportState extends State<HabitatViewport>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  late final Ticker _ticker;
   final Random _random = Random();
   final List<_AnimalVisual> _animals = <_AnimalVisual>[];
   final List<_CareParticle> _particles = <_CareParticle>[];
-  double _time = 0;
+  final ValueNotifier<double> _clock = ValueNotifier<double>(0);
+  Duration _lastElapsed = Duration.zero;
+  bool _showHint = true;
 
   @override
   void initState() {
     super.initState();
     _syncAnimals(widget.habitat.population);
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..addListener(_tick);
-    _controller.repeat();
+    _ticker = createTicker(_onTick)..start();
   }
 
   @override
@@ -110,11 +110,18 @@ class _HabitatViewportState extends State<HabitatViewport>
     }
   }
 
-  void _tick() {
+  void _onTick(Duration elapsed) {
     if (!mounted) return;
-    const dt = 1 / 60;
-    _time += dt;
+    // Derive delta from the ticker so animation speed follows real elapsed
+    // time on 60Hz, 90Hz and 120Hz displays. Clamp after app resumes.
+    final dt = ((elapsed - _lastElapsed).inMicroseconds / 1e6)
+        .clamp(0.0, 0.05);
+    _lastElapsed = elapsed;
+    _clock.value += dt;
+    _advanceAnimals(dt);
+  }
 
+  void _advanceAnimals(double dt) {
     for (final animal in _animals) {
       animal.timer -= dt;
 
@@ -164,12 +171,14 @@ class _HabitatViewportState extends State<HabitatViewport>
       }
     }
 
-    _particles.removeWhere((p) => _time - p.born > 1.15);
-    setState(() {});
+    _particles.removeWhere((p) => _clock.value - p.born > 1.15);
   }
 
-  void _handleTap(TapDownDetails details) {
+  void _handleTap(Offset position) {
     widget.onTap();
+    if (_showHint) {
+      setState(() => _showHint = false);
+    }
 
     for (final animal in _animals) {
       animal.velocity = -115 - _random.nextDouble() * 70;
@@ -191,60 +200,92 @@ class _HabitatViewportState extends State<HabitatViewport>
     final i = _random.nextInt(texts.length);
     _particles.add(
       _CareParticle(
-        position: details.localPosition,
+        position: position,
         text: texts[i],
         color: colors[i],
-        born: _time,
+        born: _clock.value,
       ),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ticker.dispose();
+    _clock.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final species = Species.fromId(widget.habitat.speciesId);
+    final habitat = widget.habitat;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: _handleTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: _backgroundGradient(widget.habitat.biomeType),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              // Explicit child sizing prevents a painter-only CustomPaint from
-              // ever collapsing to an unexpected size on a device.
-              CustomPaint(
-                painter: _HabitatPainter(
-                  biome: widget.habitat.biomeType,
-                  level: widget.habitat.level,
-                  time: _time,
-                  autoWater: widget.habitat.hasAutoWater,
-                  autoFeeder: widget.habitat.hasAutoFeeder,
+    return Semantics(
+      button: true,
+      label: '${habitat.name}: ${habitat.population} ${species.name} in the '
+          '${_biomeLabel(habitat.biomeType)}. Activate to care for the animals.',
+      child: ExcludeSemantics(
+        child: RepaintBoundary(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (details) => _handleTap(details.localPosition),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.sheet),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: _backgroundGradient(habitat.biomeType),
                 ),
-                child: const SizedBox.expand(),
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _clock,
+                  builder: (context, time, _) {
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        // Explicit child sizing prevents a painter-only
+                        // CustomPaint from collapsing on a device.
+                        CustomPaint(
+                          painter: _HabitatPainter(
+                            biome: habitat.biomeType,
+                            level: habitat.level,
+                            time: time,
+                            autoWater: habitat.hasAutoWater,
+                            autoFeeder: habitat.hasAutoFeeder,
+                          ),
+                          child: const SizedBox.expand(),
+                        ),
+                        ..._buildAnimals(species),
+                        ..._buildParticles(time),
+                        if (_showHint)
+                          Positioned(
+                            left: 14,
+                            bottom: 12,
+                            child: _hint(),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ),
-              ..._buildAnimals(species),
-              ..._buildParticles(),
-              Positioned(
-                left: 14,
-                bottom: 12,
-                child: _hint(),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  String _biomeLabel(String biome) {
+    switch (biome) {
+      case 'australian_forest':
+        return 'Australian forest';
+      case 'northern_coast':
+        return 'northern coast';
+      case 'african_grasslands':
+        return 'African grasslands';
+      case 'ice_age_tundra':
+        return 'ice age tundra';
+      default:
+        return 'tropical island';
+    }
   }
 
   List<Widget> _buildAnimals(Species species) {
@@ -257,7 +298,9 @@ class _HabitatViewportState extends State<HabitatViewport>
         child: Transform.translate(
           offset: Offset(animal.left ? -2 : 2, animal.jump),
           child: Transform.scale(
-            scale: animal.jump < -2 ? 1.08 : 1,
+            // Slight perspective: animals lower in the scene read as closer.
+            scale: (0.88 + animal.y * 0.26) *
+                (animal.jump < -2 ? 1.08 : 1),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -269,7 +312,16 @@ class _HabitatViewportState extends State<HabitatViewport>
                   scaleX: animal.left ? -1.0 : 1.0,
                   child: Text(
                     species.iconEmoji,
-                    style: const TextStyle(fontSize: 28),
+                    style: TextStyle(
+                      fontSize: 28,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -280,9 +332,9 @@ class _HabitatViewportState extends State<HabitatViewport>
     }).toList();
   }
 
-  List<Widget> _buildParticles() {
+  List<Widget> _buildParticles(double time) {
     return _particles.map((particle) {
-      final progress = ((_time - particle.born) / 1.15).clamp(0.0, 1.0);
+      final progress = ((time - particle.born) / 1.15).clamp(0.0, 1.0);
       return Positioned(
         left: particle.position.dx - 18,
         top: particle.position.dy - 18 - progress * 42,
@@ -423,6 +475,7 @@ class _HabitatPainter extends CustomPainter {
       grass,
     );
 
+    _drawAtmosphere(canvas, size);
     _drawWater(canvas, size);
     _drawFeedingStation(canvas, size);
     _drawFence(canvas, Offset(cx, cy), rx * 0.88, ry * 0.86);
@@ -436,44 +489,62 @@ class _HabitatPainter extends CustomPainter {
   }
 
   void _drawWater(Canvas canvas, Size size) {
+    final s = _propScale(size);
     final center = Offset(size.width * 0.29, size.height * 0.50);
-    final paint = Paint()..color = const Color(0xFF38BDF8);
+    final paint = Paint()..color = _waterColor();
     canvas.drawOval(
-      Rect.fromCenter(center: center, width: 54, height: 32),
+      Rect.fromCenter(center: center, width: 54 * s, height: 32 * s),
       paint,
     );
 
     final ripple = Paint()
-      ..color = Colors.white.withOpacity(0.55)
+      ..color = Colors.white.withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
+      ..strokeWidth = 1.4 * s;
     final pulse = (sin(time * 2) + 1) / 2;
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
-        width: 18 + pulse * 24,
-        height: 8 + pulse * 12,
+        width: (18 + pulse * 24) * s,
+        height: (8 + pulse * 12) * s,
       ),
       ripple,
     );
+
+    if (biome == 'ice_age_tundra') {
+      final ice = Paint()..color = const Color(0xFFE0F2FE);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center + Offset(6 * s, -3 * s),
+          width: 22 * s,
+          height: 10 * s,
+        ),
+        ice,
+      );
+    }
   }
 
   void _drawFeedingStation(Canvas canvas, Size size) {
+    final s = _propScale(size);
     final center = Offset(size.width * 0.68, size.height * 0.49);
     final post = Paint()..color = const Color(0xFF7C4A24);
     canvas.drawRect(
-      Rect.fromCenter(center: center + const Offset(0, 9), width: 5, height: 18),
+      Rect.fromCenter(
+        center: center + Offset(0, 9 * s),
+        width: 5 * s,
+        height: 18 * s,
+      ),
       post,
     );
     final bowl = Paint()..color = const Color(0xFFF59E0B);
     canvas.drawOval(
-      Rect.fromCenter(center: center, width: 40, height: 14),
+      Rect.fromCenter(center: center, width: 40 * s, height: 14 * s),
       bowl,
     );
     final food = Paint()..color = const Color(0xFF84CC16);
-    canvas.drawCircle(center + const Offset(-8, -1), 4, food);
-    canvas.drawCircle(center + const Offset(3, -2), 4, food);
-    canvas.drawCircle(center + const Offset(12, -1), 3, food);
+    canvas.drawCircle(center + Offset(-8 * s, -1 * s), 4 * s, food);
+    canvas.drawCircle(center + Offset(3 * s, -2 * s), 4 * s, food);
+    canvas.drawCircle(center + Offset(12 * s, -1 * s), 3 * s, food);
   }
 
   void _drawFence(Canvas canvas, Offset center, double rx, double ry) {
@@ -507,79 +578,479 @@ class _HabitatPainter extends CustomPainter {
   }
 
   void _drawPlants(Canvas canvas, Size size) {
-    final stem = Paint()
-      ..color = const Color(0xFF166534)
-      ..strokeWidth = 2;
-    final leaf = Paint()..color = const Color(0xFF4ADE80);
-    final positions = <Offset>[
-      Offset(size.width * .46, size.height * .34),
-      Offset(size.width * .54, size.height * .65),
-      Offset(size.width * .78, size.height * .37),
-      Offset(size.width * .23, size.height * .65),
-    ];
-    for (final p in positions) {
-      canvas.drawLine(p, p + const Offset(0, 13), stem);
+    final s = _propScale(size);
+    switch (biome) {
+      case 'australian_forest':
+        _drawEucalyptus(canvas, size, s);
+        break;
+      case 'northern_coast':
+        _drawCoastalFlora(canvas, size, s);
+        break;
+      case 'african_grasslands':
+        _drawSavannaFlora(canvas, size, s);
+        break;
+      case 'ice_age_tundra':
+        _drawTundraFlora(canvas, size, s);
+        break;
+      default:
+        _drawTropicalFlora(canvas, size, s);
+    }
+  }
+
+  void _drawTropicalFlora(Canvas canvas, Size size, double s) {
+    final trunk = Paint()
+      ..color = const Color(0xFF7C5A2B)
+      ..strokeWidth = 2.4 * s
+      ..strokeCap = StrokeCap.round;
+    final palm = Paint()
+      ..color = const Color(0xFF22C55E)
+      ..strokeWidth = 2 * s
+      ..strokeCap = StrokeCap.round;
+    final fern = Paint()..color = const Color(0xFF4ADE80);
+
+    for (final p in <Offset>[
+      Offset(size.width * .16, size.height * .60),
+      Offset(size.width * .83, size.height * .56),
+    ]) {
+      final top = p + Offset(0, -16 * s);
+      canvas.drawLine(p, top, trunk);
+      for (var i = 0; i < 4; i++) {
+        final angle = -pi / 2 + (i - 1.5) * 0.55;
+        canvas.drawLine(
+          top,
+          top + Offset(cos(angle) * 20 * s, sin(angle) * 14 * s),
+          palm,
+        );
+      }
+    }
+    for (final p in <Offset>[
+      Offset(size.width * .46, size.height * .30),
+      Offset(size.width * .76, size.height * .40),
+      Offset(size.width * .22, size.height * .40),
+    ]) {
+      canvas.drawLine(p, p + Offset(0, 10 * s), trunk);
       canvas.drawOval(
-        Rect.fromCenter(center: p + const Offset(-4, 3), width: 10, height: 5),
-        leaf,
+        Rect.fromCenter(
+          center: p + Offset(-3 * s, 4 * s),
+          width: 8 * s,
+          height: 4 * s,
+        ),
+        fern,
       );
       canvas.drawOval(
-        Rect.fromCenter(center: p + const Offset(4, 6), width: 10, height: 5),
-        leaf,
+        Rect.fromCenter(
+          center: p + Offset(3 * s, 6 * s),
+          width: 8 * s,
+          height: 4 * s,
+        ),
+        fern,
       );
     }
   }
 
+  void _drawEucalyptus(Canvas canvas, Size size, double s) {
+    final trunk = Paint()
+      ..color = const Color(0xFF9CA3AF)
+      ..strokeWidth = 3 * s
+      ..strokeCap = StrokeCap.round;
+    final canopy = Paint()..color = const Color(0xFF6B8E6B);
+    final undergrowth = Paint()..color = const Color(0xFF3F6212);
+
+    for (final p in <Offset>[
+      Offset(size.width * .18, size.height * .58),
+      Offset(size.width * .80, size.height * .54),
+    ]) {
+      canvas.drawLine(p, p + Offset(0, -26 * s), trunk);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: p + Offset(0, -32 * s),
+          width: 24 * s,
+          height: 15 * s,
+        ),
+        canopy,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: p + Offset(-11 * s, -27 * s),
+          width: 13 * s,
+          height: 9 * s,
+        ),
+        canopy,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: p + Offset(11 * s, -28 * s),
+          width: 13 * s,
+          height: 9 * s,
+        ),
+        canopy,
+      );
+    }
+    for (final p in <Offset>[
+      Offset(size.width * .42, size.height * .63),
+      Offset(size.width * .58, size.height * .34),
+    ]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: p,
+          width: 20 * s,
+          height: 7 * s,
+        ),
+        undergrowth,
+      );
+    }
+  }
+
+  void _drawCoastalFlora(Canvas canvas, Size size, double s) {
+    final rock = Paint()..color = const Color(0xFF64748B);
+    final rockDark = Paint()..color = const Color(0xFF475569);
+    final kelp = Paint()
+      ..color = const Color(0xFF166534)
+      ..strokeWidth = 2 * s
+      ..strokeCap = StrokeCap.round;
+    final foam = Paint()..color = Colors.white.withValues(alpha: 0.55);
+
+    for (final p in <Offset>[
+      Offset(size.width * .15, size.height * .42),
+      Offset(size.width * .84, size.height * .38),
+      Offset(size.width * .72, size.height * .66),
+    ]) {
+      canvas.drawOval(
+        Rect.fromCenter(center: p, width: 24 * s, height: 13 * s),
+        rock,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: p + Offset(-5 * s, 3 * s),
+          width: 12 * s,
+          height: 6 * s,
+        ),
+        rockDark,
+      );
+    }
+    for (var i = 0; i < 3; i++) {
+      final x = size.width * (0.18 + i * 0.035);
+      final base = size.height * 0.62;
+      final path = Path()
+        ..moveTo(x, base)
+        ..quadraticBezierTo(
+          x + 6 * s,
+          base - 12 * s,
+          x - 2 * s,
+          base - 22 * s,
+        );
+      canvas.drawPath(path, kelp);
+    }
+    canvas.drawCircle(
+      Offset(size.width * .30, size.height * .58),
+      2.2 * s,
+      foam,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .33, size.height * .56),
+      1.4 * s,
+      foam,
+    );
+  }
+
+  void _drawSavannaFlora(Canvas canvas, Size size, double s) {
+    final trunk = Paint()
+      ..color = const Color(0xFF78350F)
+      ..strokeWidth = 3 * s
+      ..strokeCap = StrokeCap.round;
+    final canopy = Paint()..color = const Color(0xFF6B7F2A);
+    final grass = Paint()
+      ..color = const Color(0xFFD4A72C)
+      ..strokeWidth = 1.4 * s
+      ..strokeCap = StrokeCap.round;
+
+    final acacia = Offset(size.width * .82, size.height * .42);
+    canvas.drawLine(
+      acacia,
+      acacia + Offset(0, 26 * s),
+      trunk,
+    );
+    canvas.drawLine(
+      acacia + Offset(0, 8 * s),
+      acacia + Offset(-10 * s, 18 * s),
+      trunk,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: acacia + Offset(0, -4 * s),
+        width: 46 * s,
+        height: 13 * s,
+      ),
+      canopy,
+    );
+
+    for (var i = 0; i < 6; i++) {
+      final base = Offset(
+        size.width * (0.14 + i * 0.11),
+        size.height * (0.44 + (i % 3) * 0.08),
+      );
+      canvas.drawLine(base, base + Offset(-3 * s, -7 * s), grass);
+      canvas.drawLine(base, base + Offset(1 * s, -9 * s), grass);
+      canvas.drawLine(base, base + Offset(4 * s, -6 * s), grass);
+    }
+  }
+
+  void _drawTundraFlora(Canvas canvas, Size size, double s) {
+    final snow = Paint()..color = const Color(0xFFE2E8F0);
+    final ice = Paint()..color = const Color(0xFFBAE6FD);
+    final lichen = Paint()..color = const Color(0xFF7DD3FC);
+
+    for (final p in <Offset>[
+      Offset(size.width * .16, size.height * .40),
+      Offset(size.width * .84, size.height * .62),
+      Offset(size.width * .62, size.height * .34),
+    ]) {
+      canvas.drawOval(
+        Rect.fromCenter(center: p, width: 26 * s, height: 12 * s),
+        snow,
+      );
+    }
+    for (final p in <Offset>[
+      Offset(size.width * .24, size.height * .64),
+      Offset(size.width * .74, size.height * .40),
+    ]) {
+      final shard = Path()
+        ..moveTo(p.dx, p.dy - 12 * s)
+        ..lineTo(p.dx + 6 * s, p.dy)
+        ..lineTo(p.dx - 6 * s, p.dy)
+        ..close();
+      canvas.drawPath(shard, ice);
+      canvas.drawCircle(p + Offset(-9 * s, 3 * s), 2 * s, lichen);
+      canvas.drawCircle(p + Offset(-12 * s, 6 * s), 1.4 * s, lichen);
+    }
+  }
+
   void _drawShelter(Canvas canvas, Size size) {
+    final s = _propScale(size);
     final p = Offset(size.width * .67, size.height * .29);
-    final wood = Paint()..color = const Color(0xFF8B5A2B);
-    canvas.drawRect(Rect.fromLTWH(p.dx - 18, p.dy, 4, 20), wood);
-    canvas.drawRect(Rect.fromLTWH(p.dx + 14, p.dy, 4, 20), wood);
-    final roof = Path()
-      ..moveTo(p.dx - 25, p.dy)
-      ..lineTo(p.dx, p.dy - 16)
-      ..lineTo(p.dx + 25, p.dy)
-      ..close();
-    canvas.drawPath(roof, Paint()..color = const Color(0xFFB45309));
+
+    switch (biome) {
+      case 'australian_forest':
+        final log = Paint()..color = const Color(0xFF8B5A2B);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: p + Offset(0, 8 * s),
+              width: 44 * s,
+              height: 18 * s,
+            ),
+            Radius.circular(7 * s),
+          ),
+          log,
+        );
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: p + Offset(16 * s, 8 * s),
+            width: 10 * s,
+            height: 12 * s,
+          ),
+          Paint()..color = const Color(0xFF3F2A14),
+        );
+        break;
+      case 'northern_coast':
+        final ledge = Paint()..color = const Color(0xFF64748B);
+        final cave = Paint()..color = const Color(0xFF1E293B);
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: p + Offset(0, 6 * s),
+            width: 52 * s,
+            height: 22 * s,
+          ),
+          ledge,
+        );
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: p + Offset(-14 * s, 7 * s),
+            width: 16 * s,
+            height: 12 * s,
+          ),
+          cave,
+        );
+        break;
+      case 'african_grasslands':
+        final branch = Paint()
+          ..color = const Color(0xFF78350F)
+          ..strokeWidth = 2.4 * s
+          ..strokeCap = StrokeCap.round;
+        final leaves = Paint()..color = const Color(0xFF4D7C0F);
+        for (var i = 0; i < 3; i++) {
+          final base = p + Offset((i - 1) * 14 * s, 12 * s);
+          canvas.drawLine(base, base + Offset(0, -18 * s), branch);
+          canvas.drawOval(
+            Rect.fromCenter(
+              center: base + Offset(0, -20 * s),
+              width: 18 * s,
+              height: 10 * s,
+            ),
+            leaves,
+          );
+        }
+        break;
+      case 'ice_age_tundra':
+        final ice = Paint()..color = const Color(0xFFBAE6FD);
+        final cave = Paint()..color = const Color(0xFF0C4A6E);
+        canvas.drawArc(
+          Rect.fromCenter(
+            center: p + Offset(0, 12 * s),
+            width: 46 * s,
+            height: 40 * s,
+          ),
+          pi,
+          pi,
+          true,
+          ice,
+        );
+        canvas.drawArc(
+          Rect.fromCenter(
+            center: p + Offset(0, 12 * s),
+            width: 22 * s,
+            height: 20 * s,
+          ),
+          pi,
+          pi,
+          true,
+          cave,
+        );
+        break;
+      default:
+        final wood = Paint()..color = const Color(0xFF8B5A2B);
+        canvas.drawRect(
+          Rect.fromLTWH(p.dx - 18 * s, p.dy, 4 * s, 20 * s),
+          wood,
+        );
+        canvas.drawRect(
+          Rect.fromLTWH(p.dx + 14 * s, p.dy, 4 * s, 20 * s),
+          wood,
+        );
+        final roof = Path()
+          ..moveTo(p.dx - 25 * s, p.dy)
+          ..lineTo(p.dx, p.dy - 16 * s)
+          ..lineTo(p.dx + 25 * s, p.dy)
+          ..close();
+        canvas.drawPath(roof, Paint()..color = const Color(0xFFB45309));
+    }
   }
 
   void _drawNest(Canvas canvas, Size size) {
+    final s = _propScale(size);
     final center = Offset(size.width * .52, size.height * .67);
-    final nest = Paint()..color = const Color(0xFF92400E);
+    final Color beddingColor;
+    switch (biome) {
+      case 'australian_forest':
+        beddingColor = const Color(0xFF4B5563);
+        break;
+      case 'northern_coast':
+        beddingColor = const Color(0xFF475569);
+        break;
+      case 'african_grasslands':
+        beddingColor = const Color(0xFFA16207);
+        break;
+      case 'ice_age_tundra':
+        beddingColor = const Color(0xFF94A3B8);
+        break;
+      default:
+        beddingColor = const Color(0xFF92400E);
+    }
+    final nest = Paint()..color = beddingColor;
     canvas.drawOval(
-      Rect.fromCenter(center: center, width: 46, height: 20),
+      Rect.fromCenter(center: center, width: 46 * s, height: 20 * s),
       nest,
     );
     final egg = Paint()..color = const Color(0xFFF8FAFC);
     canvas.drawOval(
-      Rect.fromCenter(center: center + const Offset(-8, -3), width: 9, height: 13),
+      Rect.fromCenter(
+        center: center + Offset(-8 * s, -3 * s),
+        width: 9 * s,
+        height: 13 * s,
+      ),
       egg,
     );
     canvas.drawOval(
-      Rect.fromCenter(center: center + const Offset(8, -2), width: 9, height: 13),
+      Rect.fromCenter(
+        center: center + Offset(8 * s, -2 * s),
+        width: 9 * s,
+        height: 13 * s,
+      ),
       egg,
     );
   }
 
+  void _drawAtmosphere(Canvas canvas, Size size) {
+    final s = _propScale(size);
+    final color = _atmosphereColor();
+    final count = biome == 'ice_age_tundra' ? 16 : 10;
+    for (var i = 0; i < count; i++) {
+      final drift = 0.012 + (i % 5) * 0.004;
+      final x = ((i * 0.173 + time * drift) % 1.0) * size.width;
+      final y =
+          (0.08 + ((i * 0.211 + time * drift * 0.6) % 0.78)) * size.height;
+      final radius = (i % 3 == 0 ? 1.7 : 1.1) * s;
+      final paint = Paint()
+        ..color = color.withValues(alpha: 0.16 + (i % 4) * 0.05);
+      canvas.drawCircle(Offset(x, y), radius, paint);
+    }
+  }
+
   void _drawFireflies(Canvas canvas, Size size) {
-    final glow = Paint()..color = const Color(0xFFFDE68A).withOpacity(.8);
+    final s = _propScale(size);
+    final glow = Paint()
+      ..color = _atmosphereColor().withValues(alpha: 0.8);
     for (var i = 0; i < 8; i++) {
       final x = (0.15 + ((i * 0.117) % .72)) * size.width;
       final y = (0.18 + ((i * .173) % .55)) * size.height;
-      final pulse = 1.5 + sin(time * 2 + i) * .8;
+      final pulse = (1.5 + sin(time * 2 + i) * .8) * s;
       canvas.drawCircle(Offset(x, y), pulse, glow);
     }
   }
 
   void _drawAutomationBadge(Canvas canvas, Size size, bool feeder) {
+    final s = _propScale(size);
     final center = feeder
         ? Offset(size.width * .70, size.height * .55)
         : Offset(size.width * .29, size.height * .55);
     final paint = Paint()
-      ..color = const Color(0xFF38BDF8).withOpacity(.75)
+      ..color = AppColors.accent.withValues(alpha: 0.75)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawCircle(center, 19, paint);
+      ..strokeWidth = 2 * s;
+    canvas.drawCircle(center, 19 * s, paint);
+  }
+
+  double _propScale(Size size) =>
+      (size.shortestSide / 360).clamp(0.75, 1.55);
+
+  Color _waterColor() {
+    switch (biome) {
+      case 'australian_forest':
+        return const Color(0xFF2D6A7A);
+      case 'northern_coast':
+        return const Color(0xFF1E7FA8);
+      case 'african_grasslands':
+        return const Color(0xFF7C9A3B);
+      case 'ice_age_tundra':
+        return const Color(0xFF7DD3FC);
+      default:
+        return const Color(0xFF38BDF8);
+    }
+  }
+
+  Color _atmosphereColor() {
+    switch (biome) {
+      case 'australian_forest':
+        return const Color(0xFFA3E635);
+      case 'northern_coast':
+        return const Color(0xFFBAE6FD);
+      case 'african_grasslands':
+        return const Color(0xFFFDE68A);
+      case 'ice_age_tundra':
+        return const Color(0xFFF8FAFC);
+      default:
+        return const Color(0xFFFDE68A);
+    }
   }
 
   Color _shoreColor() {

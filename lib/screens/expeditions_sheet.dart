@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/format/game_format.dart';
 import '../models/expedition.dart';
 import '../models/fossil.dart';
 import '../models/game_state.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
+import '../widgets/sheet_header.dart';
 
 class ExpeditionsSheet extends ConsumerWidget {
   final GameState? state;
@@ -34,44 +37,20 @@ class ExpeditionsSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
+          SheetHeader(
+            icon: '🧭',
+            title: 'Fossil Expeditions',
+            subtitle:
+                'Dispatch field teams to recover preserved bones, amber and ancient genomes.',
+            trailing: Text(
+              '🪙 ${GameFormat.compact(activeState.credits)}',
+              style: const TextStyle(
+                color: AppColors.amber,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFeatures: AppText.tabularFigures,
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Text('🧭', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
-              const Text(
-                'Fossil Expeditions',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '🪙 ${activeState.credits.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: Color(0xFFFBBF24),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Dispatch archeological field teams to discover preserved bones, amber, and ancient species genomes.',
-            style: TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
           ),
           const SizedBox(height: 14),
 
@@ -179,12 +158,16 @@ class ExpeditionsSheet extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          exp.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Text(
+                            exp.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 6),

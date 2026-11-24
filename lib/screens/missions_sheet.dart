@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/mission.dart';
 import '../providers/game_notifier.dart';
+import '../widgets/sheet_header.dart';
 
 class MissionsSheet extends ConsumerWidget {
   final GameState? state;
@@ -29,37 +30,13 @@ class MissionsSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+          const SheetHeader(
+            icon: '🎯',
+            title: 'Conservation Directives',
+            subtitle:
+                'Complete guided objectives to unlock grants and accelerate species recovery.',
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: const [
-              Text('🎯', style: TextStyle(fontSize: 22)),
-              SizedBox(width: 8),
-              Text(
-                'Conservation Directives',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Complete guided objectives to unlock grant bonuses and accelerate ancient species recovery.',
-            style: TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Expanded(
             child: ListView(
               children: missions.map((m) {

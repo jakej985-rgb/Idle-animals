@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'screens/sanctuary_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: AppColors.background,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
   runApp(
     const ProviderScope(
       child: ExtinctionSanctuaryApp(),
@@ -21,17 +30,7 @@ class ExtinctionSanctuaryApp extends StatelessWidget {
       title: 'Extinction Sanctuary',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF070E17),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF0284C7),
-          secondary: Color(0xFF10B981),
-          surface: Color(0xFF101924),
-        ),
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-        useMaterial3: true,
-      ),
+      darkTheme: buildAppTheme(),
       home: const SanctuaryScreen(),
     );
   }

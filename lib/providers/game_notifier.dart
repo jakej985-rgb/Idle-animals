@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/feedback/game_haptics.dart';
 import '../core/offline/offline_manager.dart';
 import '../core/save/save_service.dart';
 import '../core/simulation/simulation_engine.dart';
@@ -62,6 +63,26 @@ class GameNotifier extends Notifier<GameState> {
     pendingOfflineReport = null;
   }
 
+  void _lightHaptic() {
+    if (!state.hapticsEnabled) return;
+    GameHaptics.light();
+  }
+
+  void _mediumHaptic() {
+    if (!state.hapticsEnabled) return;
+    GameHaptics.medium();
+  }
+
+  void _heavyHaptic() {
+    if (!state.hapticsEnabled) return;
+    GameHaptics.heavy();
+  }
+
+  void _restorationHaptic() {
+    if (!state.hapticsEnabled) return;
+    GameHaptics.restore();
+  }
+
   void _startLoops() {
     _tickTimer?.cancel();
     _autoSaveTimer?.cancel();
@@ -105,6 +126,7 @@ class GameNotifier extends Notifier<GameState> {
       happiness: (habitat.happiness + 8.0).clamp(0.0, 100.0),
     );
     state = state.copyWith(habitats: updatedHabitats);
+    _lightHaptic();
     return true;
   }
 
@@ -117,6 +139,7 @@ class GameNotifier extends Notifier<GameState> {
       happiness: (habitat.happiness + 8.0).clamp(0.0, 100.0),
     );
     state = state.copyWith(habitats: updatedHabitats);
+    _lightHaptic();
     return true;
   }
 
@@ -133,6 +156,7 @@ class GameNotifier extends Notifier<GameState> {
       credits: state.credits + 1.0,
       habitats: updatedHabitats,
     );
+    _lightHaptic();
     return true;
   }
 
@@ -155,6 +179,7 @@ class GameNotifier extends Notifier<GameState> {
       habitats: updatedHabitats,
       totalDodosBred: state.totalDodosBred + 1,
     );
+    _mediumHaptic();
     return true;
   }
 
@@ -214,6 +239,7 @@ class GameNotifier extends Notifier<GameState> {
       offlineCapSeconds: updatedOfflineCap,
     );
 
+    _mediumHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -234,6 +260,7 @@ class GameNotifier extends Notifier<GameState> {
       staff: updatedStaff,
     );
 
+    _mediumHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -258,6 +285,7 @@ class GameNotifier extends Notifier<GameState> {
       researchNodes: updatedResearch,
     );
 
+    _mediumHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -291,6 +319,7 @@ class GameNotifier extends Notifier<GameState> {
       expeditions: updatedMap,
     );
 
+    _mediumHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -385,6 +414,7 @@ class GameNotifier extends Notifier<GameState> {
       totalExpeditionsCompleted: state.totalExpeditionsCompleted + 1,
     );
 
+    _heavyHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -412,6 +442,7 @@ class GameNotifier extends Notifier<GameState> {
       habitats: updatedHabitats,
     );
 
+    _restorationHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -430,6 +461,7 @@ class GameNotifier extends Notifier<GameState> {
       restorationPerks: updatedPerks,
     );
 
+    _mediumHaptic();
     _saveService.saveGame(state);
     return true;
   }
@@ -472,6 +504,7 @@ class GameNotifier extends Notifier<GameState> {
       missions: updatedMissions,
     );
 
+    _heavyHaptic();
     _saveService.saveGame(state);
     return true;
   }

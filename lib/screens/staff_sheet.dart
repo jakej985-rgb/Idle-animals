@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/staff.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
+import '../widgets/sheet_header.dart';
 
 class StaffSheet extends ConsumerWidget {
   final GameState? state;
@@ -29,55 +32,51 @@ class StaffSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
+          SheetHeader(
+            icon: '🧑‍🌾',
+            title: 'Sanctuary Staff',
+            subtitle: 'Keepers automate care and accelerate growth',
+            trailing: Text(
+              '🪙 ${GameFormat.compact(activeState.credits)}',
+              style: const TextStyle(
+                color: AppColors.amber,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFeatures: AppText.tabularFigures,
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Text('🧑‍🌾', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
-              const Text(
-                'Sanctuary Staff',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '🪙 ${activeState.credits.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: Color(0xFFFBBF24),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (keeper != null)
-            _buildKeeperCard(context, keeper, activeState, controller),
           const SizedBox(height: 14),
-          // Preview of upcoming staff roles
-          _buildUpcomingRole(
-            avatar: '🩺',
-            title: 'Dr. Evelyn, Veterinarian',
-            desc: 'Unlocks in next region. Monitors welfare & disease prevention.',
-          ),
-          const SizedBox(height: 10),
-          _buildUpcomingRole(
-            avatar: '🧬',
-            title: 'Dr. Aris, Geneticist',
-            desc: 'Unlocks with ancient fossils. Accelerates DNA synthesis.',
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (keeper != null)
+                    _buildKeeperCard(
+                      context,
+                      keeper,
+                      activeState,
+                      controller,
+                    ),
+                  const SizedBox(height: 14),
+                  // Preview of upcoming staff roles
+                  _buildUpcomingRole(
+                    avatar: '🩺',
+                    title: 'Dr. Evelyn, Veterinarian',
+                    desc:
+                        'Unlocks in next region. Monitors welfare & disease prevention.',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildUpcomingRole(
+                    avatar: '🧬',
+                    title: 'Dr. Aris, Geneticist',
+                    desc:
+                        'Unlocks with ancient fossils. Accelerates DNA synthesis.',
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -134,12 +133,16 @@ class StaffSheet extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          keeper.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Text(
+                            keeper.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -198,16 +201,26 @@ class StaffSheet extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Current Growth Bonus',
-                  style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 12),
+                const Flexible(
+                  child: Text(
+                    'Current Growth Bonus',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 12),
+                  ),
                 ),
-                Text(
-                  '+${(keeper.level * 15)}% Speed & Auto-Feed',
-                  style: const TextStyle(
-                    color: Color(0xFF4ADE80),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '+${(keeper.level * 15)}% Speed & Auto-Feed',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      color: Color(0xFF4ADE80),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

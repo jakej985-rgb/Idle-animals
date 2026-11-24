@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
+import '../widgets/sheet_header.dart';
 
 class WorldMapSheet extends ConsumerWidget {
   final GameState? state;
@@ -66,37 +67,13 @@ class WorldMapSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+          const SheetHeader(
+            icon: '🌎',
+            title: 'Global Sanctuary Network',
+            subtitle:
+                'Switch between restored sanctuaries. Each habitat operates concurrently.',
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: const [
-              Text('🌎', style: TextStyle(fontSize: 22)),
-              SizedBox(width: 8),
-              Text(
-                'Global Sanctuary Network',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Switch between your restored regional sanctuaries. Each habitat operates concurrently.',
-            style: TextStyle(color: Color(0xFF8BA3B8), fontSize: 12),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Expanded(
             child: ListView(
               children: regions.map((r) {

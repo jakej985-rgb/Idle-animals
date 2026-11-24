@@ -3,9 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
 import '../widgets/restoration_modal.dart';
+import '../widgets/sheet_header.dart';
+import 'archive_sheet.dart';
 import 'expeditions_sheet.dart';
 import 'missions_sheet.dart';
+import 'research_sheet.dart';
+import 'staff_sheet.dart';
+import 'upgrades_sheet.dart';
 import 'world_map_sheet.dart';
 
 class OperationsSheet extends ConsumerWidget {
@@ -45,53 +51,52 @@ class OperationsSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF0C1622),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: Color(0xFF1E3A5A), width: 1.5)),
+        color: AppColors.sheet,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+        border: Border(top: BorderSide(color: AppColors.borderStrong, width: 1.5)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Drag handle & Title Row
-          Center(
-            child: Container(
-              width: 44,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 14),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+          const SheetHeader(
+            icon: '🛰️',
+            title: 'Sanctuary Operations',
+            subtitle: 'Reserve network, field teams and sanctuary services',
           ),
-          Row(
-            children: [
-              const Text('🛰️', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Sanctuary Operations',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close, color: Colors.white60, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Operations Cards Grid / List
           Expanded(
             child: ListView(
               children: [
+                const Text('Sanctuary Services', style: AppText.overline),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _buildServiceButton(
+                      icon: '⭐',
+                      label: 'Upgrades',
+                      onTap: () => _openService(context, openSub, const UpgradesSheet()),
+                    ),
+                    _buildServiceButton(
+                      icon: '🧑‍🌾',
+                      label: 'Staff',
+                      onTap: () => _openService(context, openSub, const StaffSheet()),
+                    ),
+                    _buildServiceButton(
+                      icon: '🔬',
+                      label: 'Research',
+                      onTap: () => _openService(context, openSub, const ResearchSheet()),
+                    ),
+                    _buildServiceButton(
+                      icon: '📜',
+                      label: 'Archive',
+                      onTap: () => _openService(context, openSub, const ArchiveSheet()),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 _buildCard(
                   icon: '🌎',
                   title: 'Global Reserve Map',
@@ -190,13 +195,17 @@ class OperationsSheet extends ConsumerWidget {
                         children: [
                           Icon(Icons.tune, color: Color(0xFF94A3B8), size: 16),
                           SizedBox(width: 8),
-                          Text(
-                            'Preferences & Engine Telemetry',
-                            style: TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.4,
+                          Expanded(
+                            child: Text(
+                              'Preferences & Engine Telemetry',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                              ),
                             ),
                           ),
                         ],
@@ -207,19 +216,18 @@ class OperationsSheet extends ConsumerWidget {
                         children: [
                           const Row(
                             children: [
-                              Text('🔊', style: TextStyle(fontSize: 16)),
+                              Text('📳', style: TextStyle(fontSize: 16)),
                               SizedBox(width: 8),
                               Text(
-                                'Sound Effects',
+                                'Haptic Feedback',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 13),
                               ),
                             ],
                           ),
                           Switch(
-                            value: activeState.soundEnabled,
-                            activeColor: const Color(0xFF38BDF8),
-                            onChanged: (_) => activeController.toggleSound(),
+                            value: activeState.hapticsEnabled,
+                            onChanged: (_) => activeController.toggleHaptics(),
                           ),
                         ],
                       ),
@@ -227,11 +235,16 @@ class OperationsSheet extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Active Species: ${activeSpecies.iconEmoji} ${activeSpecies.name}',
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 12),
+                          Expanded(
+                            child: Text(
+                              'Active Species: ${activeSpecies.iconEmoji} ${activeSpecies.name}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12),
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
@@ -257,6 +270,57 @@ class OperationsSheet extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openService(
+    BuildContext context,
+    void Function(Widget sheet) openSub,
+    Widget sheet,
+  ) {
+    Navigator.of(context).pop();
+    openSub(sheet);
+  }
+
+  Widget _buildServiceButton({
+    required String icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 64),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceRaised,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(icon, style: const TextStyle(fontSize: 18)),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -300,12 +364,16 @@ class OperationsSheet extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       if (badge != null) ...[

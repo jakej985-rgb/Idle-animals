@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/upgrade.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
+import '../widgets/sheet_header.dart';
 
 class UpgradesSheet extends ConsumerWidget {
   final GameState? state;
@@ -27,41 +30,21 @@ class UpgradesSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
+          SheetHeader(
+            icon: '⭐',
+            title: 'Sanctuary Upgrades',
+            subtitle: 'Permanent sanctuary-wide improvements',
+            trailing: Text(
+              '🪙 ${GameFormat.compact(activeState.credits)}',
+              style: const TextStyle(
+                color: AppColors.amber,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFeatures: AppText.tabularFigures,
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Text('⭐', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
-              const Text(
-                'Sanctuary Upgrades',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '🪙 ${activeState.credits.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: Color(0xFFFBBF24),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Expanded(
             child: ListView(
               children: activeState.upgrades.values.map((upg) {

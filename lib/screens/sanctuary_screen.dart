@@ -1,18 +1,20 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/game_state.dart';
+
 import '../models/habitat.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
 import '../widgets/currency_header.dart';
 import '../widgets/habitat_viewport.dart';
 import '../widgets/needs_panel.dart';
 import '../widgets/offline_modal.dart';
-import 'archive_sheet.dart';
+import 'expeditions_sheet.dart';
+import 'missions_sheet.dart';
 import 'operations_sheet.dart';
-import 'research_sheet.dart';
-import 'staff_sheet.dart';
-import 'upgrades_sheet.dart';
+import 'world_map_sheet.dart';
 
 class SanctuaryScreen extends ConsumerStatefulWidget {
   const SanctuaryScreen({super.key});
@@ -33,6 +35,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     if (!_offlineModalShown && controller.pendingOfflineReport != null) {
       _offlineModalShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -50,64 +53,93 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     final habitat =
         state.habitats[state.activeHabitatId] ?? state.habitats.values.first;
 
-    // Check badges for notifications
     final hasCompletedExpedition =
         state.expeditions.values.any((e) => e.isCompleted);
     final hasClaimableMission =
         state.missions.values.any((m) => m.isCompleted && !m.isClaimed);
 
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF070E17),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            // Short or large-text viewports switch to a scrollable compact
+            // composition so the viewport never collapses below a usable size.
+            final compact =
+                constraints.maxHeight < 680 || textScale > 1.15;
+            final horizontalPadding = compact ? 12.0 : 16.0;
+
+            final header = CurrencyHeader(state: state);
+            final habitatHeader = _buildHabitatHeader(
+              context,
+              habitat,
+              hasCompletedExpedition || hasClaimableMission,
+            );
+            final viewport = HabitatViewport(
+              habitat: habitat,
+              onTap: () => controller.petAnimals(habitat.id),
+            );
+            final needs = NeedsPanel(
+              habitat: habitat,
+              credits: state.credits,
+              dna: state.dna,
+              onFeed: () => controller.feedHabitat(habitat.id),
+              onWater: () => controller.waterHabitat(habitat.id),
+              onRevive: () => controller.reviveSpecies(habitat.id),
+              compact: compact,
+            );
+            final dock = _buildDock(
+              context,
+              hasExpeditionBadge: hasCompletedExpedition,
+              hasMissionBadge: hasClaimableMission,
+            );
+
             return Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 600),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Column(
-                  children: [
-                    // 1. Top Header: Currencies & Live Rates
-                    CurrencyHeader(state: state),
-                    const SizedBox(height: 8),
-
-                    // 2. Streamlined Habitat Header & Unified Operations Bar
-                    _buildHabitatHeader(
-                      context,
-                      state,
-                      habitat,
-                      controller,
-                      hasCompletedExpedition,
-                      hasClaimableMission,
-                    ),
-                    const SizedBox(height: 8),
-
-                    // 4. Living Multi-Biome Habitat Viewport
-                    Expanded(
-                      flex: 5,
-                      child: HabitatViewport(
-                        habitat: habitat,
-                        onTap: () => controller.petAnimals(habitat.id),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // 5. Animal Needs & Breeding Panel
-                    NeedsPanel(
-                      habitat: habitat,
-                      credits: state.credits,
-                      dna: state.dna,
-                      onFeed: () => controller.feedHabitat(habitat.id),
-                      onWater: () => controller.waterHabitat(habitat.id),
-                      onRevive: () => controller.reviveSpecies(habitat.id),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // 6. Navigation Action Dock
-                    _buildDock(context, state, controller),
-                  ],
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  compact ? 6 : 8,
+                  horizontalPadding,
+                  compact ? 6 : 8,
                 ),
+                child: compact
+                    ? SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            header,
+                            const SizedBox(height: 8),
+                            habitatHeader,
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: math.max(
+                                210,
+                                constraints.maxHeight * 0.34,
+                              ),
+                              child: viewport,
+                            ),
+                            const SizedBox(height: 8),
+                            needs,
+                            const SizedBox(height: 10),
+                            dock,
+                          ],
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          header,
+                          const SizedBox(height: 8),
+                          habitatHeader,
+                          const SizedBox(height: 8),
+                          Expanded(child: viewport),
+                          const SizedBox(height: 8),
+                          needs,
+                          const SizedBox(height: 10),
+                          dock,
+                        ],
+                      ),
               ),
             );
           },
@@ -118,20 +150,17 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
 
   Widget _buildHabitatHeader(
     BuildContext context,
-    GameState state,
     Habitat habitat,
-    GameNotifier controller,
-    bool hasExpeditionBadge,
-    bool hasMissionBadge,
+    bool hasAlertBadge,
   ) {
     final species = Species.fromId(habitat.speciesId);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF101C2B),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1C344E)),
+        color: AppColors.surfaceRaised,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -148,29 +177,33 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
                     Flexible(
                       child: Text(
                         habitat.name,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
-                          letterSpacing: 0.3,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E3A5A),
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.primary.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
                         border: Border.all(
-                            color: const Color(0xFF38BDF8).withOpacity(0.4)),
+                          color: AppColors.accent.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Text(
                         'Lv ${habitat.level}',
                         style: const TextStyle(
-                          color: Color(0xFF7DD3FC),
+                          color: AppColors.accent,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -181,144 +214,143 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
                 const SizedBox(height: 2),
                 Text(
                   '${species.iconEmoji} ${species.name} • Pop: ${habitat.population}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white54,
+                    color: AppColors.textMuted,
                     fontSize: 11,
                   ),
                 ),
               ],
             ),
           ),
-
-          // Sound Quick Toggle
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            icon: Icon(
-              state.soundEnabled ? Icons.volume_up : Icons.volume_off,
-              color: state.soundEnabled ? Colors.white70 : Colors.white24,
-              size: 18,
-            ),
-            onPressed: () => controller.toggleSound(),
-          ),
-          const SizedBox(width: 6),
-
-          // Operations Unified Menu Button
-          InkWell(
-            onTap: () => _openSheet(
-              context,
-              OperationsSheet(
-                onOpenSubSheet: (sheet) => _openSheet(context, sheet),
-              ),
-            ),
-            borderRadius: BorderRadius.circular(10),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF162A3E),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF2E537A)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('🛰️', style: TextStyle(fontSize: 13)),
-                      SizedBox(width: 4),
-                      Text(
-                        'Operations',
-                        style: TextStyle(
-                          color: Color(0xFF38BDF8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (hasExpeditionBadge || hasMissionBadge)
-                  Positioned(
-                    top: -3,
-                    right: -3,
-                    child: Container(
-                      width: 9,
-                      height: 9,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          const SizedBox(width: 8),
+          _buildOperationsButton(context, hasAlertBadge),
         ],
       ),
     );
   }
 
+  Widget _buildOperationsButton(BuildContext context, bool hasAlertBadge) {
+    return Tooltip(
+      message: 'Open sanctuary operations',
+      child: Semantics(
+        button: true,
+        label: 'Open sanctuary operations',
+        child: InkWell(
+          onTap: () => _openSheet(
+            context,
+            OperationsSheet(
+              onOpenSubSheet: (sheet) => _openSheet(context, sheet),
+            ),
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                constraints: const BoxConstraints(minHeight: 44),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: AppColors.borderStrong),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('🛰️', style: TextStyle(fontSize: 13)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Operations',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (hasAlertBadge)
+                Positioned(
+                  top: -3,
+                  right: -3,
+                  child: Semantics(
+                    label: 'New activity available',
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: AppColors.emerald,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDock(
-    BuildContext context,
-    GameState state,
-    GameNotifier controller,
-  ) {
+    BuildContext context, {
+    required bool hasExpeditionBadge,
+    required bool hasMissionBadge,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF101924),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF1E3142)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildDockButton(
             icon: '🏝️',
-            label: 'Sanctuary',
+            label: 'Reserve',
             isSelected: true,
             onTap: () {},
           ),
           _buildDockButton(
-            icon: '⭐',
-            label: 'Upgrades',
+            icon: '🧭',
+            label: 'Expeditions',
+            badge: hasExpeditionBadge,
+            onTap: () => _openSheet(context, const ExpeditionsSheet()),
+          ),
+          _buildDockButton(
+            icon: '🎯',
+            label: 'Directives',
+            badge: hasMissionBadge,
+            onTap: () => _openSheet(context, const MissionsSheet()),
+          ),
+          _buildDockButton(
+            icon: '⚙️',
+            label: 'Operations',
             onTap: () => _openSheet(
               context,
-              const UpgradesSheet(),
+              OperationsSheet(
+                onOpenSubSheet: (sheet) => _openSheet(context, sheet),
+              ),
             ),
           ),
           _buildDockButton(
-            icon: '🧑‍🌾',
-            label: 'Staff',
-            onTap: () => _openSheet(
-              context,
-              const StaffSheet(),
-            ),
-          ),
-          _buildDockButton(
-            icon: '🔬',
-            label: 'Research',
-            onTap: () => _openSheet(
-              context,
-              const ResearchSheet(),
-            ),
-          ),
-          _buildDockButton(
-            icon: '📜',
-            label: 'Archive',
-            onTap: () => _openSheet(
-              context,
-              const ArchiveSheet(),
-            ),
+            icon: '🌎',
+            label: 'Map',
+            onTap: () => _openSheet(context, const WorldMapSheet()),
           ),
         ],
       ),
@@ -329,31 +361,65 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     required String icon,
     required String label,
     bool isSelected = false,
+    bool badge = false,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1E3147) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(icon, style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFF38BDF8) : Colors.white60,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              ),
+    final color = isSelected ? AppColors.accent : AppColors.textSecondary;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        label: '$label${badge ? ', new activity' : ''}',
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 52),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 2,
+                    vertical: 6,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(icon, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(height: 2),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 10,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (badge)
+                  Positioned(
+                    top: 4,
+                    right: 12,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.emerald,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -378,10 +444,17 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => FractionallySizedBox(
-        heightFactor: 0.78,
-        child: sheet,
+        heightFactor: 0.82,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: sheet,
+          ),
+        ),
       ),
     );
   }

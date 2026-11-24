@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/research_node.dart';
 import '../providers/game_notifier.dart';
+import '../theme/app_theme.dart';
+import '../widgets/sheet_header.dart';
 
 class ResearchSheet extends ConsumerWidget {
   final GameState? state;
@@ -27,41 +30,21 @@ class ResearchSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF284860),
-                borderRadius: BorderRadius.circular(2),
+          SheetHeader(
+            icon: '🔬',
+            title: 'Genetic & Sanctuary Research',
+            subtitle: 'Unlock permanent genetic and operational boosts',
+            trailing: Text(
+              '🔬 ${GameFormat.decimal(activeState.research)}',
+              style: const TextStyle(
+                color: AppColors.purple,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontFeatures: AppText.tabularFigures,
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Text('🔬', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
-              const Text(
-                'Genetic & Sanctuary Research',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '🔬 ${activeState.research.toStringAsFixed(1)}',
-                style: const TextStyle(
-                  color: Color(0xFFA78BFA),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Expanded(
             child: ListView(
               children: activeState.researchNodes.values.map((node) {

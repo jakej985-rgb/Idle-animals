@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
+import '../theme/app_theme.dart';
 
 class CurrencyHeader extends StatelessWidget {
   final GameState state;
@@ -9,18 +12,6 @@ class CurrencyHeader extends StatelessWidget {
     super.key,
     required this.state,
   });
-
-  String _formatNumber(double val) {
-    if (val >= 1000000000) {
-      return '${(val / 1000000000).toStringAsFixed(2)}B';
-    } else if (val >= 1000000) {
-      return '${(val / 1000000).toStringAsFixed(2)}M';
-    } else if (val >= 1000) {
-      return '${(val / 1000).toStringAsFixed(1)}k';
-    } else {
-      return val.toStringAsFixed(0);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,44 +40,43 @@ class CurrencyHeader extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF101924).withOpacity(0.92),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF1E3142)),
+        color: AppColors.surface.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildCurrencyItem(
             icon: '🪙',
             label: 'Credits',
-            amount: _formatNumber(state.credits),
-            rate: '+${credsRate.toStringAsFixed(1)}/s',
-            color: const Color(0xFFFBBF24),
+            amount: GameFormat.compact(state.credits),
+            rate: GameFormat.rate(credsRate),
+            color: AppColors.amber,
           ),
-          Container(width: 1, height: 28, color: const Color(0xFF223A50)),
+          const _Divider(),
           _buildCurrencyItem(
             icon: '🧬',
             label: 'DNA',
-            amount: _formatNumber(state.dna),
-            rate: '+${dnaRate.toStringAsFixed(1)}/s',
-            color: const Color(0xFF38BDF8),
+            amount: GameFormat.compact(state.dna),
+            rate: GameFormat.rate(dnaRate),
+            color: AppColors.accent,
           ),
-          Container(width: 1, height: 28, color: const Color(0xFF223A50)),
+          const _Divider(),
           _buildCurrencyItem(
             icon: '🔬',
             label: 'Research',
-            amount: _formatNumber(state.research),
-            rate: '+${resRate.toStringAsFixed(1)}/s',
-            color: const Color(0xFFA78BFA),
+            amount: GameFormat.compact(state.research),
+            rate: GameFormat.rate(resRate),
+            color: AppColors.purple,
           ),
         ],
       ),
@@ -100,36 +90,67 @@ class CurrencyHeader extends StatelessWidget {
     required String rate,
     required Color color,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
+    return Expanded(
+      child: Semantics(
+        container: true,
+        label: '$label: $amount. Generating $rate',
+        excludeSemantics: true,
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(icon, style: const TextStyle(fontSize: 16)),
-            const SizedBox(width: 4),
-            Text(
-              amount,
-              style: TextStyle(
-                color: color,
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.3,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(icon, style: const TextStyle(fontSize: 15)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      amount,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: AppText.tabularFigures,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                rate,
+                maxLines: 1,
+                style: TextStyle(
+                  color: color.withValues(alpha: 0.85),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: AppText.tabularFigures,
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 2),
-        Text(
-          rate,
-          style: TextStyle(
-            color: color.withOpacity(0.8),
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+      ),
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 26,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      color: AppColors.border,
     );
   }
 }
