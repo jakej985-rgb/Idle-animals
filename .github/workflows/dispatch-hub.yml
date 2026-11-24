@@ -26,7 +26,8 @@ jobs:
       - name: Validate Dispatch Token
         id: check-token
         run: |
-          if [ -z "${{ secrets.M3TAL_HUB_TOKEN }}" ]; then
+          TOKEN="${{ secrets.M3TAL_HUB_TOKEN || secrets.HUB_DISPATCH_TOKEN || secrets.GH_PAT }}"
+          if [ -z "$TOKEN" ]; then
             echo "::warning ::M3TAL_HUB_TOKEN secret is not configured in repository settings. Skipping automatic dispatch to M3tal-Hub."
             echo "configured=false" >> $GITHUB_OUTPUT
           else
@@ -37,7 +38,7 @@ jobs:
         if: steps.check-token.outputs.configured == 'true'
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.M3TAL_HUB_TOKEN }}
+          token: ${{ secrets.M3TAL_HUB_TOKEN || secrets.HUB_DISPATCH_TOKEN || secrets.GH_PAT }}
           repository: jakej985-rgb/M3tal-Hub
           event-type: app-release
           client-payload: >-
