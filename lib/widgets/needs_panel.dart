@@ -143,10 +143,11 @@ class NeedsPanel extends StatelessWidget {
           compact: true,
         ),
         const SizedBox(height: 10),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
             _autoChip('🍎', 'Feeder auto'),
-            const SizedBox(width: 8),
             _autoChip('💧', 'Water auto'),
           ],
         ),

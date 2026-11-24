@@ -468,7 +468,11 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.paddingOf(ctx).bottom,
               ),
-              child: sheet,
+              child: MediaQuery.removePadding(
+                context: ctx,
+                removeBottom: true,
+                child: sheet,
+              ),
             ),
           ),
         ),
