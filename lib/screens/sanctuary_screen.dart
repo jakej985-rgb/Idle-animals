@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/offline/offline_manager.dart';
 import '../models/habitat.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
@@ -27,7 +28,10 @@ class SanctuaryScreen extends ConsumerStatefulWidget {
 }
 
 class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
-  bool _offlineModalShown = false;
+  /// Which offline report already opened its modal. Each resume produces a new
+  /// report instance, so identity distinguishes a second backgrounded session
+  /// from the one already shown (a plain bool would stay latched).
+  OfflineReport? _shownOfflineReport;
   final GlobalKey _viewportKey = GlobalKey();
 
   void _revealViewport() {
@@ -45,16 +49,20 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     final state = ref.watch(gameProvider);
     final controller = ref.read(gameProvider.notifier);
 
-    // Show offline progress modal if pending
-    if (!_offlineModalShown && controller.pendingOfflineReport != null) {
-      _offlineModalShown = true;
+    // Show the offline progress modal once per report. The marker is set here
+    // rather than in the callback so a rebuild before the frame cannot queue a
+    // second dialog.
+    final pendingReport = controller.pendingOfflineReport;
+    if (pendingReport != null &&
+        !identical(pendingReport, _shownOfflineReport)) {
+      _shownOfflineReport = pendingReport;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         showDialog(
           context: context,
           barrierDismissible: false,
           builder: (ctx) => OfflineModal(
-            report: controller.pendingOfflineReport!,
+            report: pendingReport,
             onCollect: () {
               controller.dismissOfflineReport();
               Navigator.of(ctx).pop();

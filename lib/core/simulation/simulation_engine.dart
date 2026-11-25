@@ -22,8 +22,79 @@ class SimulationResult {
   });
 }
 
+/// Instantaneous resource output, in units per second.
+class ProductionRates {
+  final double creditsPerSec;
+  final double dnaPerSec;
+  final double researchPerSec;
+
+  const ProductionRates({
+    required this.creditsPerSec,
+    required this.dnaPerSec,
+    required this.researchPerSec,
+  });
+}
+
 class SimulationEngine {
   const SimulationEngine();
+
+  /// Per-second output for one habitat at a given population and happiness.
+  /// The currency header reaches it through [totalRates], so what the player
+  /// sees is produced by the same formula as what they earn.
+  static ProductionRates _ratesFor({
+    required GameState state,
+    required String speciesId,
+    required int population,
+    required double happiness,
+  }) {
+    final species = Species.fromId(speciesId);
+    final happinessMult = Habitat.happinessMultiplierFor(happiness);
+
+    return ProductionRates(
+      creditsPerSec:
+          population * species.baseCreditsRatePerSec * happinessMult,
+      dnaPerSec: population *
+          species.baseDnaRatePerSec *
+          happinessMult *
+          _dnaMultiplier(state),
+      researchPerSec: population *
+          species.baseResearchRatePerSec *
+          happinessMult *
+          state.globalResearchMultiplier,
+    );
+  }
+
+  /// Total output across every habitat at its currently stored values.
+  static ProductionRates totalRates(GameState state) {
+    var credits = 0.0;
+    var dna = 0.0;
+    var research = 0.0;
+    for (final habitat in state.habitats.values) {
+      final rates = _ratesFor(
+        state: state,
+        speciesId: habitat.speciesId,
+        population: habitat.population,
+        happiness: habitat.happiness,
+      );
+      credits += rates.creditsPerSec;
+      dna += rates.dnaPerSec;
+      research += rates.researchPerSec;
+    }
+    return ProductionRates(
+      creditsPerSec: credits,
+      dnaPerSec: dna,
+      researchPerSec: research,
+    );
+  }
+
+  static double _dnaMultiplier(GameState state) {
+    final dnaUpgradeLevel = state.upgrades['dna_sequencer']?.currentLevel ?? 0;
+    final ancientDnaResearch =
+        state.researchNodes['ancient_dna']?.isUnlocked ?? false;
+    return (1.0 + (dnaUpgradeLevel * 0.20)) *
+        (ancientDnaResearch ? 1.5 : 1.0) *
+        state.globalDnaMultiplier;
+  }
 
   SimulationResult tick({
     required GameState state,
@@ -63,15 +134,10 @@ class SimulationEngine {
     final nestingUpgrade = state.upgrades['breeding_ground'];
     final int nestingLevel = nestingUpgrade?.currentLevel ?? 0;
 
-    final dnaUpgrade = state.upgrades['dna_sequencer'];
-    final int dnaUpgradeLevel = dnaUpgrade?.currentLevel ?? 0;
-
     final incubationResearch =
         state.researchNodes['incubation']?.isUnlocked ?? false;
     final nutritionResearch =
         state.researchNodes['nutrition']?.isUnlocked ?? false;
-    final ancientDnaResearch =
-        state.researchNodes['ancient_dna']?.isUnlocked ?? false;
 
     // 1. Simulate each habitat concurrently
     for (final entry in state.habitats.entries) {
@@ -110,7 +176,8 @@ class SimulationEngine {
       }
 
       // Breeding Progression
-      final happinessMult = (currentHappiness / 100.0).clamp(0.2, 1.4);
+      final happinessMult =
+          Habitat.happinessMultiplierFor(currentHappiness);
       final keeperBreedingMult = 1.0 + (keeperLevel * 0.15);
       final nestingBreedingMult = 1.0 + (nestingLevel * 0.15);
       final incubationMult = incubationResearch ? 1.25 : 1.0;
@@ -140,26 +207,16 @@ class SimulationEngine {
       totalNewAnimals += habitatNewBorns;
 
       // Resource Generation
-      final dnaMultiplier = (1.0 + (dnaUpgradeLevel * 0.20)) *
-          (ancientDnaResearch ? 1.5 : 1.0) *
-          state.globalDnaMultiplier;
+      final rates = _ratesFor(
+        state: state,
+        speciesId: habitat.speciesId,
+        population: currentPop,
+        happiness: currentHappiness,
+      );
 
-      final credsProduced =
-          currentPop * species.baseCreditsRatePerSec * happinessMult * dt;
-      final dnaProduced = currentPop *
-          species.baseDnaRatePerSec *
-          happinessMult *
-          dnaMultiplier *
-          dt;
-      final resProduced = currentPop *
-          species.baseResearchRatePerSec *
-          happinessMult *
-          state.globalResearchMultiplier *
-          dt;
-
-      totalCreditsGen += credsProduced;
-      totalDnaGen += dnaProduced;
-      totalResearchGen += resProduced;
+      totalCreditsGen += rates.creditsPerSec * dt;
+      totalDnaGen += rates.dnaPerSec * dt;
+      totalResearchGen += rates.researchPerSec * dt;
 
       updatedHabitats[habitatId] = habitat.copyWith(
         food: currentFood,

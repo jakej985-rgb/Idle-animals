@@ -77,8 +77,14 @@ class Upgrade {
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      type: UpgradeType.values.firstWhere((t) => t.name == json['type']),
-      currency: UpgradeCurrency.values.firstWhere((c) => c.name == json['currency']),
+      type: UpgradeType.values.firstWhere(
+        (t) => t.name == json['type'],
+        orElse: () => UpgradeType.habitatLevel,
+      ),
+      currency: UpgradeCurrency.values.firstWhere(
+        (c) => c.name == json['currency'],
+        orElse: () => UpgradeCurrency.credits,
+      ),
       baseCost: (json['baseCost'] as num).toDouble(),
       costMultiplier: (json['costMultiplier'] as num?)?.toDouble() ?? 1.6,
       currentLevel: json['currentLevel'] as int? ?? 0,

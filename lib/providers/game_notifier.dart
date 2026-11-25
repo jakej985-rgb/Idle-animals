@@ -19,6 +19,8 @@ class GameNotifier extends Notifier<GameState> {
   late final OfflineManager _offlineManager;
   Timer? _tickTimer;
   Timer? _autoSaveTimer;
+  final Stopwatch _tickWatch = Stopwatch();
+  bool _paused = false;
 
   OfflineReport? pendingOfflineReport;
 
@@ -39,28 +41,63 @@ class GameNotifier extends Notifier<GameState> {
 
   Future<void> _initialize() async {
     final saved = await _saveService.loadGame();
+    // The provider can be disposed while the save is loading (tests, hot
+    // restart); touching state or starting timers afterwards would throw.
+    if (!ref.mounted) return;
     if (saved != null) {
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final report = _offlineManager.calculateOfflineProgress(
-        state: saved,
-        currentTimestampMs: now,
-      );
-
-      if (report != null &&
-          (report.animalsBorn > 0 ||
-              report.creditsEarned > 5.0 ||
-              report.dnaRecovered > 1.0)) {
-        pendingOfflineReport = report;
-        state = report.finalState;
-      } else {
-        state = saved.copyWith(lastSavedTimestamp: now);
-      }
+      state = saved;
+      _collectOfflineProgress();
     }
     _startLoops();
   }
 
+  /// Credits time elapsed since the last save and exposes it through
+  /// [pendingOfflineReport]. Runs on cold start and again on app resume.
+  void _collectOfflineProgress() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final report = _offlineManager.calculateOfflineProgress(
+      state: state,
+      currentTimestampMs: now,
+    );
+
+    if (report != null &&
+        (report.animalsBorn > 0 ||
+            report.creditsEarned > 5.0 ||
+            report.dnaRecovered > 1.0)) {
+      pendingOfflineReport = report;
+      state = report.finalState;
+    } else {
+      state = state.copyWith(lastSavedTimestamp: now);
+    }
+  }
+
+  /// Stops the simulation while the app is not visible and flushes the state,
+  /// so background time is credited exactly once, on resume.
+  Future<void> handleAppPaused() async {
+    if (_paused) return;
+    _paused = true;
+    _tickTimer?.cancel();
+    _autoSaveTimer?.cancel();
+    _tickWatch
+      ..stop()
+      ..reset();
+    state = state.copyWith(
+      lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+    await _saveService.saveGame(state);
+  }
+
+  /// Restarts the simulation and credits the time spent in the background.
+  Future<void> handleAppResumed() async {
+    if (!_paused) return;
+    _paused = false;
+    _startLoops();
+    _collectOfflineProgress();
+  }
+
   void dismissOfflineReport() {
     pendingOfflineReport = null;
+    _saveService.saveGame(state);
   }
 
   void _lightHaptic() {
@@ -87,9 +124,16 @@ class GameNotifier extends Notifier<GameState> {
     _tickTimer?.cancel();
     _autoSaveTimer?.cancel();
 
-    // 1-second simulation tick for active play
+    // 1-second simulation tick for active play. The real elapsed time is
+    // measured so timer drift and dropped frames do not under-earn, and it is
+    // clamped so a debugger pause cannot dump minutes of progress.
+    _tickWatch
+      ..reset()
+      ..start();
     _tickTimer = Timer.periodic(const Duration(milliseconds: 1000), (_) {
-      tickActive(1.0);
+      final dt = (_tickWatch.elapsedMicroseconds / 1000000).clamp(0.0, 5.0);
+      _tickWatch.reset();
+      tickActive(dt);
     });
 
     // Auto-save every 10 seconds
@@ -115,9 +159,11 @@ class GameNotifier extends Notifier<GameState> {
     final habitat = state.habitats[habitatId];
     if (habitat == null) return false;
     const cost = 5.0;
-    if (state.credits < cost && state.credits > 0) {
-      // Prevent soft-lock if very low
-    } else if (state.credits >= cost) {
+    // Zero credits is the emergency feed the panel advertises; above zero the
+    // feed must be paid for, so 1-4 credits buy nothing (matching the UI).
+    final emergencyFeed = state.credits <= 0;
+    if (!emergencyFeed && state.credits < cost) return false;
+    if (!emergencyFeed) {
       state = state.copyWith(credits: state.credits - cost);
     }
     final updatedHabitats = Map<String, Habitat>.from(state.habitats);
@@ -511,6 +557,7 @@ class GameNotifier extends Notifier<GameState> {
 
   void toggleSound() {
     state = state.copyWith(soundEnabled: !state.soundEnabled);
+    _saveService.saveGame(state);
   }
 
   void toggleHaptics() {
@@ -520,6 +567,7 @@ class GameNotifier extends Notifier<GameState> {
 
   Future<void> resetGame() async {
     await _saveService.clearSave();
+    pendingOfflineReport = null;
     state = GameState.initial();
   }
 }

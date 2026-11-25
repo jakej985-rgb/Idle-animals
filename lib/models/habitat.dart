@@ -37,7 +37,13 @@ class Habitat {
 
   double get foodPercentage => (food / maxFood).clamp(0.0, 1.0);
   double get waterPercentage => (water / maxWater).clamp(0.0, 1.0);
-  double get happinessMultiplier => (happiness / 100.0).clamp(0.2, 1.5);
+  /// Production and breeding multiplier for a 0-100 happiness value. This is
+  /// the single source of the 0.2-1.4 clamp; the simulation engine calls it
+  /// with the happiness it has just computed, before that value is stored.
+  static double happinessMultiplierFor(double happiness) =>
+      (happiness / 100.0).clamp(0.2, 1.4);
+
+  double get happinessMultiplier => happinessMultiplierFor(happiness);
 
   // Prestige / Ecosystem Restoration points calculation
   int calculateRestorationPoints() {

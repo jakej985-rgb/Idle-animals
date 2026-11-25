@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../core/format/game_format.dart';
+import '../core/simulation/simulation_engine.dart';
 import '../models/game_state.dart';
-import '../models/species.dart';
 import '../theme/app_theme.dart';
 
 class CurrencyHeader extends StatelessWidget {
@@ -15,29 +15,10 @@ class CurrencyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dnaUpgradeLevel = state.upgrades['dna_sequencer']?.currentLevel ?? 0;
-    final ancientDna = state.researchNodes['ancient_dna']?.isUnlocked ?? false;
-    final dnaMultiplier = (1.0 + (dnaUpgradeLevel * 0.20)) *
-        (ancientDna ? 1.5 : 1.0) *
-        state.globalDnaMultiplier;
-
-    double credsRate = 0;
-    double dnaRate = 0;
-    double resRate = 0;
-
-    for (final hab in state.habitats.values) {
-      final species = Species.fromId(hab.speciesId);
-      final happyMult = (hab.happiness / 100.0).clamp(0.2, 1.4);
-      credsRate += hab.population * species.baseCreditsRatePerSec * happyMult;
-      dnaRate += hab.population *
-          species.baseDnaRatePerSec *
-          happyMult *
-          dnaMultiplier;
-      resRate += hab.population *
-          species.baseResearchRatePerSec *
-          happyMult *
-          state.globalResearchMultiplier;
-    }
+    final rates = SimulationEngine.totalRates(state);
+    final credsRate = rates.creditsPerSec;
+    final dnaRate = rates.dnaPerSec;
+    final resRate = rates.researchPerSec;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
