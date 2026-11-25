@@ -5,7 +5,7 @@ import 'package:extinction_sanctuary/providers/game_notifier.dart';
 import 'package:extinction_sanctuary/screens/sanctuary_screen.dart';
 import 'package:extinction_sanctuary/theme/app_theme.dart';
 import 'package:extinction_sanctuary/widgets/offline_modal.dart';
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';

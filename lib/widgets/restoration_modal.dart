@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/habitat.dart';
@@ -35,12 +35,15 @@ class RestorationModal extends ConsumerWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 440),
         decoration: BoxDecoration(
-          color: const Color(0xFF131D2A),
+          color: AppColors.sheet,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFF10B981).withOpacity(0.5), width: 1.5),
+          border: Border.all(
+            color: AppColors.emerald.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               blurRadius: 30,
               offset: const Offset(0, 10),
             ),
@@ -59,13 +62,13 @@ class RestorationModal extends ConsumerWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF047857)],
+                      colors: [AppColors.emerald, AppColors.emeraldDeep],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        color: AppColors.emerald.withValues(alpha: 0.3),
                         blurRadius: 16,
                       ),
                     ],
@@ -80,7 +83,7 @@ class RestorationModal extends ConsumerWidget {
                 'RESTORE ${activeHabitat.name.toUpperCase()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
@@ -90,7 +93,7 @@ class RestorationModal extends ConsumerWidget {
               const Text(
                 'Complete the ecological restoration of this region. The reserve resets to Level 1, awarding permanent Restoration Points for global sanctuary upgrades.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF8BA3B8), fontSize: 11),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
               const SizedBox(height: 14),
 
@@ -98,18 +101,30 @@ class RestorationModal extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0C141D),
+                  color: AppColors.surfaceAlt,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF1E3142)),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatCol('Population', '${activeHabitat.population}', const Color(0xFF4ADE80)),
-                    Container(width: 1, height: 28, color: const Color(0xFF1E3142)),
-                    _buildStatCol('Reserve Level', 'Lv ${activeHabitat.level}', const Color(0xFF38BDF8)),
-                    Container(width: 1, height: 28, color: const Color(0xFF1E3142)),
-                    _buildStatCol('Reward', '+$earnedPoints ⭐', const Color(0xFFFBBF24)),
+                    _buildStatCol(
+                      'Population',
+                      '${activeHabitat.population}',
+                      AppColors.success,
+                    ),
+                    Container(width: 1, height: 28, color: AppColors.border),
+                    _buildStatCol(
+                      'Reserve Level',
+                      'Lv ${activeHabitat.level}',
+                      AppColors.accent,
+                    ),
+                    Container(width: 1, height: 28, color: AppColors.border),
+                    _buildStatCol(
+                      'Reward',
+                      '+$earnedPoints ⭐',
+                      AppColors.amber,
+                    ),
                   ],
                 ),
               ),
@@ -128,10 +143,10 @@ class RestorationModal extends ConsumerWidget {
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: AppColors.onFill(const Color(0xFF10B981)),
-                  disabledBackgroundColor: const Color(0xFF162534),
-                  disabledForegroundColor: Colors.white24,
+                  backgroundColor: AppColors.emerald,
+                  foregroundColor: AppColors.onFill(AppColors.emerald),
+                  disabledBackgroundColor: AppColors.surfaceRaised,
+                  disabledForegroundColor: AppColors.textSubdued,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -154,7 +169,7 @@ class RestorationModal extends ConsumerWidget {
                     child: Text(
                       'Permanent Global Perks',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -164,7 +179,7 @@ class RestorationModal extends ConsumerWidget {
                   Text(
                     'Available: ${activeState.restorationPoints.toStringAsFixed(0)} ⭐',
                     style: const TextStyle(
-                      color: Color(0xFFFBBF24),
+                      color: AppColors.amber,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -234,7 +249,7 @@ class RestorationModal extends ConsumerWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFF8BA3B8), fontSize: 10),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
           ),
         ],
       ),
@@ -257,9 +272,9 @@ class RestorationModal extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C141D),
+        color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1E3142)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -275,7 +290,7 @@ class RestorationModal extends ConsumerWidget {
                       child: Text(
                         title,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -286,7 +301,7 @@ class RestorationModal extends ConsumerWidget {
                     Text(
                       'Lv $lvl',
                       style: const TextStyle(
-                        color: Color(0xFF38BDF8),
+                        color: AppColors.accent,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -295,7 +310,10 @@ class RestorationModal extends ConsumerWidget {
                 ),
                 Text(
                   desc,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
+                  style: const TextStyle(
+                    color: AppColors.textSubdued,
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -312,10 +330,10 @@ class RestorationModal extends ConsumerWidget {
                   }
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0284C7),
-              foregroundColor: AppColors.onFill(const Color(0xFF0284C7)),
-              disabledBackgroundColor: const Color(0xFF162534),
-              disabledForegroundColor: Colors.white24,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onFill(AppColors.primary),
+              disabledBackgroundColor: AppColors.surfaceRaised,
+              disabledForegroundColor: AppColors.textSubdued,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),

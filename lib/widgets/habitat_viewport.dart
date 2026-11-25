@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../models/habitat.dart';
@@ -370,7 +370,7 @@ class _HabitatViewportState extends State<HabitatViewport>
   Widget _hint() {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.48),
+        color: Colors.black.withValues(alpha: 0.48),
         borderRadius: BorderRadius.circular(13),
         border: Border.all(color: Colors.white12),
       ),

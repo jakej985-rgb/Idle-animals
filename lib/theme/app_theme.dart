@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Central palette for the sanctuary UI.
@@ -32,6 +32,12 @@ abstract final class AppColors {
   static const quince = Color(0xFFF97316);
   static const purple = Color(0xFFA78BFA);
   static const danger = Color(0xFFF87171);
+
+  /// Modal artwork accents: the cyan-to-mint offline glow and the deep green
+  /// end of the restoration gradient.
+  static const cyan = Color(0xFF00C9FF);
+  static const mint = Color(0xFF92FE9D);
+  static const emeraldDeep = Color(0xFF047857);
 
   /// Readable foreground for text or icons painted on a saturated [fill].
   ///

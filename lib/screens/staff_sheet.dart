@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/format/game_format.dart';
 import '../models/game_state.dart';
@@ -103,7 +103,7 @@ class StaffSheet extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isHired
-              ? AppColors.accent.withOpacity(0.5)
+              ? AppColors.accent.withValues(alpha: 0.5)
               : const Color(0xFF223A50),
           width: 1.5,
         ),
@@ -151,7 +151,7 @@ class StaffSheet extends ConsumerWidget {
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: isHired
-                                ? AppColors.emerald.withOpacity(0.2)
+                                ? AppColors.emerald.withValues(alpha: 0.2)
                                 : const Color(0xFF334155),
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -267,7 +267,7 @@ class StaffSheet extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt.withOpacity(0.6),
+        color: AppColors.surfaceAlt.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF182534)),
       ),

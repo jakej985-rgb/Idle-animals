@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
@@ -112,7 +112,7 @@ class WorldMapSheet extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: isUnlocked
-                                ? AppColors.accent.withOpacity(0.3)
+                                ? AppColors.accent.withValues(alpha: 0.3)
                                 : Colors.white12,
                           ),
                         ),

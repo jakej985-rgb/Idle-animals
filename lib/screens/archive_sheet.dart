@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
@@ -76,7 +76,7 @@ class ArchiveSheet extends ConsumerWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.emerald.withOpacity(0.6),
+          color: AppColors.emerald.withValues(alpha: 0.6),
           width: 1.5,
         ),
       ),
@@ -123,7 +123,7 @@ class ArchiveSheet extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.emerald.withOpacity(0.2),
+                            color: AppColors.emerald.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
@@ -202,7 +202,7 @@ class ArchiveSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt.withOpacity(0.6),
+        color: AppColors.surfaceAlt.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF182534)),
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 
 import '../core/format/game_format.dart';
 import '../core/simulation/simulation_engine.dart';

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/format/game_format.dart';
 import '../models/game_state.dart';
@@ -83,8 +83,8 @@ class ResearchSheet extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isUnlocked
-              ? AppColors.emerald.withOpacity(0.5)
-              : (prereqsMet ? const Color(0xFF8B5CF6).withOpacity(0.4) : AppColors.border),
+              ? AppColors.emerald.withValues(alpha: 0.5)
+              : (prereqsMet ? const Color(0xFF8B5CF6).withValues(alpha: 0.4) : AppColors.border),
         ),
       ),
       child: Row(
@@ -124,7 +124,7 @@ class ResearchSheet extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.emerald.withOpacity(0.2),
+                          color: AppColors.emerald.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(

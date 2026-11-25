@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/format/game_format.dart';
 import '../models/game_state.dart';
@@ -92,7 +92,7 @@ class UpgradesSheet extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isMaxed
-              ? AppColors.emerald.withOpacity(0.4)
+              ? AppColors.emerald.withValues(alpha: 0.4)
               : AppColors.border,
         ),
       ),
@@ -131,7 +131,7 @@ class UpgradesSheet extends ConsumerWidget {
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: isMaxed
-                            ? AppColors.emerald.withOpacity(0.2)
+                            ? AppColors.emerald.withValues(alpha: 0.2)
                             : const Color(0xFF1B3147),
                         borderRadius: BorderRadius.circular(6),
                       ),

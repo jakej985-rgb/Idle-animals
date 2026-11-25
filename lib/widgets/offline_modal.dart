@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
+import '../core/format/game_format.dart';
 import '../core/offline/offline_manager.dart';
 import '../theme/app_theme.dart';
 
@@ -20,15 +21,15 @@ class OfflineModal extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 420),
         decoration: BoxDecoration(
-          color: const Color(0xFF131D2A),
+          color: AppColors.sheet,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFF284860),
+            color: AppColors.borderStrong,
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               blurRadius: 30,
               offset: const Offset(0, 10),
             ),
@@ -46,13 +47,13 @@ class OfflineModal extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF00C9FF), Color(0xFF92FE9D)],
+                    colors: [AppColors.cyan, AppColors.mint],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF00C9FF).withOpacity(0.3),
+                      color: AppColors.cyan.withValues(alpha: 0.3),
                       blurRadius: 16,
                       spreadRadius: 2,
                     ),
@@ -68,7 +69,7 @@ class OfflineModal extends StatelessWidget {
               'WELCOME BACK',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.2,
@@ -79,7 +80,7 @@ class OfflineModal extends StatelessWidget {
               'Away for ${report.awayDurationFormatted}',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFF8BA3B8),
+                color: AppColors.textMuted,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -89,23 +90,25 @@ class OfflineModal extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.15),
+                  color: AppColors.amber.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                  border: Border.all(
+                    color: AppColors.amber.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: const Text(
                   'Reached offline simulation cap. Upgrade log to extend!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.amber, fontSize: 11),
+                  style: TextStyle(color: AppColors.amber, fontSize: 11),
                 ),
               ),
             ],
             const SizedBox(height: 20),
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF0C141D),
+                color: AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF1E3142)),
+                border: Border.all(color: AppColors.border),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
@@ -113,29 +116,29 @@ class OfflineModal extends StatelessWidget {
                   _buildStatRow(
                     icon: '🦤',
                     label: 'Dodos Born',
-                    value: '+${report.dodosBorn}',
-                    color: const Color(0xFF4ADE80),
+                    value: '+${GameFormat.whole(report.dodosBorn.toDouble())}',
+                    color: AppColors.success,
                   ),
-                  const Divider(color: Color(0xFF1E3142), height: 16),
+                  const Divider(color: AppColors.border, height: 16),
                   _buildStatRow(
                     icon: '🪙',
                     label: 'Credits Earned',
-                    value: '+${report.creditsEarned.toStringAsFixed(0)}',
-                    color: const Color(0xFFFBBF24),
+                    value: '+${GameFormat.compact(report.creditsEarned)}',
+                    color: AppColors.amber,
                   ),
-                  const Divider(color: Color(0xFF1E3142), height: 16),
+                  const Divider(color: AppColors.border, height: 16),
                   _buildStatRow(
                     icon: '🧬',
                     label: 'DNA Recovered',
-                    value: '+${report.dnaRecovered.toStringAsFixed(1)}',
-                    color: const Color(0xFF38BDF8),
+                    value: '+${GameFormat.decimal(report.dnaRecovered)}',
+                    color: AppColors.accent,
                   ),
-                  const Divider(color: Color(0xFF1E3142), height: 16),
+                  const Divider(color: AppColors.border, height: 16),
                   _buildStatRow(
                     icon: '🔬',
                     label: 'Research Produced',
-                    value: '+${report.researchGathered.toStringAsFixed(1)}',
-                    color: const Color(0xFFA78BFA),
+                    value: '+${GameFormat.decimal(report.researchGathered)}',
+                    color: AppColors.purple,
                   ),
                 ],
               ),
@@ -144,14 +147,14 @@ class OfflineModal extends StatelessWidget {
             ElevatedButton(
               onPressed: onCollect,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: AppColors.onFill(const Color(0xFF10B981)),
+                backgroundColor: AppColors.emerald,
+                foregroundColor: AppColors.onFill(AppColors.emerald),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 elevation: 4,
-                shadowColor: const Color(0xFF10B981).withOpacity(0.5),
+                shadowColor: AppColors.emerald.withValues(alpha: 0.5),
               ),
               child: const Text(
                 'COLLECT REWARDS',
@@ -182,7 +185,7 @@ class OfflineModal extends StatelessWidget {
           child: Text(
             label,
             style: const TextStyle(
-              color: Color(0xFFC4D5E5),
+              color: AppColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),

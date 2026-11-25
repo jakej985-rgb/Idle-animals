@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:extinction_sanctuary/core/ui/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/species.dart';
@@ -342,7 +342,7 @@ class OperationsSheet extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.surfaceRaised,
           borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: accentColor.withOpacity(0.25)),
+          border: Border.all(color: accentColor.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
@@ -351,9 +351,9 @@ class OperationsSheet extends ConsumerWidget {
               height: 44,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.12),
+                color: accentColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: accentColor.withOpacity(0.3)),
+                border: Border.all(color: accentColor.withValues(alpha: 0.3)),
               ),
               child: Text(icon, style: const TextStyle(fontSize: 22)),
             ),
