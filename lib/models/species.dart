@@ -139,7 +139,7 @@ class Species {
     iconEmoji: '🦣',
   );
 
-  static Map<String, Species> registry = {
+  static const Map<String, Species> registry = {
     'dodo': dodo,
     'thylacine': thylacine,
     'great_auk': greatAuk,
@@ -150,49 +150,5 @@ class Species {
 
   static Species fromId(String id) {
     return registry[id] ?? dodo;
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'scientificName': scientificName,
-        'extinctionEra': extinctionEra,
-        'habitatType': habitatType,
-        'description': description,
-        'basePopulationCapacity': basePopulationCapacity,
-        'baseBreedingSeconds': baseBreedingSeconds,
-        'baseFoodConsumptionPerSec': baseFoodConsumptionPerSec,
-        'baseWaterConsumptionPerSec': baseWaterConsumptionPerSec,
-        'baseDnaRatePerSec': baseDnaRatePerSec,
-        'baseResearchRatePerSec': baseResearchRatePerSec,
-        'baseCreditsRatePerSec': baseCreditsRatePerSec,
-        'iconEmoji': iconEmoji,
-      };
-
-  factory Species.fromJson(Map<String, dynamic> json) {
-    final id = json['id'] as String;
-    if (registry.containsKey(id)) {
-      return registry[id]!;
-    }
-    return Species(
-      id: id,
-      name: json['name'] as String,
-      scientificName: json['scientificName'] as String,
-      extinctionEra: json['extinctionEra'] as String,
-      habitatType: json['habitatType'] as String,
-      description: json['description'] as String,
-      basePopulationCapacity: json['basePopulationCapacity'] as int,
-      baseBreedingSeconds: (json['baseBreedingSeconds'] as num).toDouble(),
-      baseFoodConsumptionPerSec:
-          (json['baseFoodConsumptionPerSec'] as num).toDouble(),
-      baseWaterConsumptionPerSec:
-          (json['baseWaterConsumptionPerSec'] as num).toDouble(),
-      baseDnaRatePerSec: (json['baseDnaRatePerSec'] as num).toDouble(),
-      baseResearchRatePerSec:
-          (json['baseResearchRatePerSec'] as num).toDouble(),
-      baseCreditsRatePerSec:
-          (json['baseCreditsRatePerSec'] as num).toDouble(),
-      iconEmoji: json['iconEmoji'] as String? ?? '🐾',
-    );
   }
 }

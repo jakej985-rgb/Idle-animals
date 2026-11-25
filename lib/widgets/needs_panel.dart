@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/balance/game_balance.dart';
 import '../core/format/game_format.dart';
 import '../models/habitat.dart';
 import '../models/species.dart';
@@ -29,8 +30,6 @@ class NeedsPanel extends StatelessWidget {
     this.compact = false,
   });
 
-  static const double reviveDnaCost = 15.0;
-
   String _getHappinessText(double happiness) {
     if (happiness >= 85) return 'Thriving 🥰 (+20% Output)';
     if (happiness >= 60) return 'Content 😊 (Normal)';
@@ -49,7 +48,8 @@ class NeedsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final species = Species.fromId(habitat.speciesId);
     final bool canRevive =
-        dna >= reviveDnaCost && habitat.population < habitat.capacity;
+        dna >= GameBalance.reviveCostDna &&
+        habitat.population < habitat.capacity;
     final bool bothAutomated = habitat.hasAutoFeeder && habitat.hasAutoWater;
 
     final body = bothAutomated
@@ -139,7 +139,8 @@ class NeedsPanel extends StatelessWidget {
       children: [
         _buildPopulationHeader(
           Species.fromId(habitat.speciesId),
-          dna >= reviveDnaCost && habitat.population < habitat.capacity,
+          dna >= GameBalance.reviveCostDna &&
+              habitat.population < habitat.capacity,
           compact: true,
         ),
         const SizedBox(height: 10),
@@ -261,8 +262,9 @@ class NeedsPanel extends StatelessWidget {
   Widget _buildReviveButton(bool canRevive, {required bool compact}) {
     final tooltip = canRevive
         ? 'Revive a ${Species.fromId(habitat.speciesId).name} for '
-            '${GameFormat.whole(reviveDnaCost)} DNA'
-        : 'Revive needs ${GameFormat.whole(reviveDnaCost)} DNA and free capacity';
+            '${GameFormat.whole(GameBalance.reviveCostDna)} DNA'
+        : 'Revive needs ${GameFormat.whole(GameBalance.reviveCostDna)} DNA '
+            'and free capacity';
 
     if (compact) {
       return Tooltip(
@@ -293,17 +295,20 @@ class NeedsPanel extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
         ),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               '🧬 Revive',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
-              '15 DNA',
-              style: TextStyle(fontSize: 10, color: Color(0xFFBAE6FD)),
+              '${GameFormat.whole(GameBalance.reviveCostDna)} DNA',
+              style: const TextStyle(
+                fontSize: 10,
+                color: Color(0xFFBAE6FD),
+              ),
             ),
           ],
         ),
@@ -344,12 +349,14 @@ class NeedsPanel extends StatelessWidget {
     );
   }
 
-  bool get _canFeed => credits >= 5 || credits <= 0;
+  bool get _canFeed =>
+      credits >= GameBalance.feedCostCredits || credits <= 0;
 
   String get _feedActionLabel {
+    final cost = GameFormat.whole(GameBalance.feedCostCredits);
     if (credits <= 0) return 'Emergency feed';
-    if (credits < 5) return 'Need 5 🪙';
-    return 'Feed (5🪙)';
+    if (credits < GameBalance.feedCostCredits) return 'Need $cost 🪙';
+    return 'Feed ($cost🪙)';
   }
 
   Widget _buildNeedBar({

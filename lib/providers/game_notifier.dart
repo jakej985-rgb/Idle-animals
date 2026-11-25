@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/balance/game_balance.dart';
 import '../core/feedback/game_haptics.dart';
 import '../core/offline/offline_manager.dart';
 import '../core/save/save_service.dart';
@@ -158,7 +159,7 @@ class GameNotifier extends Notifier<GameState> {
   bool feedHabitat(String habitatId) {
     final habitat = state.habitats[habitatId];
     if (habitat == null) return false;
-    const cost = 5.0;
+    const cost = GameBalance.feedCostCredits;
     // Zero credits is the emergency feed the panel advertises; above zero the
     // feed must be paid for, so 1-4 credits buy nothing (matching the UI).
     final emergencyFeed = state.credits <= 0;
@@ -212,7 +213,7 @@ class GameNotifier extends Notifier<GameState> {
     if (habitat == null) return false;
     if (habitat.population >= habitat.capacity) return false;
 
-    const dnaCost = 15.0;
+    const dnaCost = GameBalance.reviveCostDna;
     if (state.dna < dnaCost) return false;
 
     final updatedHabitats = Map<String, Habitat>.from(state.habitats);
