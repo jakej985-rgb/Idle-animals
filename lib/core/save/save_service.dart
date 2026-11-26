@@ -78,6 +78,8 @@ class SaveService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_saveKeyV1);
       await prefs.remove(_saveKeyV2);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('SaveService: could not clear save ($e).');
+    }
   }
 }

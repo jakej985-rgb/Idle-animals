@@ -109,7 +109,7 @@ class Habitat {
 
   factory Habitat.fromJson(Map<String, dynamic> json) {
     return Habitat(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       name: json['name'] as String,
       speciesId: json['speciesId'] as String,
       biomeType: json['biomeType'] as String? ?? 'tropical_island',
