@@ -48,5 +48,30 @@ void main() {
       expect(recovered!.credits, equals(60.0));
       expect(recovered.schemaVersion, equals(2));
     });
+
+    test('Loads a save whose habitat entry has no id instead of resetting',
+        () async {
+      // Regression: Habitat.fromJson used to cast id to a non-null String, so a
+      // renamed/missing field threw and loadGame fell back to GameState.initial().
+      final jsonMap = GameState.initial().toJson();
+      jsonMap['credits'] = 1234.5;
+      final habitats = jsonMap['habitats'] as Map<String, dynamic>;
+      final island = habitats['dodo_island'] as Map<String, dynamic>;
+      island.remove('id');
+
+      SharedPreferences.setMockInitialValues({
+        'extinction_sanctuary_save_v2': jsonEncode(jsonMap),
+      });
+
+      final loaded = await SaveService().loadGame();
+
+      expect(loaded, isNotNull);
+      // A reset would start over at 60 credits with the default sanctuary.
+      expect(loaded!.credits, equals(1234.5));
+      expect(loaded.habitats.containsKey('dodo_island'), isTrue);
+      expect(loaded.habitats['dodo_island']!.name,
+          equals('Dodo Island Sanctuary'));
+      expect(loaded.habitats['dodo_island']!.id, isEmpty);
+    });
   });
 }
