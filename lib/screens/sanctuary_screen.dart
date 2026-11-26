@@ -32,6 +32,10 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
   /// report instance, so identity distinguishes a second backgrounded session
   /// from the one already shown (a plain bool would stay latched).
   OfflineReport? _shownOfflineReport;
+
+  /// True while a report dialog is on screen. A resume during that time still
+  /// applies its earnings to the state, but must not stack a second dialog.
+  bool _offlineDialogOpen = false;
   final GlobalKey _viewportKey = GlobalKey();
 
   void _revealViewport() {
@@ -56,20 +60,27 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     if (pendingReport != null &&
         !identical(pendingReport, _shownOfflineReport)) {
       _shownOfflineReport = pendingReport;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => OfflineModal(
-            report: pendingReport,
-            onCollect: () {
-              controller.dismissOfflineReport();
-              Navigator.of(ctx).pop();
-            },
-          ),
-        );
-      });
+      if (!_offlineDialogOpen) {
+        _offlineDialogOpen = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) {
+            _offlineDialogOpen = false;
+            return;
+          }
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => OfflineModal(
+              report: pendingReport,
+              onCollect: () {
+                controller.dismissOfflineReport();
+                Navigator.of(ctx).pop();
+              },
+            ),
+          );
+          _offlineDialogOpen = false;
+        });
+      }
     }
 
     final habitat =
