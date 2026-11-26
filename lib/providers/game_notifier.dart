@@ -23,6 +23,10 @@ class GameNotifier extends Notifier<GameState> {
   final Stopwatch _tickWatch = Stopwatch();
   bool _paused = false;
 
+  /// Completes once the first load has been applied, so a pause that arrives
+  /// mid-load can wait instead of persisting the temporary initial state.
+  Future<void>? _loadFuture;
+
   OfflineReport? pendingOfflineReport;
 
   @override
@@ -36,7 +40,7 @@ class GameNotifier extends Notifier<GameState> {
       _autoSaveTimer?.cancel();
     });
 
-    _initialize();
+    _loadFuture = _initialize();
     return GameState.initial();
   }
 
@@ -49,7 +53,8 @@ class GameNotifier extends Notifier<GameState> {
       state = saved;
       _collectOfflineProgress();
     }
-    _startLoops();
+    // A pause may have arrived while the save was loading.
+    if (!_paused) _startLoops();
   }
 
   /// Credits time elapsed since the last save and exposes it through
@@ -61,14 +66,23 @@ class GameNotifier extends Notifier<GameState> {
       currentTimestampMs: now,
     );
 
-    if (report != null &&
-        (report.animalsBorn > 0 ||
-            report.creditsEarned > 5.0 ||
-            report.dnaRecovered > 1.0)) {
-      pendingOfflineReport = report;
-      state = report.finalState;
-    } else {
+    // Gaps under the report threshold return no report, but the time still
+    // elapsed: simulate it so quick app switches do not discard progress.
+    if (report == null) {
+      final elapsedMs = now - state.lastSavedTimestamp;
+      if (elapsedMs > 0 && elapsedMs < OfflineManager.minimumReportMs) {
+        state = _engine.tick(state: state, dt: elapsedMs / 1000.0).nextState;
+      }
       state = state.copyWith(lastSavedTimestamp: now);
+      return;
+    }
+
+    // Keep the simulated progress even when it is too small to announce.
+    state = report.finalState;
+    if (report.animalsBorn > 0 ||
+        report.creditsEarned > 5.0 ||
+        report.dnaRecovered > 1.0) {
+      pendingOfflineReport = report;
     }
   }
 
@@ -82,6 +96,11 @@ class GameNotifier extends Notifier<GameState> {
     _tickWatch
       ..stop()
       ..reset();
+    // Pausing during the first load must not write the temporary initial state
+    // over the save that is still being read.
+    final load = _loadFuture;
+    if (load != null) await load;
+    if (!ref.mounted) return;
     state = state.copyWith(
       lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch,
     );

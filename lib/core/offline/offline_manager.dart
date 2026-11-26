@@ -37,6 +37,10 @@ class OfflineReport {
 }
 
 class OfflineManager {
+  /// Gaps shorter than this produce no report, so a quick app switch does not
+  /// pop a welcome-back dialog. Callers still credit the elapsed time.
+  static const int minimumReportMs = 15000;
+
   final SimulationEngine engine;
 
   const OfflineManager({this.engine = const SimulationEngine()});
@@ -57,8 +61,8 @@ class OfflineManager {
       return null;
     }
 
-    // 3. Minimum threshold: under 15 seconds produces no modal
-    if (elapsedMs < 15000) {
+    // 3. Minimum threshold: under 15 seconds produces no report
+    if (elapsedMs < minimumReportMs) {
       return null;
     }
 
