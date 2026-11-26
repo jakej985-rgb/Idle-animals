@@ -1,4 +1,4 @@
-import 'package:extinction_sanctuary/core/ui/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_theme.dart';
 

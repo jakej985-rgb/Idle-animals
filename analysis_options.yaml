@@ -10,11 +10,6 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
-  # `deprecated_member_use` is no longer ignored project-wide. The only
-  # remaining occurrences are `import 'package:flutter/material.dart'`, which
-  # Flutter 3.50 deprecated in favour of `package:material_ui/material_ui.dart`.
-  # Each such import carries a line-level ignore until that migration is done
-  # as its own change.
   exclude:
     - build/**
     - web/**

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:extinction_sanctuary/theme/app_theme.dart';
-import 'package:extinction_sanctuary/core/ui/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// WCAG 2.1 relative luminance of an opaque color.

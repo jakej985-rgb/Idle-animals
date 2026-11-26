@@ -1,4 +1,4 @@
-import 'package:extinction_sanctuary/core/ui/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/balance/game_balance.dart';
 import '../core/format/game_format.dart';

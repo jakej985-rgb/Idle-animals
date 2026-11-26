@@ -1,4 +1,4 @@
-import 'package:extinction_sanctuary/core/ui/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/format/game_format.dart';
 import '../models/expedition.dart';

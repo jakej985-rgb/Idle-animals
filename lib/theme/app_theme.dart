@@ -1,4 +1,4 @@
-import 'package:extinction_sanctuary/core/ui/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Central palette for the sanctuary UI.
@@ -115,9 +115,36 @@ abstract final class AppText {
   static const tabularFigures = <FontFeature>[FontFeature.tabularFigures()];
 }
 
+/// Applies Outfit to every style in [base].
+///
+/// `material_ui` declares its own [TextTheme] while GoogleFonts' text theme
+/// helper is typed against `package:flutter/material.dart`, so the two cannot
+/// be passed to each other. The individual styles are the shared [TextStyle]
+/// type, so the font is applied per style; this matches the output of
+/// `GoogleFonts.outfitTextTheme(base)` style for style.
+TextTheme _outfitTextTheme(TextTheme base) {
+  return TextTheme(
+    displayLarge: GoogleFonts.outfit(textStyle: base.displayLarge),
+    displayMedium: GoogleFonts.outfit(textStyle: base.displayMedium),
+    displaySmall: GoogleFonts.outfit(textStyle: base.displaySmall),
+    headlineLarge: GoogleFonts.outfit(textStyle: base.headlineLarge),
+    headlineMedium: GoogleFonts.outfit(textStyle: base.headlineMedium),
+    headlineSmall: GoogleFonts.outfit(textStyle: base.headlineSmall),
+    titleLarge: GoogleFonts.outfit(textStyle: base.titleLarge),
+    titleMedium: GoogleFonts.outfit(textStyle: base.titleMedium),
+    titleSmall: GoogleFonts.outfit(textStyle: base.titleSmall),
+    bodyLarge: GoogleFonts.outfit(textStyle: base.bodyLarge),
+    bodyMedium: GoogleFonts.outfit(textStyle: base.bodyMedium),
+    bodySmall: GoogleFonts.outfit(textStyle: base.bodySmall),
+    labelLarge: GoogleFonts.outfit(textStyle: base.labelLarge),
+    labelMedium: GoogleFonts.outfit(textStyle: base.labelMedium),
+    labelSmall: GoogleFonts.outfit(textStyle: base.labelSmall),
+  );
+}
+
 ThemeData buildAppTheme() {
   final base = ThemeData(brightness: Brightness.dark, useMaterial3: true);
-  final textTheme = GoogleFonts.outfitTextTheme(base.textTheme).apply(
+  final textTheme = _outfitTextTheme(base.textTheme).apply(
     bodyColor: AppColors.textPrimary,
     displayColor: AppColors.textPrimary,
   );
