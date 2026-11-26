@@ -42,8 +42,7 @@ void main() {
 
     test('A background gap under the report threshold still earns', () async {
       final save = _saveWithCredits(500.0)
-        ..['lastSavedTimestamp'] =
-            DateTime.now().millisecondsSinceEpoch - 5000;
+        ..['lastSavedTimestamp'] = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
         'extinction_sanctuary_save_v2': jsonEncode(save),
       });
@@ -53,10 +52,25 @@ void main() {
       container.read(gameProvider);
       await pumpEventQueue();
 
+      final notifier = container.read(gameProvider.notifier);
+      await notifier.handleAppPaused();
+      final creditsBefore = container.read(gameProvider).credits;
+
+      // Stamp the gap right before the resume instead of when the container is
+      // built. Only a few synchronous lines run between the two, so even a slow
+      // runner stays far below the 15s report threshold and cannot flake this.
+      notifier.state = notifier.state.copyWith(
+        lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch - 5000,
+      );
+      await notifier.handleAppResumed();
+
       // One dodo earns 1 credit/s, so a 5s gap is ~5 credits. The old code
       // advanced the timestamp without simulating and earned nothing.
-      expect(container.read(gameProvider).credits, greaterThan(500.0));
-      expect(container.read(gameProvider.notifier).pendingOfflineReport, isNull);
+      expect(
+        container.read(gameProvider).credits,
+        greaterThan(creditsBefore),
+      );
+      expect(notifier.pendingOfflineReport, isNull);
     });
   });
 }
