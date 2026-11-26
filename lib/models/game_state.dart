@@ -317,7 +317,15 @@ class GameState {
       activeHabitatId:
           json['activeHabitatId'] as String? ?? 'dodo_island',
       habitats: (json['habitats'] as Map<String, dynamic>?)?.map(
-            (k, v) => MapEntry(k, Habitat.fromJson(v as Map<String, dynamic>)),
+            (k, v) {
+              final habitat = Habitat.fromJson(v as Map<String, dynamic>);
+              // Older saves can omit the id. The map key is authoritative, and
+              // care actions look habitats up by `id`, not by the map key.
+              return MapEntry(
+                k,
+                habitat.id.isEmpty ? habitat.copyWith(id: k) : habitat,
+              );
+            },
           ) ??
           {},
       staff: (json['staff'] as Map<String, dynamic>?)?.map(

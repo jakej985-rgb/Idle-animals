@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:extinction_sanctuary/core/save/save_service.dart';
 import 'package:extinction_sanctuary/models/game_state.dart';
+import 'package:extinction_sanctuary/providers/game_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -71,7 +73,38 @@ void main() {
       expect(loaded.habitats.containsKey('dodo_island'), isTrue);
       expect(loaded.habitats['dodo_island']!.name,
           equals('Dodo Island Sanctuary'));
-      expect(loaded.habitats['dodo_island']!.id, isEmpty);
+      // The map key is the habitat's identity, so a missing field must not
+      // leave the id empty (care actions look the habitat up by `id`).
+      expect(loaded.habitats['dodo_island']!.id, equals('dodo_island'));
+    });
+
+    test('A recovered habitat id still resolves care actions', () async {
+      final jsonMap = GameState.initial().toJson();
+      jsonMap['credits'] = 500.0;
+      jsonMap['lastSavedTimestamp'] = DateTime.now().millisecondsSinceEpoch;
+      final habitats = jsonMap['habitats'] as Map<String, dynamic>;
+      final island = habitats['dodo_island'] as Map<String, dynamic>;
+      island.remove('id');
+      island['food'] = 10.0;
+
+      SharedPreferences.setMockInitialValues({
+        'extinction_sanctuary_save_v2': jsonEncode(jsonMap),
+      });
+
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      container.read(gameProvider); // starts the async load
+      await pumpEventQueue();
+
+      final notifier = container.read(gameProvider.notifier);
+      final habitat = container.read(gameProvider).habitats['dodo_island']!;
+
+      expect(habitat.id, equals('dodo_island'));
+      expect(notifier.feedHabitat(habitat.id), isTrue);
+      expect(
+        container.read(gameProvider).habitats['dodo_island']!.food,
+        equals(100.0),
+      );
     });
   });
 }
