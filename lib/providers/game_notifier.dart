@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/balance/game_balance.dart';
 import '../core/feedback/game_haptics.dart';
 import '../core/offline/offline_manager.dart';
+import '../core/save/save_codec.dart';
 import '../core/save/save_service.dart';
 import '../core/simulation/simulation_engine.dart';
 import '../models/expedition.dart';
@@ -28,6 +32,10 @@ class GameNotifier extends Notifier<GameState> {
   Future<void>? _loadFuture;
 
   OfflineReport? pendingOfflineReport;
+
+  /// Completes once the first save has been read and applied. The app waits on
+  /// it so the default state is never shown (or acted on) as the player's own.
+  Future<void> get ready => _loadFuture ?? Future<void>.value();
 
   @override
   GameState build() {
@@ -71,7 +79,7 @@ class GameNotifier extends Notifier<GameState> {
     if (report == null) {
       final elapsedMs = now - state.lastSavedTimestamp;
       if (elapsedMs > 0 && elapsedMs < OfflineManager.minimumReportMs) {
-        state = _engine.tick(state: state, dt: elapsedMs / 1000.0).nextState;
+        state = _simulate(elapsedMs);
       }
       state = state.copyWith(lastSavedTimestamp: now);
       return;
@@ -84,6 +92,19 @@ class GameNotifier extends Notifier<GameState> {
         report.dnaRecovered > 1.0) {
       pendingOfflineReport = report;
     }
+  }
+
+  /// Runs [elapsedMs] of simulation in the same slice size the offline report
+  /// uses, so a short gap and a reported one resolve alike for equal time.
+  GameState _simulate(int elapsedMs) {
+    final seconds = elapsedMs / 1000.0;
+    final steps = max(1, (seconds / OfflineManager.maxStepSeconds).ceil());
+    final dt = seconds / steps;
+    var next = state;
+    for (var i = 0; i < steps; i++) {
+      next = _engine.tick(state: next, dt: dt).nextState;
+    }
+    return next;
   }
 
   /// Stops the simulation while the app is not visible and flushes the state,
@@ -123,6 +144,24 @@ class GameNotifier extends Notifier<GameState> {
   void dismissOfflineReport() {
     pendingOfflineReport = null;
     _saveService.saveGame(state);
+  }
+
+  /// A copyable backup of the current save.
+  String exportSave() => SaveCodec.encode(state);
+
+  /// Replaces the current game with [token], or leaves it untouched when the
+  /// text is not a complete save. Returns whether the import was applied.
+  bool importSave(String token) {
+    final imported = SaveCodec.decode(token);
+    if (imported == null) return false;
+    // The imported progress is where the player is now; an offline report from
+    // the session being replaced would credit the wrong game.
+    pendingOfflineReport = null;
+    state = imported.copyWith(
+      lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+    _saveService.saveGame(state);
+    return true;
   }
 
   void _lightHaptic() {
@@ -289,14 +328,17 @@ class GameNotifier extends Notifier<GameState> {
     // Apply specific upgrade effects to active habitat
     final currentHab = updatedHabitats[state.activeHabitatId];
     if (upg.type == UpgradeType.habitatLevel && currentHab != null) {
-      updatedHabitats[state.activeHabitatId] =
-          currentHab.copyWith(level: currentHab.level + 1);
+      updatedHabitats[state.activeHabitatId] = currentHab.copyWith(
+        level: currentHab.level + 1,
+      );
     } else if (upg.type == UpgradeType.autoFeeder && currentHab != null) {
-      updatedHabitats[state.activeHabitatId] =
-          currentHab.copyWith(hasAutoFeeder: true);
+      updatedHabitats[state.activeHabitatId] = currentHab.copyWith(
+        hasAutoFeeder: true,
+      );
     } else if (upg.type == UpgradeType.autoWater && currentHab != null) {
-      updatedHabitats[state.activeHabitatId] =
-          currentHab.copyWith(hasAutoWater: true);
+      updatedHabitats[state.activeHabitatId] = currentHab.copyWith(
+        hasAutoWater: true,
+      );
     } else if (upg.type == UpgradeType.offlineCap) {
       updatedOfflineCap += 7200.0; // +2 hours
     }
@@ -326,10 +368,7 @@ class GameNotifier extends Notifier<GameState> {
     final updatedStaff = Map<String, StaffMember>.from(state.staff);
     updatedStaff[staffId] = staff.copyWith(level: staff.level + 1);
 
-    state = state.copyWith(
-      credits: state.credits - cost,
-      staff: updatedStaff,
-    );
+    state = state.copyWith(credits: state.credits - cost, staff: updatedStaff);
 
     _mediumHaptic();
     _saveService.saveGame(state);
@@ -401,7 +440,9 @@ class GameNotifier extends Notifier<GameState> {
 
     double bonusDna = 0;
     double bonusResearch = 0;
-    final updatedInventory = Map<String, FossilItem>.from(state.fossilInventory);
+    final updatedInventory = Map<String, FossilItem>.from(
+      state.fossilInventory,
+    );
 
     for (final find in exp.possibleFinds) {
       bonusDna += find.dnaBonus;
@@ -409,8 +450,9 @@ class GameNotifier extends Notifier<GameState> {
 
       final existing = updatedInventory[find.id];
       if (existing != null) {
-        updatedInventory[find.id] =
-            existing.copyWith(count: existing.count + find.count);
+        updatedInventory[find.id] = existing.copyWith(
+          count: existing.count + find.count,
+        );
       } else {
         updatedInventory[find.id] = find;
       }
@@ -597,4 +639,6 @@ class GameNotifier extends Notifier<GameState> {
   }
 }
 
-final gameProvider = NotifierProvider<GameNotifier, GameState>(GameNotifier.new);
+final gameProvider = NotifierProvider<GameNotifier, GameState>(
+  GameNotifier.new,
+);
