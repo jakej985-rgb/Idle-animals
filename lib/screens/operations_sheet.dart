@@ -6,6 +6,7 @@ import '../models/species.dart';
 import '../providers/game_notifier.dart';
 import '../theme/app_theme.dart';
 import '../widgets/restoration_modal.dart';
+import '../widgets/save_transfer_dialog.dart';
 import '../widgets/sheet_header.dart';
 import 'archive_sheet.dart';
 import 'expeditions_sheet.dart';
@@ -43,9 +44,7 @@ class OperationsSheet extends ConsumerWidget {
           );
         };
 
-    final activeHabitat =
-        activeState.habitats[activeState.activeHabitatId] ??
-        activeState.habitats.values.first;
+    final activeHabitat = activeState.activeHabitat;
     final activeSpecies = Species.fromId(activeHabitat.speciesId);
 
     final hasCompletedExpedition = activeState.expeditions.values.any(
@@ -193,6 +192,18 @@ class OperationsSheet extends ConsumerWidget {
                       ),
                     );
                   },
+                ),
+                const SizedBox(height: 10),
+                _buildCard(
+                  icon: '💾',
+                  title: 'Save Data',
+                  subtitle:
+                      'Copy a backup string or restore one on this device',
+                  accentColor: AppColors.quince,
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (_) => const SaveTransferDialog(),
+                  ),
                 ),
                 const SizedBox(height: 16),
 

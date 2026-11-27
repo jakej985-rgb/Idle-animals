@@ -8,7 +8,6 @@ import 'package:extinction_sanctuary/widgets/offline_modal.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Fixed-state notifier that can queue offline reports the way a resume does.
 class _ResumeNotifier extends GameNotifier {
@@ -63,10 +62,6 @@ Future<void> _showFrames(WidgetTester tester) async {
 }
 
 void main() {
-  setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
-  });
-
   testWidgets(
     'offline modal opens again for a second report after the first is collected',
     (tester) async {

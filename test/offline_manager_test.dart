@@ -17,6 +17,20 @@ void main() {
       expect(report, isNull);
     });
 
+    test('Formats a report shorter than a minute in seconds', () {
+      final state = GameState.initial();
+      final now = state.lastSavedTimestamp + 30000; // 30 seconds later
+
+      final report = offlineManager.calculateOfflineProgress(
+        state: state,
+        currentTimestampMs: now,
+      );
+
+      expect(report, isNotNull);
+      // "0m" read as no time at all right above a list of earnings.
+      expect(report!.awayDurationFormatted, equals('30s'));
+    });
+
     test(
       'Calculates offline progress deterministically for 30 minutes away',
       () {

@@ -7,7 +7,6 @@ import 'package:extinction_sanctuary/theme/app_theme.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Returns a fixed state and never starts the game loops, so no timers, saves
 /// or offline reports leak into a rendering test.
@@ -58,13 +57,6 @@ void _usePhoneViewport(WidgetTester tester) {
 }
 
 void main() {
-  setUpAll(() {
-    // Fonts are not fetched in tests. Expect a one-off google_fonts message
-    // about Outfit-Regular missing from assets: it falls back to the test font,
-    // whose metrics are deterministic, so the goldens stay stable.
-    GoogleFonts.config.allowRuntimeFetching = false;
-  });
-
   group('UI Golden Tests', () {
     testWidgets('sanctuary screen renders unchanged', (tester) async {
       _usePhoneViewport(tester);

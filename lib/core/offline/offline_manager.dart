@@ -26,14 +26,19 @@ class OfflineReport {
   });
 
   String get awayDurationFormatted {
-    final int minutes = (secondsAway / 60).floor();
-    final int hours = (minutes / 60).floor();
+    final int totalSeconds = secondsAway.floor();
+    final int minutes = totalSeconds ~/ 60;
+    final int hours = minutes ~/ 60;
     final int remMin = minutes % 60;
     if (hours > 0) {
       return '${hours}h ${remMin}m';
-    } else {
-      return '${remMin}m';
     }
+    if (minutes > 0) {
+      return '${minutes}m';
+    }
+    // A report can be shorter than a minute, and saying "0m" reads as no time
+    // at all when the modal is listing earnings.
+    return '${totalSeconds}s';
   }
 }
 
@@ -41,6 +46,12 @@ class OfflineManager {
   /// Gaps shorter than this produce no report, so a quick app switch does not
   /// pop a welcome-back dialog. Callers still credit the elapsed time.
   static const int minimumReportMs = 15000;
+
+  /// Longest slice simulated at once. Live play ticks every second and clamps a
+  /// frame to 5s, so away-time must not be applied in coarser lumps than that:
+  /// feeding, happiness and breeding all resolve per slice, and bigger steps
+  /// earn differently for the same wall-clock time.
+  static const double maxStepSeconds = 5.0;
 
   final SimulationEngine engine;
 
@@ -77,8 +88,9 @@ class OfflineManager {
     final double simSec = min(elapsedSec, capSec);
     final bool wasCapped = elapsedSec > capSec;
 
-    // 5. Simulate in discrete slices (maximum 100 steps for speed and precision)
-    final int steps = min(100, max(1, (simSec / 5.0).ceil()));
+    // 5. Simulate in slices no longer than [maxStepSeconds], the same size the
+    // live loop is clamped to, so the banked time resolves like active play.
+    final int steps = max(1, (simSec / maxStepSeconds).ceil());
     final double dtPerStep = simSec / steps;
 
     var currentState = state;

@@ -62,12 +62,40 @@ class _ExtinctionSanctuaryAppState
 
   @override
   Widget build(BuildContext context) {
+    final notifier = ref.watch(gameProvider.notifier);
     return MaterialApp(
       title: 'Extinction Sanctuary',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
       darkTheme: buildAppTheme(),
-      home: const SanctuaryScreen(),
+      // The first frame must not present GameState.initial() as the player's
+      // progress: until the save has been read, the header would show the wrong
+      // numbers and any tap would be discarded when the load replaces the state.
+      home: FutureBuilder<void>(
+        future: notifier.ready,
+        builder: (context, snapshot) =>
+            snapshot.connectionState == ConnectionState.done
+            ? const SanctuaryScreen()
+            : const _BootSplash(),
+      ),
+    );
+  }
+}
+
+class _BootSplash extends StatelessWidget {
+  const _BootSplash();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      ),
     );
   }
 }

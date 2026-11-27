@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/balance/game_balance.dart';
 import '../core/feedback/game_haptics.dart';
 import '../core/offline/offline_manager.dart';
+import '../core/save/save_codec.dart';
 import '../core/save/save_service.dart';
 import '../core/simulation/simulation_engine.dart';
 import '../models/expedition.dart';
@@ -30,6 +32,10 @@ class GameNotifier extends Notifier<GameState> {
   Future<void>? _loadFuture;
 
   OfflineReport? pendingOfflineReport;
+
+  /// Completes once the first save has been read and applied. The app waits on
+  /// it so the default state is never shown (or acted on) as the player's own.
+  Future<void> get ready => _loadFuture ?? Future<void>.value();
 
   @override
   GameState build() {
@@ -73,7 +79,7 @@ class GameNotifier extends Notifier<GameState> {
     if (report == null) {
       final elapsedMs = now - state.lastSavedTimestamp;
       if (elapsedMs > 0 && elapsedMs < OfflineManager.minimumReportMs) {
-        state = _engine.tick(state: state, dt: elapsedMs / 1000.0).nextState;
+        state = _simulate(elapsedMs);
       }
       state = state.copyWith(lastSavedTimestamp: now);
       return;
@@ -86,6 +92,19 @@ class GameNotifier extends Notifier<GameState> {
         report.dnaRecovered > 1.0) {
       pendingOfflineReport = report;
     }
+  }
+
+  /// Runs [elapsedMs] of simulation in the same slice size the offline report
+  /// uses, so a short gap and a reported one resolve alike for equal time.
+  GameState _simulate(int elapsedMs) {
+    final seconds = elapsedMs / 1000.0;
+    final steps = max(1, (seconds / OfflineManager.maxStepSeconds).ceil());
+    final dt = seconds / steps;
+    var next = state;
+    for (var i = 0; i < steps; i++) {
+      next = _engine.tick(state: next, dt: dt).nextState;
+    }
+    return next;
   }
 
   /// Stops the simulation while the app is not visible and flushes the state,
@@ -112,14 +131,37 @@ class GameNotifier extends Notifier<GameState> {
   /// Restarts the simulation and credits the time spent in the background.
   Future<void> handleAppResumed() async {
     if (!_paused) return;
+    // The provider can be disposed while the app is in the background; starting
+    // timers afterwards would leak them past disposal.
+    if (!ref.mounted) return;
     _paused = false;
-    _startLoops();
+    // Credit the background time before the 1s loop restarts, so its first tick
+    // does not also count the time since the tick watch was reset.
     _collectOfflineProgress();
+    _startLoops();
   }
 
   void dismissOfflineReport() {
     pendingOfflineReport = null;
     _saveService.saveGame(state);
+  }
+
+  /// A copyable backup of the current save.
+  String exportSave() => SaveCodec.encode(state);
+
+  /// Replaces the current game with [token], or leaves it untouched when the
+  /// text is not a complete save. Returns whether the import was applied.
+  bool importSave(String token) {
+    final imported = SaveCodec.decode(token);
+    if (imported == null) return false;
+    // The imported progress is where the player is now; an offline report from
+    // the session being replaced would credit the wrong game.
+    pendingOfflineReport = null;
+    state = imported.copyWith(
+      lastSavedTimestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+    _saveService.saveGame(state);
+    return true;
   }
 
   void _lightHaptic() {

@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Central palette for the sanctuary UI.
 ///
@@ -115,30 +114,35 @@ abstract final class AppText {
   static const tabularFigures = <FontFeature>[FontFeature.tabularFigures()];
 }
 
-/// Applies Outfit to every style in [base].
+/// The bundled Outfit family, declared in `pubspec.yaml`.
+const String appFontFamily = 'Outfit';
+
+/// Applies [appFontFamily] to every style in [base].
 ///
-/// `material_ui` declares its own [TextTheme] while GoogleFonts' text theme
-/// helper is typed against `package:flutter/material.dart`, so the two cannot
-/// be passed to each other. The individual styles are the shared [TextStyle]
-/// type, so the font is applied per style; this matches the output of
-/// `GoogleFonts.outfitTextTheme(base)` style for style.
+/// `material_ui` declares its own [TextTheme] while the theme helpers are typed
+/// against `package:flutter/material.dart`, so the two cannot be passed to each
+/// other. The individual styles are the shared [TextStyle] type, so the family
+/// is applied per style.
 TextTheme _outfitTextTheme(TextTheme base) {
+  TextStyle? outfit(TextStyle? style) =>
+      style?.copyWith(fontFamily: appFontFamily);
+
   return TextTheme(
-    displayLarge: GoogleFonts.outfit(textStyle: base.displayLarge),
-    displayMedium: GoogleFonts.outfit(textStyle: base.displayMedium),
-    displaySmall: GoogleFonts.outfit(textStyle: base.displaySmall),
-    headlineLarge: GoogleFonts.outfit(textStyle: base.headlineLarge),
-    headlineMedium: GoogleFonts.outfit(textStyle: base.headlineMedium),
-    headlineSmall: GoogleFonts.outfit(textStyle: base.headlineSmall),
-    titleLarge: GoogleFonts.outfit(textStyle: base.titleLarge),
-    titleMedium: GoogleFonts.outfit(textStyle: base.titleMedium),
-    titleSmall: GoogleFonts.outfit(textStyle: base.titleSmall),
-    bodyLarge: GoogleFonts.outfit(textStyle: base.bodyLarge),
-    bodyMedium: GoogleFonts.outfit(textStyle: base.bodyMedium),
-    bodySmall: GoogleFonts.outfit(textStyle: base.bodySmall),
-    labelLarge: GoogleFonts.outfit(textStyle: base.labelLarge),
-    labelMedium: GoogleFonts.outfit(textStyle: base.labelMedium),
-    labelSmall: GoogleFonts.outfit(textStyle: base.labelSmall),
+    displayLarge: outfit(base.displayLarge),
+    displayMedium: outfit(base.displayMedium),
+    displaySmall: outfit(base.displaySmall),
+    headlineLarge: outfit(base.headlineLarge),
+    headlineMedium: outfit(base.headlineMedium),
+    headlineSmall: outfit(base.headlineSmall),
+    titleLarge: outfit(base.titleLarge),
+    titleMedium: outfit(base.titleMedium),
+    titleSmall: outfit(base.titleSmall),
+    bodyLarge: outfit(base.bodyLarge),
+    bodyMedium: outfit(base.bodyMedium),
+    bodySmall: outfit(base.bodySmall),
+    labelLarge: outfit(base.labelLarge),
+    labelMedium: outfit(base.labelMedium),
+    labelSmall: outfit(base.labelSmall),
   );
 }
 

@@ -83,8 +83,7 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
       }
     }
 
-    final habitat =
-        state.habitats[state.activeHabitatId] ?? state.habitats.values.first;
+    final habitat = state.activeHabitat;
 
     final hasCompletedExpedition = state.expeditions.values.any(
       (e) => e.isCompleted,

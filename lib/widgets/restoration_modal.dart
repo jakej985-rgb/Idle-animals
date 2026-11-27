@@ -24,10 +24,7 @@ class RestorationModal extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final GameState activeState = state ?? ref.watch(gameProvider);
     final GameNotifier controller = ref.read(gameProvider.notifier);
-    final activeHabitat =
-        habitat ??
-        activeState.habitats[activeState.activeHabitatId] ??
-        activeState.habitats.values.first;
+    final activeHabitat = habitat ?? activeState.activeHabitat;
     final earnedPoints = activeHabitat.calculateRestorationPoints();
     final canRestore =
         activeHabitat.population >= 10 || activeHabitat.level >= 2;
