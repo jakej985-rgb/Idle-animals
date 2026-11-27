@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'providers/game_notifier.dart';
 import 'screens/sanctuary_screen.dart';
 import 'theme/app_theme.dart';
@@ -17,11 +18,7 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
-  runApp(
-    const ProviderScope(
-      child: ExtinctionSanctuaryApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: ExtinctionSanctuaryApp()));
 }
 
 class ExtinctionSanctuaryApp extends ConsumerStatefulWidget {
@@ -32,7 +29,8 @@ class ExtinctionSanctuaryApp extends ConsumerStatefulWidget {
       _ExtinctionSanctuaryAppState();
 }
 
-class _ExtinctionSanctuaryAppState extends ConsumerState<ExtinctionSanctuaryApp> {
+class _ExtinctionSanctuaryAppState
+    extends ConsumerState<ExtinctionSanctuaryApp> {
   late final AppLifecycleListener _lifecycleListener;
 
   @override
@@ -64,12 +62,40 @@ class _ExtinctionSanctuaryAppState extends ConsumerState<ExtinctionSanctuaryApp>
 
   @override
   Widget build(BuildContext context) {
+    final notifier = ref.watch(gameProvider.notifier);
     return MaterialApp(
       title: 'Extinction Sanctuary',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
       darkTheme: buildAppTheme(),
-      home: const SanctuaryScreen(),
+      // The first frame must not present GameState.initial() as the player's
+      // progress: until the save has been read, the header would show the wrong
+      // numbers and any tap would be discarded when the load replaces the state.
+      home: FutureBuilder<void>(
+        future: notifier.ready,
+        builder: (context, snapshot) =>
+            snapshot.connectionState == ConnectionState.done
+            ? const SanctuaryScreen()
+            : const _BootSplash(),
+      ),
+    );
+  }
+}
+
+class _BootSplash extends StatelessWidget {
+  const _BootSplash();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      ),
     );
   }
 }

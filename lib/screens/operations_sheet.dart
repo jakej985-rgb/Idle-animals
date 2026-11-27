@@ -1,10 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
 import '../theme/app_theme.dart';
 import '../widgets/restoration_modal.dart';
+import '../widgets/save_transfer_dialog.dart';
 import '../widgets/sheet_header.dart';
 import 'archive_sheet.dart';
 import 'expeditions_sheet.dart';
@@ -29,8 +31,10 @@ class OperationsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final GameState activeState = state ?? ref.watch(gameProvider);
-    final GameNotifier activeController = controller ?? ref.read(gameProvider.notifier);
-    final openSub = onOpenSubSheet ??
+    final GameNotifier activeController =
+        controller ?? ref.read(gameProvider.notifier);
+    final openSub =
+        onOpenSubSheet ??
         (Widget sheet) {
           showModalBottomSheet(
             context: context,
@@ -41,19 +45,26 @@ class OperationsSheet extends ConsumerWidget {
         };
 
     final activeHabitat =
-        activeState.habitats[activeState.activeHabitatId] ?? activeState.habitats.values.first;
+        activeState.habitats[activeState.activeHabitatId] ??
+        activeState.habitats.values.first;
     final activeSpecies = Species.fromId(activeHabitat.speciesId);
 
-    final hasCompletedExpedition =
-        activeState.expeditions.values.any((e) => e.isCompleted);
-    final hasClaimableMission =
-        activeState.missions.values.any((m) => m.isCompleted && !m.isClaimed);
+    final hasCompletedExpedition = activeState.expeditions.values.any(
+      (e) => e.isCompleted,
+    );
+    final hasClaimableMission = activeState.missions.values.any(
+      (m) => m.isCompleted && !m.isClaimed,
+    );
 
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.sheet,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
-        border: Border(top: BorderSide(color: AppColors.borderStrong, width: 1.5)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.sheet),
+        ),
+        border: Border(
+          top: BorderSide(color: AppColors.borderStrong, width: 1.5),
+        ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
@@ -77,22 +88,26 @@ class OperationsSheet extends ConsumerWidget {
                     _buildServiceButton(
                       icon: '⭐',
                       label: 'Upgrades',
-                      onTap: () => _openService(context, openSub, const UpgradesSheet()),
+                      onTap: () =>
+                          _openService(context, openSub, const UpgradesSheet()),
                     ),
                     _buildServiceButton(
                       icon: '🧑‍🌾',
                       label: 'Staff',
-                      onTap: () => _openService(context, openSub, const StaffSheet()),
+                      onTap: () =>
+                          _openService(context, openSub, const StaffSheet()),
                     ),
                     _buildServiceButton(
                       icon: '🔬',
                       label: 'Research',
-                      onTap: () => _openService(context, openSub, const ResearchSheet()),
+                      onTap: () =>
+                          _openService(context, openSub, const ResearchSheet()),
                     ),
                     _buildServiceButton(
                       icon: '📜',
                       label: 'Archive',
-                      onTap: () => _openService(context, openSub, const ArchiveSheet()),
+                      onTap: () =>
+                          _openService(context, openSub, const ArchiveSheet()),
                     ),
                   ],
                 ),
@@ -100,7 +115,8 @@ class OperationsSheet extends ConsumerWidget {
                 _buildCard(
                   icon: '🌎',
                   title: 'Global Reserve Map',
-                  subtitle: '${activeState.habitats.length} Habitats Active • Travel & Expand',
+                  subtitle:
+                      '${activeState.habitats.length} Habitats Active • Travel & Expand',
                   accentColor: AppColors.accent,
                   badge: null,
                   onTap: () {
@@ -173,10 +189,23 @@ class OperationsSheet extends ConsumerWidget {
                           activeController.restoreEcosystem(activeHabitat.id);
                           Navigator.of(ctx).pop();
                         },
-                        onBuyPerk: (key) => activeController.buyRestorationPerk(key),
+                        onBuyPerk: (key) =>
+                            activeController.buyRestorationPerk(key),
                       ),
                     );
                   },
+                ),
+                const SizedBox(height: 10),
+                _buildCard(
+                  icon: '💾',
+                  title: 'Save Data',
+                  subtitle:
+                      'Copy a backup string or restore one on this device',
+                  accentColor: AppColors.quince,
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (_) => const SaveTransferDialog(),
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -193,7 +222,11 @@ class OperationsSheet extends ConsumerWidget {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.tune, color: AppColors.textSecondary, size: 16),
+                          Icon(
+                            Icons.tune,
+                            color: AppColors.textSecondary,
+                            size: 16,
+                          ),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -221,7 +254,9 @@ class OperationsSheet extends ConsumerWidget {
                               Text(
                                 'Haptic Feedback',
                                 style: TextStyle(
-                                    color: Colors.white, fontSize: 13),
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -241,13 +276,17 @@ class OperationsSheet extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12),
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black38,
                               borderRadius: BorderRadius.circular(6),
@@ -380,7 +419,9 @@ class OperationsSheet extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: badgeColor ?? accentColor,
                             borderRadius: BorderRadius.circular(6),
@@ -388,7 +429,9 @@ class OperationsSheet extends ConsumerWidget {
                           child: Text(
                             badge,
                             style: TextStyle(
-                              color: AppColors.onFill(badgeColor ?? accentColor),
+                              color: AppColors.onFill(
+                                badgeColor ?? accentColor,
+                              ),
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.5,
