@@ -44,8 +44,9 @@ behaviour and two UI goldens.
 ## Release
 
 - `.github/workflows/release.yml` builds a signed Android APK and publishes a
-  GitHub release on every push to `main` and on `v*` tags. Signing keys come
-  from repository secrets; without them the build falls back to debug signing.
+  GitHub release from a pushed `v*` tag or a manual `workflow_dispatch` run.
+  Signing keys come from repository secrets; without them the build falls back
+  to debug signing.
 - `.github/workflows/ci.yml` runs `flutter analyze` and `flutter test` on pull
   requests and on `main`.
 - `scripts/build_web_release.sh` produces the web bundle.
