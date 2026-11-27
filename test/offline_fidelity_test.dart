@@ -37,36 +37,38 @@ const Habitat _dryIsland = Habitat(
 
 void main() {
   group('Offline earnings match live play', () {
-    test('two hours away earns what two hours in the app would have earned',
-        () {
-      const seconds = 7200;
-      final start = GameState.initial();
-      final live = _playLive(start, seconds);
-      final report = _goAway(start, seconds);
+    test(
+      'two hours away earns what two hours in the app would have earned',
+      () {
+        const seconds = 7200;
+        final start = GameState.initial();
+        final live = _playLive(start, seconds);
+        final report = _goAway(start, seconds);
 
-      final liveCredits = live.credits - start.credits;
-      final liveDna = live.dna - start.dna;
+        final liveCredits = live.credits - start.credits;
+        final liveDna = live.dna - start.dna;
 
-      expect(report.wasCapped, isFalse);
-      expect(report.simulatedSeconds, equals(seconds.toDouble()));
-      // The old 100-step ceiling simulated this in eighteen-second lumps.
-      expect(report.creditsEarned, closeTo(liveCredits, liveCredits * 0.005));
-      expect(report.dnaRecovered, closeTo(liveDna, liveDna * 0.005));
-      expect(
-        report.animalsBorn,
-        equals(live.totalAnimalsBred - start.totalAnimalsBred),
-      );
-      expect(
-        report.finalState.habitats['dodo_island']!.population,
-        equals(live.habitats['dodo_island']!.population),
-      );
-    });
+        expect(report.wasCapped, isFalse);
+        expect(report.simulatedSeconds, equals(seconds.toDouble()));
+        // The old 100-step ceiling simulated this in eighteen-second lumps.
+        expect(report.creditsEarned, closeTo(liveCredits, liveCredits * 0.005));
+        expect(report.dnaRecovered, closeTo(liveDna, liveDna * 0.005));
+        expect(
+          report.animalsBorn,
+          equals(live.totalAnimalsBred - start.totalAnimalsBred),
+        );
+        expect(
+          report.finalState.habitats['dodo_island']!.population,
+          equals(live.habitats['dodo_island']!.population),
+        );
+      },
+    );
 
     test('a starved sanctuary still tracks live play over half an hour', () {
       const seconds = 1800;
-      final start = GameState.initial().copyWith(habitats: const {
-        'dodo_island': _dryIsland,
-      });
+      final start = GameState.initial().copyWith(
+        habitats: const {'dodo_island': _dryIsland},
+      );
       final live = _playLive(start, seconds);
       final report = _goAway(start, seconds);
 

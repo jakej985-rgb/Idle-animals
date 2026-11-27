@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/research_node.dart';
@@ -11,11 +12,7 @@ class ResearchSheet extends ConsumerWidget {
   final GameState? state;
   final Function(String)? onUnlockResearch;
 
-  const ResearchSheet({
-    super.key,
-    this.state,
-    this.onUnlockResearch,
-  });
+  const ResearchSheet({super.key, this.state, this.onUnlockResearch});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,7 +46,11 @@ class ResearchSheet extends ConsumerWidget {
             child: ListView(
               children: activeState.researchNodes.values.map((node) {
                 return _buildResearchNodeCard(
-                    context, node, activeState, controller);
+                  context,
+                  node,
+                  activeState,
+                  controller,
+                );
               }).toList(),
             ),
           ),
@@ -58,8 +59,12 @@ class ResearchSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildResearchNodeCard(BuildContext context, ResearchNode node,
-      GameState activeState, GameNotifier controller) {
+  Widget _buildResearchNodeCard(
+    BuildContext context,
+    ResearchNode node,
+    GameState activeState,
+    GameNotifier controller,
+  ) {
     final isUnlocked = node.isUnlocked;
 
     // Check prerequisites
@@ -84,7 +89,9 @@ class ResearchSheet extends ConsumerWidget {
         border: Border.all(
           color: isUnlocked
               ? AppColors.emerald.withValues(alpha: 0.5)
-              : (prereqsMet ? const Color(0xFF8B5CF6).withValues(alpha: 0.4) : AppColors.border),
+              : (prereqsMet
+                    ? const Color(0xFF8B5CF6).withValues(alpha: 0.4)
+                    : AppColors.border),
         ),
       ),
       child: Row(
@@ -95,7 +102,9 @@ class ResearchSheet extends ConsumerWidget {
             decoration: BoxDecoration(
               color: isUnlocked
                   ? const Color(0xFF064E3B)
-                  : (prereqsMet ? const Color(0xFF2E1065) : const Color(0xFF1E293B)),
+                  : (prereqsMet
+                        ? const Color(0xFF2E1065)
+                        : const Color(0xFF1E293B)),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
@@ -122,7 +131,9 @@ class ResearchSheet extends ConsumerWidget {
                     if (isUnlocked)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.emerald.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
@@ -177,8 +188,10 @@ class ResearchSheet extends ConsumerWidget {
                 foregroundColor: AppColors.onFill(const Color(0xFF7C3AED)),
                 disabledBackgroundColor: const Color(0xFF1E293B),
                 disabledForegroundColor: Colors.white24,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

@@ -37,8 +37,7 @@ class Species {
     scientificName: 'Raphus cucullatus',
     extinctionEra: 'c. 1662 (Mauritius)',
     habitatType: 'tropical_island',
-    description:
-        'A flightless bird endemic to Mauritius. Known for its docile nature and distinctive hooked beak, restored through ancient genetic recovery.',
+    description: 'A flightless bird endemic to Mauritius. Known for its docile nature and distinctive hooked beak, restored through ancient genetic recovery.',
     basePopulationCapacity: 25,
     baseBreedingSeconds: 15.0,
     baseFoodConsumptionPerSec: 0.05,
@@ -55,8 +54,7 @@ class Species {
     scientificName: 'Thylacinus cynocephalus',
     extinctionEra: 'c. 1936 (Tasmania)',
     habitatType: 'australian_forest',
-    description:
-        'The Tasmanian Tiger, a legendary carnivorous marsupial with distinctive tiger-like dorsal stripes and a flexible pouch.',
+    description: 'The Tasmanian Tiger, a legendary carnivorous marsupial with distinctive tiger-like dorsal stripes and a flexible pouch.',
     basePopulationCapacity: 20,
     baseBreedingSeconds: 22.0,
     baseFoodConsumptionPerSec: 0.08,
@@ -73,8 +71,7 @@ class Species {
     scientificName: 'Pinguinus impennis',
     extinctionEra: 'c. 1852 (North Atlantic)',
     habitatType: 'northern_coast',
-    description:
-        'A flightless, wing-propelled diving seabird of the North Atlantic. Agile swimmers in icy offshore waters.',
+    description: 'A flightless, wing-propelled diving seabird of the North Atlantic. Agile swimmers in icy offshore waters.',
     basePopulationCapacity: 25,
     baseBreedingSeconds: 28.0,
     baseFoodConsumptionPerSec: 0.10,
@@ -91,8 +88,7 @@ class Species {
     scientificName: 'Equus quagga quagga',
     extinctionEra: 'c. 1883 (South Africa)',
     habitatType: 'african_grasslands',
-    description:
-        'A unique plains zebra sub-species with vivid stripes on its head and neck fading to chestnut brown across the torso.',
+    description: 'A unique plains zebra sub-species with vivid stripes on its head and neck fading to chestnut brown across the torso.',
     basePopulationCapacity: 30,
     baseBreedingSeconds: 35.0,
     baseFoodConsumptionPerSec: 0.14,
@@ -109,8 +105,7 @@ class Species {
     scientificName: 'Bos primigenius',
     extinctionEra: 'c. 1627 (Poland)',
     habitatType: 'european_woodland',
-    description:
-        'The colossal wild ancestor of domestic cattle that roamed prehistoric Europe, celebrated for its curved horns and immense strength.',
+    description: 'The colossal wild ancestor of domestic cattle that roamed prehistoric Europe, celebrated for its curved horns and immense strength.',
     basePopulationCapacity: 20,
     baseBreedingSeconds: 45.0,
     baseFoodConsumptionPerSec: 0.20,
@@ -127,8 +122,7 @@ class Species {
     scientificName: 'Mammuthus primigenius',
     extinctionEra: 'c. 4000 BP (Wrangel Island)',
     habitatType: 'ice_age_tundra',
-    description:
-        'The crowning giant of the Pleistocene epoch, shielded by dense shaggy fur and massive curving ivory tusks.',
+    description: 'The crowning giant of the Pleistocene epoch, shielded by dense shaggy fur and massive curving ivory tusks.',
     basePopulationCapacity: 15,
     baseBreedingSeconds: 65.0,
     baseFoodConsumptionPerSec: 0.35,

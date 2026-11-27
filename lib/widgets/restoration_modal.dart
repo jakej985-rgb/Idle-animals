@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/game_state.dart';
 import '../models/habitat.dart';
 import '../providers/game_notifier.dart';
@@ -25,7 +26,8 @@ class RestorationModal extends ConsumerWidget {
     final GameNotifier controller = ref.read(gameProvider.notifier);
     final activeHabitat = habitat ?? activeState.activeHabitat;
     final earnedPoints = activeHabitat.calculateRestorationPoints();
-    final canRestore = activeHabitat.population >= 10 || activeHabitat.level >= 2;
+    final canRestore =
+        activeHabitat.population >= 10 || activeHabitat.level >= 2;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -154,7 +156,10 @@ class RestorationModal extends ConsumerWidget {
                   canRestore
                       ? 'RESTORE ECOSYSTEM (+$earnedPoints ⭐)'
                       : 'Reach Pop 10 or Reserve Lv 2 to Restore',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               const SizedBox(height: 18),

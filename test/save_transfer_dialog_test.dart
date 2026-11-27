@@ -65,12 +65,11 @@ void main() {
     final calls = <MethodCall>[];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      calls.add(call);
-      return null;
-    });
+          calls.add(call);
+          return null;
+        });
     addTearDown(
-      () => TestDefaultBinaryMessengerBinding
-          .instance.defaultBinaryMessenger
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null),
     );
 
@@ -80,8 +79,7 @@ void main() {
     await tester.tap(find.widgetWithText(OutlinedButton, 'Copy backup'));
     await tester.pump();
 
-    final copy =
-        calls.lastWhere((call) => call.method == 'Clipboard.setData');
+    final copy = calls.lastWhere((call) => call.method == 'Clipboard.setData');
     expect((copy.arguments as Map)['text'], equals(token));
     // The button reports success without a snackbar over the dialog.
     expect(find.text('Copied'), findsOneWidget);
@@ -89,8 +87,9 @@ void main() {
     await _disposeDialog(tester, container);
   });
 
-  testWidgets('rejects a paste that is not a save and keeps the game',
-      (tester) async {
+  testWidgets('rejects a paste that is not a save and keeps the game', (
+    tester,
+  ) async {
     final container = await _pumpDialog(tester);
     final creditsBefore = container.read(gameProvider).credits;
 

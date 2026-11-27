@@ -11,8 +11,9 @@ void main() {
       final futureSavedTimeMs = 1700005000000;
       final currentClientTimeMs = 1700000000000; // in the past
 
-      final stateWithFutureTime =
-          initial.copyWith(lastSavedTimestamp: futureSavedTimeMs);
+      final stateWithFutureTime = initial.copyWith(
+        lastSavedTimestamp: futureSavedTimeMs,
+      );
       final report = manager.calculateOfflineProgress(
         state: stateWithFutureTime,
         currentTimestampMs: currentClientTimeMs,
@@ -22,29 +23,32 @@ void main() {
       expect(report, isNull);
     });
 
-    test('Clamps absurdly large clock jumps forward to safety threshold and cap', () {
-      final initial = GameState.initial();
-      final baseTimeMs = 1700000000000;
-      // 2 years into the future (over 60 million seconds)
-      final twoYearsLaterMs = baseTimeMs + (86400 * 365 * 2 * 1000);
+    test(
+      'Clamps absurdly large clock jumps forward to safety threshold and cap',
+      () {
+        final initial = GameState.initial();
+        final baseTimeMs = 1700000000000;
+        // 2 years into the future (over 60 million seconds)
+        final twoYearsLaterMs = baseTimeMs + (86400 * 365 * 2 * 1000);
 
-      final savedState = initial.copyWith(
-        lastSavedTimestamp: baseTimeMs,
-        offlineCapSeconds: 86400, // 24-hour player offline cap
-      );
+        final savedState = initial.copyWith(
+          lastSavedTimestamp: baseTimeMs,
+          offlineCapSeconds: 86400, // 24-hour player offline cap
+        );
 
-      final report = manager.calculateOfflineProgress(
-        state: savedState,
-        currentTimestampMs: twoYearsLaterMs,
-      );
+        final report = manager.calculateOfflineProgress(
+          state: savedState,
+          currentTimestampMs: twoYearsLaterMs,
+        );
 
-      expect(report, isNotNull);
-      // Even though clock jumped 2 years, offline report is capped at offlineCapSeconds (86400s)
-      expect(report!.wasCapped, isTrue);
-      expect(report.simulatedSeconds, equals(86400.0));
-      // Elapsed seconds clamped to 30-day ceiling (2,592,000s)
-      expect(report.secondsAway, equals(30 * 86400.0));
-    });
+        expect(report, isNotNull);
+        // Even though clock jumped 2 years, offline report is capped at offlineCapSeconds (86400s)
+        expect(report!.wasCapped, isTrue);
+        expect(report.simulatedSeconds, equals(86400.0));
+        // Elapsed seconds clamped to 30-day ceiling (2,592,000s)
+        expect(report.secondsAway, equals(30 * 86400.0));
+      },
+    );
 
     test('Prevent duplicate collection through updated timestamp', () {
       final initial = GameState.initial();
@@ -59,7 +63,9 @@ void main() {
       expect(report, isNotNull);
 
       // Once applied, state's lastSavedTimestamp is set to now
-      final updatedState = report!.finalState.copyWith(lastSavedTimestamp: t2Ms);
+      final updatedState = report!.finalState.copyWith(
+        lastSavedTimestamp: t2Ms,
+      );
 
       // Immediate second check at same timestamp returns null (preventing infinite reward loop)
       final duplicateReport = manager.calculateOfflineProgress(
