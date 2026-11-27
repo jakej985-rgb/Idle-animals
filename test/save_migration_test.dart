@@ -6,6 +6,7 @@ import 'package:extinction_sanctuary/core/save/save_service.dart';
 import 'package:extinction_sanctuary/models/game_state.dart';
 import 'package:extinction_sanctuary/providers/game_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -201,5 +202,81 @@ void main() {
         expect(loaded.schemaVersion, equals(99));
       },
     );
+
+    test(
+      'A negative schema version does not walk the migration loop',
+      () async {
+        final jsonMap = GameState.initial().toJson()
+          ..['schemaVersion'] = -2147483648
+          ..['credits'] = 333.0;
+
+        SharedPreferences.setMockInitialValues({
+          'extinction_sanctuary_save_v2': jsonEncode(jsonMap),
+        });
+
+        final clock = Stopwatch()..start();
+        final loaded = await SaveService().loadGame();
+        clock.stop();
+
+        expect(loaded, isNotNull);
+        expect(loaded!.credits, equals(333.0));
+        expect(loaded.schemaVersion, equals(GameState.currentSchemaVersion));
+        // Unclamped, the loop runs one iteration per integer up to the current
+        // schema: about twenty seconds of blocked main thread here, minutes on
+        // a phone. Reading a stored version must not cost anything.
+        expect(clock.elapsed, lessThan(const Duration(seconds: 2)));
+      },
+    );
+
+    test('A save with no habitats is recovered, not loaded', () async {
+      final noHabitats = GameState.initial().toJson()
+        ..['credits'] = 900.0
+        ..['habitats'] = <String, dynamic>{};
+      final previous = GameState.initial().toJson()..['credits'] = 2468.0;
+
+      SharedPreferences.setMockInitialValues({
+        'extinction_sanctuary_save_v2': jsonEncode(noHabitats),
+        'extinction_sanctuary_save_v2_backup': jsonEncode(previous),
+      });
+
+      final recovered = await SaveService().loadGame();
+
+      // Loading an empty habitat map throws on the sanctuary screen, i.e. on
+      // every launch, so the previous save is used instead.
+      expect(recovered, isNotNull);
+      expect(recovered!.credits, equals(2468.0));
+      expect(recovered.habitats, isNotEmpty);
+    });
+
+    test(
+      'A backup is returned even when it cannot be promoted to the live slot',
+      () async {
+        final previous = GameState.initial().toJson()..['credits'] = 777.0;
+        SharedPreferences.resetStatic();
+        SharedPreferencesStorePlatform.instance = _ReadOnlyPreferencesStore({
+          'flutter.extinction_sanctuary_save_v2':
+              '{corrupted_malformed_json_###',
+          'flutter.extinction_sanctuary_save_v2_backup': jsonEncode(previous),
+        });
+
+        final recovered = await SaveService().loadGame();
+
+        // The promotion write fails here; the recovered progress must still be
+        // handed back instead of resetting the player to a new game.
+        expect(recovered, isNotNull);
+        expect(recovered!.credits, equals(777.0));
+      },
+    );
   });
+}
+
+/// Reads normally but rejects every write, like a device whose storage has
+/// gone read-only after the save was written.
+class _ReadOnlyPreferencesStore extends InMemorySharedPreferencesStore {
+  _ReadOnlyPreferencesStore(super.data) : super.withData();
+
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async {
+    throw StateError('the preferences store is read-only');
+  }
 }

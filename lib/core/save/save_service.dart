@@ -107,8 +107,17 @@ class SaveService {
       final raw = prefs.getString(_backupKey);
       if (raw == null || raw.isEmpty) return null;
       final state = GameState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-      await prefs.setString(_saveKeyV2, raw);
-      debugPrint('SaveService: recovered the previous save.');
+      // Promotion is best-effort: a device that cannot write hands the
+      // recovered progress back for this session instead of dropping it.
+      try {
+        await prefs.setString(_saveKeyV2, raw);
+        debugPrint('SaveService: recovered the previous save.');
+      } catch (error) {
+        debugPrint(
+          'SaveService: recovered the previous save but could not promote it '
+          '(${_firstLine(error)}).',
+        );
+      }
       return state;
     } catch (error) {
       debugPrint(

@@ -53,6 +53,13 @@ void main() {
       final payload = base64Url.encode(utf8.encode('{"credits": 5}'));
       expect(SaveCodec.decode('${SaveCodec.prefix}$payload'), isNull);
     });
+
+    test('rejects a save with no habitats', () {
+      final payload = base64Url.encode(
+        utf8.encode('{"credits": 5, "habitats": {}}'),
+      );
+      expect(SaveCodec.decode('${SaveCodec.prefix}$payload'), isNull);
+    });
   });
 
   group('Importing a save', () {
@@ -87,6 +94,23 @@ void main() {
 
       expect(notifier.importSave('nonsense'), isFalse);
       expect(container.read(gameProvider).credits, equals(60.0));
+    });
+
+    test('a save with no habitats leaves the current game in place', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      container.read(gameProvider);
+      await pumpEventQueue();
+
+      final notifier = container.read(gameProvider.notifier);
+      final payload = base64Url.encode(
+        utf8.encode('{"credits": 5, "habitats": {}}'),
+      );
+
+      expect(notifier.importSave('${SaveCodec.prefix}$payload'), isFalse);
+      expect(container.read(gameProvider).credits, equals(60.0));
+      expect(container.read(gameProvider).habitats, isNotEmpty);
     });
   });
 }

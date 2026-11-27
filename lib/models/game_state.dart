@@ -312,7 +312,11 @@ class GameState {
 
   factory GameState.fromJson(Map<String, dynamic> json) {
     var data = Map<String, dynamic>.from(json);
-    final version = (data['schemaVersion'] as int?) ?? 1;
+    final storedVersion = (data['schemaVersion'] as int?) ?? 1;
+    // A version below the first schema would otherwise walk the migration loop
+    // one step per integer up to the current one - for a negative version that
+    // is billions of iterations on the main thread.
+    final version = storedVersion < 1 ? 1 : storedVersion;
     for (var from = version; from < currentSchemaVersion; from++) {
       final migrate = _migrations[from];
       if (migrate != null) data = migrate(data);
@@ -327,6 +331,14 @@ class GameState {
   }
 
   static GameState _fromV2Json(Map<String, dynamic> json) {
+    // A payload without habitats is not a playable game: callers read the
+    // active habitat, so it is rejected as unreadable (and recovered from the
+    // backup) rather than loaded and throwing on every launch.
+    final habitats = json['habitats'];
+    if (habitats is! Map || habitats.isEmpty) {
+      throw const FormatException('the save has no habitats');
+    }
+
     // Migration: If v1, totalAnimalsBred falls back to totalDodosBred
     final totalBred =
         json['totalAnimalsBred'] as int? ?? json['totalDodosBred'] as int? ?? 1;
