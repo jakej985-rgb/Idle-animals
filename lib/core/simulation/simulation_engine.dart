@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import '../../models/expedition.dart';
 import '../../models/game_state.dart';
 import '../../models/habitat.dart';
@@ -51,13 +52,14 @@ class SimulationEngine {
     final happinessMult = Habitat.happinessMultiplierFor(happiness);
 
     return ProductionRates(
-      creditsPerSec:
-          population * species.baseCreditsRatePerSec * happinessMult,
-      dnaPerSec: population *
+      creditsPerSec: population * species.baseCreditsRatePerSec * happinessMult,
+      dnaPerSec:
+          population *
           species.baseDnaRatePerSec *
           happinessMult *
           _dnaMultiplier(state),
-      researchPerSec: population *
+      researchPerSec:
+          population *
           species.baseResearchRatePerSec *
           happinessMult *
           state.globalResearchMultiplier,
@@ -157,10 +159,14 @@ class SimulationEngine {
       var currentWater = max(0.0, habitat.water - waterConsumed);
 
       // Automated systems or Keeper refill
-      if (habitat.hasAutoFeeder || hasAutoFeeder || (hasKeeper && currentFood < 20.0)) {
+      if (habitat.hasAutoFeeder ||
+          hasAutoFeeder ||
+          (hasKeeper && currentFood < 20.0)) {
         currentFood = habitat.maxFood;
       }
-      if (habitat.hasAutoWater || hasAutoWater || (hasKeeper && currentWater < 20.0)) {
+      if (habitat.hasAutoWater ||
+          hasAutoWater ||
+          (hasKeeper && currentWater < 20.0)) {
         currentWater = habitat.maxWater;
       }
 
@@ -176,21 +182,22 @@ class SimulationEngine {
       }
 
       // Breeding Progression
-      final happinessMult =
-          Habitat.happinessMultiplierFor(currentHappiness);
+      final happinessMult = Habitat.happinessMultiplierFor(currentHappiness);
       final keeperBreedingMult = 1.0 + (keeperLevel * 0.15);
       final nestingBreedingMult = 1.0 + (nestingLevel * 0.15);
       final incubationMult = incubationResearch ? 1.25 : 1.0;
       final globalGrowthMult = state.globalGrowthMultiplier;
 
-      final breedingSpeedRate = (1.0 / species.baseBreedingSeconds) *
+      final breedingSpeedRate =
+          (1.0 / species.baseBreedingSeconds) *
           happinessMult *
           keeperBreedingMult *
           nestingBreedingMult *
           incubationMult *
           globalGrowthMult;
 
-      var breedingProgress = habitat.breedingProgress + (breedingSpeedRate * dt);
+      var breedingProgress =
+          habitat.breedingProgress + (breedingSpeedRate * dt);
       var currentPop = habitat.population;
       var habitatNewBorns = 0;
 
@@ -242,7 +249,10 @@ class SimulationEngine {
 
     // 3. Update Mission Progress
     final updatedMissions = Map<String, Mission>.from(state.missions);
-    int totalPop = updatedHabitats.values.fold(0, (sum, h) => sum + h.population);
+    int totalPop = updatedHabitats.values.fold(
+      0,
+      (sum, h) => sum + h.population,
+    );
 
     for (final mEntry in state.missions.entries) {
       final m = mEntry.value;

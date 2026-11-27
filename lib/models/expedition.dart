@@ -67,19 +67,19 @@ class Expedition {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'region': region,
-        'description': description,
-        'durationSeconds': durationSeconds,
-        'creditsCost': creditsCost,
-        'iconEmoji': iconEmoji,
-        'unlocksSpeciesId': unlocksSpeciesId,
-        'possibleFinds': possibleFinds.map((f) => f.toJson()).toList(),
-        'isActive': isActive,
-        'startedTimestampMs': startedTimestampMs,
-        'isCompleted': isCompleted,
-      };
+    'id': id,
+    'name': name,
+    'region': region,
+    'description': description,
+    'durationSeconds': durationSeconds,
+    'creditsCost': creditsCost,
+    'iconEmoji': iconEmoji,
+    'unlocksSpeciesId': unlocksSpeciesId,
+    'possibleFinds': possibleFinds.map((f) => f.toJson()).toList(),
+    'isActive': isActive,
+    'startedTimestampMs': startedTimestampMs,
+    'isCompleted': isCompleted,
+  };
 
   factory Expedition.fromJson(Map<String, dynamic> json) {
     return Expedition(
@@ -91,7 +91,8 @@ class Expedition {
       creditsCost: (json['creditsCost'] as num).toDouble(),
       iconEmoji: json['iconEmoji'] as String? ?? '🗺️',
       unlocksSpeciesId: json['unlocksSpeciesId'] as String?,
-      possibleFinds: (json['possibleFinds'] as List<dynamic>?)
+      possibleFinds:
+          (json['possibleFinds'] as List<dynamic>?)
               ?.map((e) => FossilItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:extinction_sanctuary/core/save/save_service.dart';
@@ -37,22 +38,24 @@ void main() {
       expect(prefs.containsKey('extinction_sanctuary_save_v2'), isTrue);
     });
 
-    test('Recovers gracefully from corrupted save JSON without crashing', () async {
-      SharedPreferences.setMockInitialValues({
-        'extinction_sanctuary_save_v2': '{corrupted_malformed_json_###',
-      });
+    test(
+      'Recovers gracefully from corrupted save JSON without crashing',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'extinction_sanctuary_save_v2': '{corrupted_malformed_json_###',
+        });
 
-      final saveService = SaveService();
-      final recovered = await saveService.loadGame();
+        final saveService = SaveService();
+        final recovered = await saveService.loadGame();
 
-      // Rather than crashing with FormatException, returns safe initial state
-      expect(recovered, isNotNull);
-      expect(recovered!.credits, equals(60.0));
-      expect(recovered.schemaVersion, equals(2));
-    });
+        // Rather than crashing with FormatException, returns safe initial state
+        expect(recovered, isNotNull);
+        expect(recovered!.credits, equals(60.0));
+        expect(recovered.schemaVersion, equals(2));
+      },
+    );
 
-    test('Loads a save whose habitat entry has no id instead of resetting',
-        () async {
+    test('Loads a save whose habitat entry has no id instead of resetting', () async {
       // Regression: Habitat.fromJson used to cast id to a non-null String, so a
       // renamed/missing field threw and loadGame fell back to GameState.initial().
       final jsonMap = GameState.initial().toJson();
@@ -71,8 +74,10 @@ void main() {
       // A reset would start over at 60 credits with the default sanctuary.
       expect(loaded!.credits, equals(1234.5));
       expect(loaded.habitats.containsKey('dodo_island'), isTrue);
-      expect(loaded.habitats['dodo_island']!.name,
-          equals('Dodo Island Sanctuary'));
+      expect(
+        loaded.habitats['dodo_island']!.name,
+        equals('Dodo Island Sanctuary'),
+      );
       // The map key is the habitat's identity, so a missing field must not
       // leave the id empty (care actions look the habitat up by `id`).
       expect(loaded.habitats['dodo_island']!.id, equals('dodo_island'));

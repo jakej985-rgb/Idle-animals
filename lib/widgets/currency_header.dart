@@ -8,10 +8,7 @@ import '../theme/app_theme.dart';
 class CurrencyHeader extends StatelessWidget {
   final GameState state;
 
-  const CurrencyHeader({
-    super.key,
-    required this.state,
-  });
+  const CurrencyHeader({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {

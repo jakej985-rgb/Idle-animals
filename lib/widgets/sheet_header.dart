@@ -61,10 +61,7 @@ class SheetHeader extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) ...[
-              const SizedBox(width: 10),
-              trailing!,
-            ],
+            if (trailing != null) ...[const SizedBox(width: 10), trailing!],
             IconButton(
               tooltip: 'Close',
               onPressed: () => Navigator.of(context).maybePop(),

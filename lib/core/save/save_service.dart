@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../models/game_state.dart';
 
 class SaveService {
@@ -35,9 +37,8 @@ class SaveService {
         if (raw != null && raw.isNotEmpty) {
           // Found legacy v1 save; migrate to v2
           final legacyMap = jsonDecode(raw) as Map<String, dynamic>;
-          final migratedState = GameState.fromJson(legacyMap).copyWith(
-            schemaVersion: GameState.currentSchemaVersion,
-          );
+          final migratedState = GameState.fromJson(legacyMap)
+              .copyWith(schemaVersion: GameState.currentSchemaVersion);
           // Persist upgraded v2 save
           await saveGame(migratedState);
           return migratedState;

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'providers/game_notifier.dart';
 import 'screens/sanctuary_screen.dart';
 import 'theme/app_theme.dart';
@@ -17,11 +18,7 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
-  runApp(
-    const ProviderScope(
-      child: ExtinctionSanctuaryApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: ExtinctionSanctuaryApp()));
 }
 
 class ExtinctionSanctuaryApp extends ConsumerStatefulWidget {
@@ -32,7 +29,8 @@ class ExtinctionSanctuaryApp extends ConsumerStatefulWidget {
       _ExtinctionSanctuaryAppState();
 }
 
-class _ExtinctionSanctuaryAppState extends ConsumerState<ExtinctionSanctuaryApp> {
+class _ExtinctionSanctuaryAppState
+    extends ConsumerState<ExtinctionSanctuaryApp> {
   late final AppLifecycleListener _lifecycleListener;
 
   @override

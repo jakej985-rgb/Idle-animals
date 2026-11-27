@@ -17,25 +17,28 @@ void main() {
       expect(report, isNull);
     });
 
-    test('Calculates offline progress deterministically for 30 minutes away', () {
-      final state = GameState.initial();
-      const halfHourMs = 30 * 60 * 1000;
-      final now = state.lastSavedTimestamp + halfHourMs;
+    test(
+      'Calculates offline progress deterministically for 30 minutes away',
+      () {
+        final state = GameState.initial();
+        const halfHourMs = 30 * 60 * 1000;
+        final now = state.lastSavedTimestamp + halfHourMs;
 
-      final report = offlineManager.calculateOfflineProgress(
-        state: state,
-        currentTimestampMs: now,
-      );
+        final report = offlineManager.calculateOfflineProgress(
+          state: state,
+          currentTimestampMs: now,
+        );
 
-      expect(report, isNotNull);
-      expect(report!.wasCapped, isFalse);
-      expect(report.secondsAway, equals(1800.0));
-      expect(report.simulatedSeconds, equals(1800.0));
-      expect(report.creditsEarned, greaterThan(100.0));
-      expect(report.dnaRecovered, greaterThan(20.0));
-      expect(report.dodosBorn, greaterThanOrEqualTo(1));
-      expect(report.awayDurationFormatted, equals('30m'));
-    });
+        expect(report, isNotNull);
+        expect(report!.wasCapped, isFalse);
+        expect(report.secondsAway, equals(1800.0));
+        expect(report.simulatedSeconds, equals(1800.0));
+        expect(report.creditsEarned, greaterThan(100.0));
+        expect(report.dnaRecovered, greaterThan(20.0));
+        expect(report.dodosBorn, greaterThanOrEqualTo(1));
+        expect(report.awayDurationFormatted, equals('30m'));
+      },
+    );
 
     test('Truncates offline progress at configured offline cap', () {
       final state = GameState.initial(); // cap = 7200s (2 hours)

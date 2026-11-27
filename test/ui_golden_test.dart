@@ -33,11 +33,11 @@ const _habitat = Habitat(
 );
 
 GameState _goldenState() => GameState.initial().copyWith(
-      credits: 1250.0,
-      dna: 40.0,
-      activeHabitatId: 'dodo_island',
-      habitats: const {'dodo_island': _habitat},
-    );
+  credits: 1250.0,
+  dna: 40.0,
+  activeHabitatId: 'dodo_island',
+  habitats: const {'dodo_island': _habitat},
+);
 
 Widget _harness(GameState state, Widget home) {
   return ProviderScope(

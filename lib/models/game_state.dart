@@ -103,8 +103,7 @@ class GameState {
           role: StaffRole.keeper,
           level: 0,
           title: 'Habitat Caretaker',
-          description:
-              'Maintains habitat feeders, comforts animals, and increases breeding speed by +10% per level.',
+          description: 'Maintains habitat feeders, comforts animals, and increases breeding speed by +10% per level.',
           avatarEmoji: '🧑‍🌾',
         ),
       },
@@ -112,7 +111,8 @@ class GameState {
         'habitat_expansion': const Upgrade(
           id: 'habitat_expansion',
           title: 'Expand Island Reserve',
-          description: 'Increases active habitat capacity by +10 and habitat level.',
+          description:
+              'Increases active habitat capacity by +10 and habitat level.',
           type: UpgradeType.habitatLevel,
           currency: UpgradeCurrency.credits,
           baseCost: 50.0,
@@ -142,7 +142,8 @@ class GameState {
         'breeding_ground': const Upgrade(
           id: 'breeding_ground',
           title: 'Protected Nesting Grounds',
-          description: 'Soft island moss nests increase natural breeding rate by +15%.',
+          description:
+              'Soft island moss nests increase natural breeding rate by +15%.',
           type: UpgradeType.breedingSpeed,
           currency: UpgradeCurrency.dna,
           baseCost: 25.0,
@@ -263,7 +264,8 @@ class GameState {
       missions: missions ?? this.missions,
       restorationPerks: restorationPerks ?? this.restorationPerks,
       unlockedSpeciesIds: unlockedSpeciesIds ?? this.unlockedSpeciesIds,
-      totalAnimalsBred: totalAnimalsBred ?? totalDodosBred ?? this.totalAnimalsBred,
+      totalAnimalsBred:
+          totalAnimalsBred ?? totalDodosBred ?? this.totalAnimalsBred,
       totalExpeditionsCompleted:
           totalExpeditionsCompleted ?? this.totalExpeditionsCompleted,
       soundEnabled: soundEnabled ?? this.soundEnabled,
@@ -272,94 +274,96 @@ class GameState {
   }
 
   Map<String, dynamic> toJson() => {
-        'schemaVersion': currentSchemaVersion,
-        'credits': credits,
-        'dna': dna,
-        'research': research,
-        'restorationPoints': restorationPoints,
-        'lastSavedTimestamp': lastSavedTimestamp,
-        'offlineCapSeconds': offlineCapSeconds,
-        'activeHabitatId': activeHabitatId,
-        'habitats': habitats.map((k, v) => MapEntry(k, v.toJson())),
-        'staff': staff.map((k, v) => MapEntry(k, v.toJson())),
-        'upgrades': upgrades.map((k, v) => MapEntry(k, v.toJson())),
-        'researchNodes': researchNodes.map((k, v) => MapEntry(k, v.toJson())),
-        'expeditions': expeditions.map((k, v) => MapEntry(k, v.toJson())),
-        'fossilInventory':
-            fossilInventory.map((k, v) => MapEntry(k, v.toJson())),
-        'missions': missions.map((k, v) => MapEntry(k, v.toJson())),
-        'restorationPerks': restorationPerks,
-        'unlockedSpeciesIds': unlockedSpeciesIds,
-        'totalAnimalsBred': totalAnimalsBred,
-        'totalDodosBred': totalAnimalsBred, // Backwards compatibility for v1
-        'totalExpeditionsCompleted': totalExpeditionsCompleted,
-        'soundEnabled': soundEnabled,
-        'hapticsEnabled': hapticsEnabled,
-      };
+    'schemaVersion': currentSchemaVersion,
+    'credits': credits,
+    'dna': dna,
+    'research': research,
+    'restorationPoints': restorationPoints,
+    'lastSavedTimestamp': lastSavedTimestamp,
+    'offlineCapSeconds': offlineCapSeconds,
+    'activeHabitatId': activeHabitatId,
+    'habitats': habitats.map((k, v) => MapEntry(k, v.toJson())),
+    'staff': staff.map((k, v) => MapEntry(k, v.toJson())),
+    'upgrades': upgrades.map((k, v) => MapEntry(k, v.toJson())),
+    'researchNodes': researchNodes.map((k, v) => MapEntry(k, v.toJson())),
+    'expeditions': expeditions.map((k, v) => MapEntry(k, v.toJson())),
+    'fossilInventory': fossilInventory.map((k, v) => MapEntry(k, v.toJson())),
+    'missions': missions.map((k, v) => MapEntry(k, v.toJson())),
+    'restorationPerks': restorationPerks,
+    'unlockedSpeciesIds': unlockedSpeciesIds,
+    'totalAnimalsBred': totalAnimalsBred,
+    'totalDodosBred': totalAnimalsBred, // Backwards compatibility for v1
+    'totalExpeditionsCompleted': totalExpeditionsCompleted,
+    'soundEnabled': soundEnabled,
+    'hapticsEnabled': hapticsEnabled,
+  };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
     // Migration: If v1, totalAnimalsBred falls back to totalDodosBred
-    final totalBred = json['totalAnimalsBred'] as int? ??
-        json['totalDodosBred'] as int? ??
-        1;
+    final totalBred =
+        json['totalAnimalsBred'] as int? ?? json['totalDodosBred'] as int? ?? 1;
 
     return GameState(
       schemaVersion: json['schemaVersion'] as int? ?? 1,
       credits: (json['credits'] as num?)?.toDouble() ?? 60.0,
       dna: (json['dna'] as num?)?.toDouble() ?? 10.0,
       research: (json['research'] as num?)?.toDouble() ?? 0.0,
-      restorationPoints:
-          (json['restorationPoints'] as num?)?.toDouble() ?? 0.0,
-      lastSavedTimestamp: (json['lastSavedTimestamp'] as int?) ??
+      restorationPoints: (json['restorationPoints'] as num?)?.toDouble() ?? 0.0,
+      lastSavedTimestamp:
+          (json['lastSavedTimestamp'] as int?) ??
           DateTime.now().millisecondsSinceEpoch,
       offlineCapSeconds:
           (json['offlineCapSeconds'] as num?)?.toDouble() ?? 7200.0,
-      activeHabitatId:
-          json['activeHabitatId'] as String? ?? 'dodo_island',
-      habitats: (json['habitats'] as Map<String, dynamic>?)?.map(
-            (k, v) {
-              final habitat = Habitat.fromJson(v as Map<String, dynamic>);
-              // Older saves can omit the id. The map key is authoritative, and
-              // care actions look habitats up by `id`, not by the map key.
-              return MapEntry(
-                k,
-                habitat.id.isEmpty ? habitat.copyWith(id: k) : habitat,
-              );
-            },
-          ) ??
+      activeHabitatId: json['activeHabitatId'] as String? ?? 'dodo_island',
+      habitats:
+          (json['habitats'] as Map<String, dynamic>?)?.map((k, v) {
+            final habitat = Habitat.fromJson(v as Map<String, dynamic>);
+            // Older saves can omit the id. The map key is authoritative, and
+            // care actions look habitats up by `id`, not by the map key.
+            return MapEntry(
+              k,
+              habitat.id.isEmpty ? habitat.copyWith(id: k) : habitat,
+            );
+          }) ??
           {},
-      staff: (json['staff'] as Map<String, dynamic>?)?.map(
+      staff:
+          (json['staff'] as Map<String, dynamic>?)?.map(
             (k, v) =>
                 MapEntry(k, StaffMember.fromJson(v as Map<String, dynamic>)),
           ) ??
           {},
-      upgrades: (json['upgrades'] as Map<String, dynamic>?)?.map(
+      upgrades:
+          (json['upgrades'] as Map<String, dynamic>?)?.map(
             (k, v) => MapEntry(k, Upgrade.fromJson(v as Map<String, dynamic>)),
           ) ??
           {},
-      researchNodes: (json['researchNodes'] as Map<String, dynamic>?)?.map(
+      researchNodes:
+          (json['researchNodes'] as Map<String, dynamic>?)?.map(
             (k, v) =>
                 MapEntry(k, ResearchNode.fromJson(v as Map<String, dynamic>)),
           ) ??
           {},
-      expeditions: (json['expeditions'] as Map<String, dynamic>?)?.map(
+      expeditions:
+          (json['expeditions'] as Map<String, dynamic>?)?.map(
             (k, v) =>
                 MapEntry(k, Expedition.fromJson(v as Map<String, dynamic>)),
           ) ??
           {for (var e in Expedition.defaultExpeditions()) e.id: e},
       fossilInventory:
           (json['fossilInventory'] as Map<String, dynamic>?)?.map(
-                (k, v) =>
-                    MapEntry(k, FossilItem.fromJson(v as Map<String, dynamic>)),
-              ) ??
-              {},
-      missions: (json['missions'] as Map<String, dynamic>?)?.map(
             (k, v) =>
-                MapEntry(k, Mission.fromJson(v as Map<String, dynamic>)),
+                MapEntry(k, FossilItem.fromJson(v as Map<String, dynamic>)),
+          ) ??
+          {},
+      missions:
+          (json['missions'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, Mission.fromJson(v as Map<String, dynamic>)),
           ) ??
           {for (var m in Mission.defaultMissions()) m.id: m},
-      restorationPerks: (json['restorationPerks'] as Map<String, dynamic>?)
-              ?.map((k, v) => MapEntry(k, v as int)) ??
+      restorationPerks:
+          (json['restorationPerks'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, v as int),
+          ) ??
           {
             'growth_boost': 0,
             'dna_boost': 0,
@@ -368,12 +372,11 @@ class GameState {
           },
       unlockedSpeciesIds:
           (json['unlockedSpeciesIds'] as List<dynamic>?)
-                  ?.map((e) => e.toString())
-                  .toList() ??
-              ['dodo'],
+              ?.map((e) => e.toString())
+              .toList() ??
+          ['dodo'],
       totalAnimalsBred: totalBred,
-      totalExpeditionsCompleted:
-          json['totalExpeditionsCompleted'] as int? ?? 0,
+      totalExpeditionsCompleted: json['totalExpeditionsCompleted'] as int? ?? 0,
       soundEnabled: json['soundEnabled'] as bool? ?? true,
       hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
     );
