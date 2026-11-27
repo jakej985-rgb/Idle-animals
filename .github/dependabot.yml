@@ -7,8 +7,25 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # One PR per week for routine updates. Majors stay out of the group: they
+    # need a deliberate read, and two neighbouring lines of pubspec.yaml
+    # (flutter_riverpod / shared_preferences) conflict when bumped apart.
+    groups:
+      pub-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    # Action bumps are all majors by tag convention but the same kind of change
+    # (a new action runtime), and each one edits a different workflow line, so
+    # they review well together in a single PR.
+    groups:
+      github-actions:
+        patterns:
+          - '*'
