@@ -267,6 +267,41 @@ void main() {
         expect(recovered!.credits, equals(777.0));
       },
     );
+
+    test(
+      'A save whose active habitat is gone falls back to one it has',
+      () async {
+        final jsonMap = GameState.initial().toJson()
+          ..['credits'] = 500.0
+          ..['activeHabitatId'] = 'retired_sanctuary_id'
+          ..['lastSavedTimestamp'] = DateTime.now().millisecondsSinceEpoch;
+
+        SharedPreferences.setMockInitialValues({
+          'extinction_sanctuary_save_v2': jsonEncode(jsonMap),
+        });
+
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        container.read(gameProvider);
+        await pumpEventQueue();
+
+        final state = container.read(gameProvider);
+        final notifier = container.read(gameProvider.notifier);
+        final level = state.habitats['dodo_island']!.level;
+
+        expect(state.activeHabitatId, equals('dodo_island'));
+        expect(state.habitats.containsKey(state.activeHabitatId), isTrue);
+
+        // Care actions and upgrade effects address the active habitat by id; a
+        // stale id made them return false or spend credits for no effect.
+        expect(notifier.feedHabitat(state.activeHabitatId), isTrue);
+        expect(notifier.buyUpgrade('habitat_expansion'), isTrue);
+        expect(
+          container.read(gameProvider).habitats[state.activeHabitatId]!.level,
+          equals(level + 1),
+        );
+      },
+    );
   });
 }
 

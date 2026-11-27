@@ -334,10 +334,27 @@ class GameState {
     // A payload without habitats is not a playable game: callers read the
     // active habitat, so it is rejected as unreadable (and recovered from the
     // backup) rather than loaded and throwing on every launch.
-    final habitats = json['habitats'];
-    if (habitats is! Map || habitats.isEmpty) {
+    final savedHabitats = json['habitats'];
+    if (savedHabitats is! Map || savedHabitats.isEmpty) {
       throw const FormatException('the save has no habitats');
     }
+
+    final habitats = (savedHabitats as Map<String, dynamic>).map((k, v) {
+      final habitat = Habitat.fromJson(v as Map<String, dynamic>);
+      // The map key is authoritative: older saves can omit the id and a stale
+      // one can disagree with the key. Care actions look habitats up by `id`,
+      // not by the map key, so it must match.
+      return MapEntry(k, habitat.copyWith(id: k));
+    });
+
+    // The active id must name a habitat this save actually has: care actions
+    // and upgrades address the active habitat by that id, so a stale one makes
+    // them silently do nothing. Fall back to a habitat that is here.
+    final requestedActive = json['activeHabitatId'] as String?;
+    final activeHabitatId =
+        requestedActive != null && habitats.containsKey(requestedActive)
+        ? requestedActive
+        : habitats.keys.first;
 
     // Migration: If v1, totalAnimalsBred falls back to totalDodosBred
     final totalBred =
@@ -354,16 +371,8 @@ class GameState {
           DateTime.now().millisecondsSinceEpoch,
       offlineCapSeconds:
           (json['offlineCapSeconds'] as num?)?.toDouble() ?? 7200.0,
-      activeHabitatId: json['activeHabitatId'] as String? ?? 'dodo_island',
-      habitats:
-          (json['habitats'] as Map<String, dynamic>?)?.map((k, v) {
-            final habitat = Habitat.fromJson(v as Map<String, dynamic>);
-            // The map key is authoritative: older saves can omit the id and a
-            // stale one can disagree with the key. Care actions look habitats
-            // up by `id`, not by the map key, so it must match.
-            return MapEntry(k, habitat.copyWith(id: k));
-          }) ??
-          {},
+      activeHabitatId: activeHabitatId,
+      habitats: habitats,
       staff:
           (json['staff'] as Map<String, dynamic>?)?.map(
             (k, v) =>
