@@ -319,12 +319,10 @@ class GameState {
       habitats: (json['habitats'] as Map<String, dynamic>?)?.map(
             (k, v) {
               final habitat = Habitat.fromJson(v as Map<String, dynamic>);
-              // Older saves can omit the id. The map key is authoritative, and
-              // care actions look habitats up by `id`, not by the map key.
-              return MapEntry(
-                k,
-                habitat.id.isEmpty ? habitat.copyWith(id: k) : habitat,
-              );
+              // The map key is authoritative: older saves can omit the id and a
+              // stale one can disagree with the key. Care actions look habitats
+              // up by `id`, not by the map key, so it must match.
+              return MapEntry(k, habitat.copyWith(id: k));
             },
           ) ??
           {},

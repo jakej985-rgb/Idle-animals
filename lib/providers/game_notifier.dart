@@ -110,9 +110,14 @@ class GameNotifier extends Notifier<GameState> {
   /// Restarts the simulation and credits the time spent in the background.
   Future<void> handleAppResumed() async {
     if (!_paused) return;
+    // The provider can be disposed while the app is in the background; starting
+    // timers afterwards would leak them past disposal.
+    if (!ref.mounted) return;
     _paused = false;
-    _startLoops();
+    // Credit the background time before the 1s loop restarts, so its first tick
+    // does not also count the time since the tick watch was reset.
     _collectOfflineProgress();
+    _startLoops();
   }
 
   void dismissOfflineReport() {

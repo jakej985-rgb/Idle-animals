@@ -106,5 +106,21 @@ void main() {
         equals(100.0),
       );
     });
+
+    test('The saved habitat map key overrides a stale habitat id', () async {
+      final jsonMap = GameState.initial().toJson();
+      final habitats = jsonMap['habitats'] as Map<String, dynamic>;
+      (habitats['dodo_island'] as Map<String, dynamic>)['id'] =
+          'retired_sanctuary_id';
+
+      SharedPreferences.setMockInitialValues({
+        'extinction_sanctuary_save_v2': jsonEncode(jsonMap),
+      });
+
+      final loaded = await SaveService().loadGame();
+
+      expect(loaded, isNotNull);
+      expect(loaded!.habitats['dodo_island']!.id, equals('dodo_island'));
+    });
   });
 }
