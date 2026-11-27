@@ -8,6 +8,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build and exercise the release steps without publishing'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -96,16 +101,35 @@ jobs:
           echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
           echo "apk_path=extinction-sanctuary-${TAG_NAME}.apk" >> $GITHUB_OUTPUT
 
+      # Deliberately no continue-on-error: a failed upload has to fail the
+      # release, not publish one without its APK.
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
-        continue-on-error: true
         with:
           name: extinction-sanctuary-release-apk
           path: ${{ steps.release_info.outputs.apk_path }}
           if-no-files-found: error
           retention-days: 14
 
+      # A dry run stops here. action-gh-release has no dry-run switch, and
+      # `draft: true` would still create a tag and a release object, so the
+      # dry run only reports what it would have published.
+      - name: Dry run notice
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          {
+            echo "### Release dry run"
+            echo ""
+            echo "Built the release APK and uploaded it as a workflow artifact."
+            echo "Publishing was skipped: no tag and no GitHub Release were created."
+            echo ""
+            echo "- tag: `${{ steps.release_info.outputs.tag_name }}`"
+            echo "- name: ${{ steps.release_info.outputs.release_name }}"
+            echo "- asset: `${{ steps.release_info.outputs.apk_path }}`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish GitHub Release
+        if: github.event.inputs.dry_run != 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.release_info.outputs.tag_name }}
