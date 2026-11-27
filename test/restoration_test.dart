@@ -29,7 +29,10 @@ void main() {
       expect(restored, isTrue);
 
       // Verify points granted and habitat reset
-      expect(notifier.state.restorationPoints, equals(expectedPoints.toDouble()));
+      expect(
+        notifier.state.restorationPoints,
+        equals(expectedPoints.toDouble()),
+      );
       expect(notifier.state.habitats['dodo_island']!.level, equals(1));
       expect(notifier.state.habitats['dodo_island']!.population, equals(1));
       expect(notifier.state.habitats['dodo_island']!.timesRestored, equals(1));
@@ -40,9 +43,7 @@ void main() {
       addTearDown(container.dispose);
       final notifier = container.read(gameProvider.notifier);
 
-      notifier.state = notifier.state.copyWith(
-        restorationPoints: 30.0,
-      );
+      notifier.state = notifier.state.copyWith(restorationPoints: 30.0);
 
       // Purchase growth boost perk (costs 5 points for Lv 1)
       final bought = notifier.buyRestorationPerk('growth_boost');

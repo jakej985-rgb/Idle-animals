@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
@@ -9,10 +10,7 @@ import '../widgets/sheet_header.dart';
 class ArchiveSheet extends ConsumerWidget {
   final GameState? state;
 
-  const ArchiveSheet({
-    super.key,
-    this.state,
-  });
+  const ArchiveSheet({super.key, this.state});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,8 +36,9 @@ class ArchiveSheet extends ConsumerWidget {
           Expanded(
             child: ListView(
               children: allSpecies.map((species) {
-                final isUnlocked =
-                    activeState.unlockedSpeciesIds.contains(species.id);
+                final isUnlocked = activeState.unlockedSpeciesIds.contains(
+                  species.id,
+                );
 
                 if (isUnlocked) {
                   return _buildUnlockedCard(species, activeState);
@@ -67,10 +66,7 @@ class ArchiveSheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1B3147),
-            Color(0xFF101D2C),
-          ],
+          colors: [Color(0xFF1B3147), Color(0xFF101D2C)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -91,12 +87,13 @@ class ArchiveSheet extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F1E2E),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: AppColors.emerald, width: 1.5),
+                  border: Border.all(color: AppColors.emerald, width: 1.5),
                 ),
                 child: Center(
-                  child: Text(species.iconEmoji,
-                      style: const TextStyle(fontSize: 28)),
+                  child: Text(
+                    species.iconEmoji,
+                    style: const TextStyle(fontSize: 28),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -121,7 +118,9 @@ class ArchiveSheet extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.emerald.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
@@ -218,8 +217,10 @@ class ArchiveSheet extends ConsumerWidget {
             child: Center(
               child: Opacity(
                 opacity: 0.35,
-                child: Text(species.iconEmoji,
-                    style: const TextStyle(fontSize: 24)),
+                child: Text(
+                  species.iconEmoji,
+                  style: const TextStyle(fontSize: 24),
+                ),
               ),
             ),
           ),
@@ -284,10 +285,7 @@ class ArchiveSheet extends ConsumerWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 9,
-            ),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 9),
           ),
         ],
       ),

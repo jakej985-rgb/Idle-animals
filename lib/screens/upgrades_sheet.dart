@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/upgrade.dart';
@@ -11,11 +12,7 @@ class UpgradesSheet extends ConsumerWidget {
   final GameState? state;
   final Function(String)? onBuyUpgrade;
 
-  const UpgradesSheet({
-    super.key,
-    this.state,
-    this.onBuyUpgrade,
-  });
+  const UpgradesSheet({super.key, this.state, this.onBuyUpgrade});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,8 +54,12 @@ class UpgradesSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildUpgradeCard(BuildContext context, Upgrade upg,
-      GameState activeState, GameNotifier controller) {
+  Widget _buildUpgradeCard(
+    BuildContext context,
+    Upgrade upg,
+    GameState activeState,
+    GameNotifier controller,
+  ) {
     final cost = upg.currentCost;
     bool canAfford = false;
     String currencyIcon = '🪙';
@@ -128,7 +129,9 @@ class UpgradesSheet extends ConsumerWidget {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: isMaxed
                             ? AppColors.emerald.withValues(alpha: 0.2)

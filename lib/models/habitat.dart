@@ -37,6 +37,7 @@ class Habitat {
 
   double get foodPercentage => (food / maxFood).clamp(0.0, 1.0);
   double get waterPercentage => (water / maxWater).clamp(0.0, 1.0);
+
   /// Production and breeding multiplier for a 0-100 happiness value. This is
   /// the single source of the 0.2-1.4 clamp; the simulation engine calls it
   /// with the happiness it has just computed, before that value is stored.
@@ -90,22 +91,22 @@ class Habitat {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'speciesId': speciesId,
-        'biomeType': biomeType,
-        'level': level,
-        'population': population,
-        'breedingProgress': breedingProgress,
-        'food': food,
-        'maxFood': maxFood,
-        'water': water,
-        'maxWater': maxWater,
-        'happiness': happiness,
-        'hasAutoFeeder': hasAutoFeeder,
-        'hasAutoWater': hasAutoWater,
-        'timesRestored': timesRestored,
-      };
+    'id': id,
+    'name': name,
+    'speciesId': speciesId,
+    'biomeType': biomeType,
+    'level': level,
+    'population': population,
+    'breedingProgress': breedingProgress,
+    'food': food,
+    'maxFood': maxFood,
+    'water': water,
+    'maxWater': maxWater,
+    'happiness': happiness,
+    'hasAutoFeeder': hasAutoFeeder,
+    'hasAutoWater': hasAutoWater,
+    'timesRestored': timesRestored,
+  };
 
   factory Habitat.fromJson(Map<String, dynamic> json) {
     return Habitat(
@@ -115,8 +116,7 @@ class Habitat {
       biomeType: json['biomeType'] as String? ?? 'tropical_island',
       level: json['level'] as int? ?? 1,
       population: json['population'] as int? ?? 1,
-      breedingProgress:
-          (json['breedingProgress'] as num?)?.toDouble() ?? 0.0,
+      breedingProgress: (json['breedingProgress'] as num?)?.toDouble() ?? 0.0,
       food: (json['food'] as num?)?.toDouble() ?? 100.0,
       maxFood: (json['maxFood'] as num?)?.toDouble() ?? 100.0,
       water: (json['water'] as num?)?.toDouble() ?? 100.0,

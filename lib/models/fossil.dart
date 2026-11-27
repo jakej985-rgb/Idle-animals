@@ -1,9 +1,4 @@
-enum FossilRarity {
-  common,
-  uncommon,
-  rare,
-  legendary,
-}
+enum FossilRarity { common, uncommon, rare, legendary }
 
 class FossilItem {
   final String id;
@@ -40,15 +35,15 @@ class FossilItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'rarity': rarity.name,
-        'iconEmoji': iconEmoji,
-        'dnaBonus': dnaBonus,
-        'researchBonus': researchBonus,
-        'count': count,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'rarity': rarity.name,
+    'iconEmoji': iconEmoji,
+    'dnaBonus': dnaBonus,
+    'researchBonus': researchBonus,
+    'count': count,
+  };
 
   factory FossilItem.fromJson(Map<String, dynamic> json) {
     return FossilItem(

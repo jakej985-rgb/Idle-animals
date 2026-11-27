@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/format/game_format.dart';
 import '../models/expedition.dart';
 import '../models/fossil.dart';
@@ -40,8 +41,7 @@ class ExpeditionsSheet extends ConsumerWidget {
           SheetHeader(
             icon: '🧭',
             title: 'Fossil Expeditions',
-            subtitle:
-                'Dispatch field teams to recover preserved bones, amber and ancient genomes.',
+            subtitle: 'Dispatch field teams to recover preserved bones, amber and ancient genomes.',
             trailing: Text(
               '🪙 ${GameFormat.compact(activeState.credits)}',
               style: const TextStyle(
@@ -65,11 +65,14 @@ class ExpeditionsSheet extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  const Text('🦴 Discoveries: ',
-                      style: TextStyle(
-                          color: Color(0xFFCBD5E1),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold)),
+                  const Text(
+                    '🦴 Discoveries: ',
+                    style: TextStyle(
+                      color: Color(0xFFCBD5E1),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -80,14 +83,22 @@ class ExpeditionsSheet extends ConsumerWidget {
                             child: Chip(
                               padding: EdgeInsets.zero,
                               labelPadding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 0),
+                                horizontal: 6,
+                                vertical: 0,
+                              ),
                               visualDensity: VisualDensity.compact,
                               backgroundColor: const Color(0xFF162534),
-                              avatar: Text(f.iconEmoji,
-                                  style: const TextStyle(fontSize: 12)),
-                              label: Text('${f.name} (x${f.count})',
-                                  style: const TextStyle(
-                                      fontSize: 10, color: Colors.white70)),
+                              avatar: Text(
+                                f.iconEmoji,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              label: Text(
+                                '${f.name} (x${f.count})',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white70,
+                                ),
+                              ),
                             ),
                           );
                         }).toList(),
@@ -104,7 +115,12 @@ class ExpeditionsSheet extends ConsumerWidget {
             child: ListView(
               children: exps.map((exp) {
                 return _buildExpeditionCard(
-                    context, exp, nowMs, activeState, controller);
+                  context,
+                  exp,
+                  nowMs,
+                  activeState,
+                  controller,
+                );
               }).toList(),
             ),
           ),
@@ -113,8 +129,13 @@ class ExpeditionsSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildExpeditionCard(BuildContext context, Expedition exp, int nowMs,
-      GameState activeState, GameNotifier controller) {
+  Widget _buildExpeditionCard(
+    BuildContext context,
+    Expedition exp,
+    int nowMs,
+    GameState activeState,
+    GameNotifier controller,
+  ) {
     final canAfford = activeState.credits >= exp.creditsCost;
     final isDone = exp.isCompleted || exp.checkCompleted(nowMs);
     final remainingSec = exp.getRemainingSeconds(nowMs);
@@ -128,9 +149,7 @@ class ExpeditionsSheet extends ConsumerWidget {
         border: Border.all(
           color: isDone
               ? AppColors.emerald
-              : (exp.isActive
-                  ? AppColors.primary
-                  : AppColors.border),
+              : (exp.isActive ? AppColors.primary : AppColors.border),
           width: (isDone || exp.isActive) ? 1.5 : 1.0,
         ),
       ),
@@ -147,8 +166,10 @@ class ExpeditionsSheet extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
-                  child: Text(exp.iconEmoji,
-                      style: const TextStyle(fontSize: 24)),
+                  child: Text(
+                    exp.iconEmoji,
+                    style: const TextStyle(fontSize: 24),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -174,9 +195,12 @@ class ExpeditionsSheet extends ConsumerWidget {
                         if (exp.unlocksSpeciesId != null)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1),
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Text(
@@ -206,7 +230,10 @@ class ExpeditionsSheet extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(
             exp.description,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -216,8 +243,7 @@ class ExpeditionsSheet extends ConsumerWidget {
             runSpacing: 4,
             children: exp.possibleFinds.map((find) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFF131F2A),
                   borderRadius: BorderRadius.circular(8),
@@ -244,8 +270,9 @@ class ExpeditionsSheet extends ConsumerWidget {
                 value: 1.0 - (remainingSec / exp.durationSeconds),
                 minHeight: 6,
                 backgroundColor: AppColors.track,
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.primary,
+                ),
               ),
             ),
             const SizedBox(height: 6),

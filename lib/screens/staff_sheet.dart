@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/format/game_format.dart';
 import '../models/game_state.dart';
 import '../models/staff.dart';
@@ -11,11 +12,7 @@ class StaffSheet extends ConsumerWidget {
   final GameState? state;
   final Function(String)? onHireOrUpgrade;
 
-  const StaffSheet({
-    super.key,
-    this.state,
-    this.onHireOrUpgrade,
-  });
+  const StaffSheet({super.key, this.state, this.onHireOrUpgrade});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,26 +50,19 @@ class StaffSheet extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (keeper != null)
-                    _buildKeeperCard(
-                      context,
-                      keeper,
-                      activeState,
-                      controller,
-                    ),
+                    _buildKeeperCard(context, keeper, activeState, controller),
                   const SizedBox(height: 14),
                   // Preview of upcoming staff roles
                   _buildUpcomingRole(
                     avatar: '🩺',
                     title: 'Dr. Evelyn, Veterinarian',
-                    desc:
-                        'Unlocks in next region. Monitors welfare & disease prevention.',
+                    desc: 'Unlocks in next region. Monitors welfare & disease prevention.',
                   ),
                   const SizedBox(height: 10),
                   _buildUpcomingRole(
                     avatar: '🧬',
                     title: 'Dr. Aris, Geneticist',
-                    desc:
-                        'Unlocks with ancient fossils. Accelerates DNA synthesis.',
+                    desc: 'Unlocks with ancient fossils. Accelerates DNA synthesis.',
                   ),
                 ],
               ),
@@ -83,8 +73,12 @@ class StaffSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildKeeperCard(BuildContext context, StaffMember keeper,
-      GameState activeState, GameNotifier controller) {
+  Widget _buildKeeperCard(
+    BuildContext context,
+    StaffMember keeper,
+    GameState activeState,
+    GameNotifier controller,
+  ) {
     final cost = keeper.upgradeCost;
     final canAfford = activeState.credits >= cost;
     final isHired = keeper.isHired;
@@ -93,10 +87,7 @@ class StaffSheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFF1B3147),
-            const Color(0xFF101D2C),
-          ],
+          colors: [const Color(0xFF1B3147), const Color(0xFF101D2C)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -122,8 +113,10 @@ class StaffSheet extends ConsumerWidget {
                   border: Border.all(color: AppColors.accent, width: 2),
                 ),
                 child: Center(
-                  child: Text(keeper.avatarEmoji,
-                      style: const TextStyle(fontSize: 28)),
+                  child: Text(
+                    keeper.avatarEmoji,
+                    style: const TextStyle(fontSize: 28),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -148,7 +141,9 @@ class StaffSheet extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: isHired
                                 ? AppColors.emerald.withValues(alpha: 0.2)
