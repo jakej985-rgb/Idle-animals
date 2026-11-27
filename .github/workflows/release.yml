@@ -1,9 +1,10 @@
 name: Release Android APK
 
 on:
+  # Releases are cut deliberately: by pushing a version tag, or by hand from the
+  # Actions tab. A merge to main used to build an APK and publish a release (and
+  # a tag) on every commit, which made the release history noise.
   push:
-    branches:
-      - main
     tags:
       - 'v*'
   workflow_dispatch:

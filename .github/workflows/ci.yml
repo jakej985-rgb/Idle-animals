@@ -37,5 +37,10 @@ jobs:
       - name: Run code analyzer
         run: flutter analyze
 
+      # `flutter test` never compiles the app for the web target, so a dart2js
+      # or asset error would otherwise merge green.
+      - name: Build web (release)
+        run: flutter build web --release
+
       - name: Run unit tests
         run: flutter test
