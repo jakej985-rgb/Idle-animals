@@ -290,7 +290,7 @@ void main() {
         final level = state.habitats['dodo_island']!.level;
 
         expect(state.activeHabitatId, equals('dodo_island'));
-        expect(state.habitats.containsKey(state.activeHabitatId), isTrue);
+        expect(state.activeHabitat.id, equals(state.activeHabitatId));
 
         // Care actions and upgrade effects address the active habitat by id; a
         // stale id made them return false or spend credits for no effect.

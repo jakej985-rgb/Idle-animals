@@ -44,9 +44,7 @@ class OperationsSheet extends ConsumerWidget {
           );
         };
 
-    final activeHabitat =
-        activeState.habitats[activeState.activeHabitatId] ??
-        activeState.habitats.values.first;
+    final activeHabitat = activeState.activeHabitat;
     final activeSpecies = Species.fromId(activeHabitat.speciesId);
 
     final hasCompletedExpedition = activeState.expeditions.values.any(

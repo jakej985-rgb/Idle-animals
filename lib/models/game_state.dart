@@ -56,6 +56,11 @@ class GameState {
     this.hapticsEnabled = true,
   });
 
+  /// The habitat the player is caring for. Every loader routes
+  /// [activeHabitatId] through a habitat the state actually has, so the active
+  /// id and this habitat cannot disagree.
+  Habitat get activeHabitat => habitats[activeHabitatId]!;
+
   // Permanent restoration multipliers
   double get globalGrowthMultiplier =>
       1.0 + ((restorationPerks['growth_boost'] ?? 0) * 0.15);

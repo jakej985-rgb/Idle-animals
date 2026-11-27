@@ -27,11 +27,9 @@ abstract final class SaveCodec {
       final bytes = base64Url.decode(base64Url.normalize(payload));
       final decoded = jsonDecode(utf8.decode(bytes));
       if (decoded is! Map<String, dynamic>) return null;
+      // The parser rejects a payload with no habitats (and anything else a save
+      // cannot do without); that FormatException lands in the catch below.
       if (decoded['credits'] is! num) return null;
-      // A token with no habitats has nothing to restore: the sanctuary screen
-      // reads the active habitat, so loading one would throw on every launch.
-      final habitats = decoded['habitats'];
-      if (habitats is! Map || habitats.isEmpty) return null;
       return GameState.fromJson(decoded);
     } catch (_) {
       // A truncated or edited token is a paste problem, not a crash.
