@@ -123,9 +123,9 @@ jobs:
             echo "Built the release APK and uploaded it as a workflow artifact."
             echo "Publishing was skipped: no tag and no GitHub Release were created."
             echo ""
-            echo "- tag: `${{ steps.release_info.outputs.tag_name }}`"
+            echo "- tag: \`${{ steps.release_info.outputs.tag_name }}\`"
             echo "- name: ${{ steps.release_info.outputs.release_name }}"
-            echo "- asset: `${{ steps.release_info.outputs.apk_path }}`"
+            echo "- asset: \`${{ steps.release_info.outputs.apk_path }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish GitHub Release
