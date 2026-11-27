@@ -1,4 +1,10 @@
-enum StaffRole { keeper, veterinarian, geneticist, botanist, researcher }
+enum StaffRole {
+  keeper,
+  veterinarian,
+  geneticist,
+  botanist,
+  researcher,
+}
 
 class StaffMember {
   final String id;
@@ -49,14 +55,14 @@ class StaffMember {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'role': role.name,
-    'level': level,
-    'title': title,
-    'description': description,
-    'avatarEmoji': avatarEmoji,
-  };
+        'id': id,
+        'name': name,
+        'role': role.name,
+        'level': level,
+        'title': title,
+        'description': description,
+        'avatarEmoji': avatarEmoji,
+      };
 
   factory StaffMember.fromJson(Map<String, dynamic> json) {
     return StaffMember(

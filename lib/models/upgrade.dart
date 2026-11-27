@@ -1,4 +1,8 @@
-enum UpgradeCurrency { credits, dna, research }
+enum UpgradeCurrency {
+  credits,
+  dna,
+  research,
+}
 
 enum UpgradeType {
   habitatLevel,
@@ -36,11 +40,11 @@ class Upgrade {
 
   bool get isMaxed => currentLevel >= maxLevel;
 
-  double get currentCost =>
-      baseCost *
-      (currentLevel == 0 ? 1.0 : (costMultiplier * currentLevel * 1.25));
+  double get currentCost => baseCost * (currentLevel == 0 ? 1.0 : (costMultiplier * currentLevel * 1.25));
 
-  Upgrade copyWith({int? currentLevel}) {
+  Upgrade copyWith({
+    int? currentLevel,
+  }) {
     return Upgrade(
       id: id,
       title: title,
@@ -56,17 +60,17 @@ class Upgrade {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'type': type.name,
-    'currency': currency.name,
-    'baseCost': baseCost,
-    'costMultiplier': costMultiplier,
-    'currentLevel': currentLevel,
-    'maxLevel': maxLevel,
-    'icon': icon,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'type': type.name,
+        'currency': currency.name,
+        'baseCost': baseCost,
+        'costMultiplier': costMultiplier,
+        'currentLevel': currentLevel,
+        'maxLevel': maxLevel,
+        'icon': icon,
+      };
 
   factory Upgrade.fromJson(Map<String, dynamic> json) {
     return Upgrade(

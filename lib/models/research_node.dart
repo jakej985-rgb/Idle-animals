@@ -17,7 +17,9 @@ class ResearchNode {
     required this.icon,
   });
 
-  ResearchNode copyWith({bool? isUnlocked}) {
+  ResearchNode copyWith({
+    bool? isUnlocked,
+  }) {
     return ResearchNode(
       id: id,
       title: title,
@@ -30,14 +32,14 @@ class ResearchNode {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'cost': cost,
-    'isUnlocked': isUnlocked,
-    'prerequisites': prerequisites,
-    'icon': icon,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'cost': cost,
+        'isUnlocked': isUnlocked,
+        'prerequisites': prerequisites,
+        'icon': icon,
+      };
 
   factory ResearchNode.fromJson(Map<String, dynamic> json) {
     return ResearchNode(
@@ -46,8 +48,7 @@ class ResearchNode {
       description: json['description'] as String,
       cost: (json['cost'] as num).toDouble(),
       isUnlocked: json['isUnlocked'] as bool? ?? false,
-      prerequisites:
-          (json['prerequisites'] as List<dynamic>?)
+      prerequisites: (json['prerequisites'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

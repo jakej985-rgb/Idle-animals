@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-
 import '../core/format/game_format.dart';
 import '../core/offline/offline_manager.dart';
 import '../theme/app_theme.dart';
@@ -24,7 +23,10 @@ class OfflineModal extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.sheet,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.borderStrong, width: 1.5),
+          border: Border.all(
+            color: AppColors.borderStrong,
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.6),
@@ -86,10 +88,7 @@ class OfflineModal extends StatelessWidget {
             if (report.wasCapped) ...[
               const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.amber.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),

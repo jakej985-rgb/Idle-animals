@@ -1,4 +1,9 @@
-enum MissionRewardType { credits, dna, research, restorationPoints }
+enum MissionRewardType {
+  credits,
+  dna,
+  research,
+  restorationPoints,
+}
 
 class Mission {
   final String id;
@@ -25,7 +30,11 @@ class Mission {
     required this.iconEmoji,
   });
 
-  Mission copyWith({int? currentProgress, bool? isCompleted, bool? isClaimed}) {
+  Mission copyWith({
+    int? currentProgress,
+    bool? isCompleted,
+    bool? isClaimed,
+  }) {
     return Mission(
       id: id,
       title: title,
@@ -41,17 +50,17 @@ class Mission {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'targetCount': targetCount,
-    'currentProgress': currentProgress,
-    'isCompleted': isCompleted,
-    'isClaimed': isClaimed,
-    'rewardType': rewardType.name,
-    'rewardAmount': rewardAmount,
-    'iconEmoji': iconEmoji,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'targetCount': targetCount,
+        'currentProgress': currentProgress,
+        'isCompleted': isCompleted,
+        'isClaimed': isClaimed,
+        'rewardType': rewardType.name,
+        'rewardAmount': rewardAmount,
+        'iconEmoji': iconEmoji,
+      };
 
   factory Mission.fromJson(Map<String, dynamic> json) {
     return Mission(
@@ -112,8 +121,7 @@ class Mission {
       Mission(
         id: 'pop_30',
         title: 'Thriving Ecosystem',
-        description:
-            'Achieve a total sanctuary population of 30 extinct animals.',
+        description: 'Achieve a total sanctuary population of 30 extinct animals.',
         targetCount: 30,
         rewardType: MissionRewardType.restorationPoints,
         rewardAmount: 15.0,

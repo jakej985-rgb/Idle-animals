@@ -33,10 +33,7 @@ void main() {
       final res = engine.tick(state: multiHabitatState, dt: 1.0);
 
       // Verify both habitats produced output and consumed food
-      expect(
-        res.creditsGenerated,
-        greaterThan(20.0),
-      ); // 10 dodos * 1.0 + 5 thylacines * 2.5
+      expect(res.creditsGenerated, greaterThan(20.0)); // 10 dodos * 1.0 + 5 thylacines * 2.5
       expect(res.dnaGenerated, greaterThan(5.0));
       expect(res.nextState.habitats['dodo_island']!.food, lessThan(100.0));
       expect(res.nextState.habitats['tasman_forest']!.food, lessThan(100.0));

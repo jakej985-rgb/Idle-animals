@@ -66,7 +66,10 @@ void main() {
 
       // One dodo earns 1 credit/s, so a 5s gap is ~5 credits. The old code
       // advanced the timestamp without simulating and earned nothing.
-      expect(container.read(gameProvider).credits, greaterThan(creditsBefore));
+      expect(
+        container.read(gameProvider).credits,
+        greaterThan(creditsBefore),
+      );
       expect(notifier.pendingOfflineReport, isNull);
     });
   });

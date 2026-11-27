@@ -55,8 +55,8 @@ class NeedsPanel extends StatelessWidget {
     final body = bothAutomated
         ? _buildAutomationSummary()
         : compact
-        ? _buildCompactBody(species, canRevive)
-        : _buildFullBody(species, canRevive);
+            ? _buildCompactBody(species, canRevive)
+            : _buildFullBody(species, canRevive);
 
     return Container(
       padding: EdgeInsets.all(compact ? 12 : 16),
@@ -183,7 +183,8 @@ class NeedsPanel extends StatelessWidget {
     required bool compact,
   }) {
     final isAtCapacity = habitat.population >= habitat.capacity;
-    final populationColor = isAtCapacity ? AppColors.amber : AppColors.success;
+    final populationColor =
+        isAtCapacity ? AppColors.amber : AppColors.success;
 
     return Row(
       children: [
@@ -243,7 +244,8 @@ class NeedsPanel extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: isAtCapacity ? AppColors.amber : AppColors.textMuted,
+                  color:
+                      isAtCapacity ? AppColors.amber : AppColors.textMuted,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
@@ -260,9 +262,9 @@ class NeedsPanel extends StatelessWidget {
   Widget _buildReviveButton(bool canRevive, {required bool compact}) {
     final tooltip = canRevive
         ? 'Revive a ${Species.fromId(habitat.speciesId).name} for '
-              '${GameFormat.whole(GameBalance.reviveCostDna)} DNA'
+            '${GameFormat.whole(GameBalance.reviveCostDna)} DNA'
         : 'Revive needs ${GameFormat.whole(GameBalance.reviveCostDna)} DNA '
-              'and free capacity';
+            'and free capacity';
 
     if (compact) {
       return Tooltip(
@@ -303,7 +305,10 @@ class NeedsPanel extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               '${GameFormat.whole(GameBalance.reviveCostDna)} DNA',
-              style: const TextStyle(fontSize: 10, color: Color(0xFFBAE6FD)),
+              style: const TextStyle(
+                fontSize: 10,
+                color: Color(0xFFBAE6FD),
+              ),
             ),
           ],
         ),
@@ -344,7 +349,8 @@ class NeedsPanel extends StatelessWidget {
     );
   }
 
-  bool get _canFeed => credits >= GameBalance.feedCostCredits || credits <= 0;
+  bool get _canFeed =>
+      credits >= GameBalance.feedCostCredits || credits <= 0;
 
   String get _feedActionLabel {
     final cost = GameFormat.whole(GameBalance.feedCostCredits);
@@ -365,8 +371,7 @@ class NeedsPanel extends StatelessWidget {
   }) {
     return Semantics(
       container: true,
-      label:
-          '$label: ${(percent * 100).toStringAsFixed(0)} percent'
+      label: '$label: ${(percent * 100).toStringAsFixed(0)} percent'
           '${isAuto ? ', automated' : ''}',
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -380,36 +385,36 @@ class NeedsPanel extends StatelessWidget {
           children: [
             ExcludeSemantics(
               child: Row(
-                children: [
-                  Text(icon, style: const TextStyle(fontSize: 14)),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+              children: [
+                Text(icon, style: const TextStyle(fontSize: 14)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  if (isAuto)
-                    _autoBadge()
-                  else
-                    Text(
-                      '${(percent * 100).toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        fontFeatures: AppText.tabularFigures,
-                      ),
+                ),
+                const SizedBox(width: 6),
+                if (isAuto)
+                  _autoBadge()
+                else
+                  Text(
+                    '${(percent * 100).toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      fontFeatures: AppText.tabularFigures,
                     ),
-                ],
-              ),
+                  ),
+              ],
+            ),
             ),
             const SizedBox(height: 6),
             ExcludeSemantics(
@@ -423,9 +428,8 @@ class NeedsPanel extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   padding: EdgeInsets.zero,
                   side: BorderSide(
-                    color: isAuto
-                        ? AppColors.border
-                        : color.withValues(alpha: 0.6),
+                    color:
+                        isAuto ? AppColors.border : color.withValues(alpha: 0.6),
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -436,7 +440,9 @@ class NeedsPanel extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: (isAuto || !enabled) ? AppColors.textSubdued : color,
+                    color: (isAuto || !enabled)
+                        ? AppColors.textSubdued
+                        : color,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
@@ -461,8 +467,7 @@ class NeedsPanel extends StatelessWidget {
   }) {
     return Semantics(
       container: true,
-      label:
-          '$label: ${(percent * 100).toStringAsFixed(0)} percent'
+      label: '$label: ${(percent * 100).toStringAsFixed(0)} percent'
           '${isAuto ? ', automated' : ''}',
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -476,32 +481,32 @@ class NeedsPanel extends StatelessWidget {
           children: [
             ExcludeSemantics(
               child: Row(
-                children: [
-                  Text(icon, style: const TextStyle(fontSize: 13)),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+              children: [
+                Text(icon, style: const TextStyle(fontSize: 13)),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
-                    isAuto ? 'AUTO' : '${(percent * 100).toStringAsFixed(0)}%',
-                    style: TextStyle(
-                      color: isAuto ? AppColors.success : color,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      fontFeatures: AppText.tabularFigures,
-                    ),
+                ),
+                Text(
+                  isAuto ? 'AUTO' : '${(percent * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    color: isAuto ? AppColors.success : color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    fontFeatures: AppText.tabularFigures,
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             ),
             const SizedBox(height: 5),
             ExcludeSemantics(
@@ -559,8 +564,7 @@ class NeedsPanel extends StatelessWidget {
     final color = _getHappinessColor(habitat.happiness);
     return Semantics(
       container: true,
-      label:
-          'Welfare ${habitat.happiness.toStringAsFixed(0)} percent. '
+      label: 'Welfare ${habitat.happiness.toStringAsFixed(0)} percent. '
           '${_getHappinessText(habitat.happiness)}',
       excludeSemantics: true,
       child: Container(

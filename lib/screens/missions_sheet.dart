@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../models/game_state.dart';
 import '../models/mission.dart';
 import '../providers/game_notifier.dart';
@@ -11,7 +10,11 @@ class MissionsSheet extends ConsumerWidget {
   final GameState? state;
   final Function(String)? onClaimMission;
 
-  const MissionsSheet({super.key, this.state, this.onClaimMission});
+  const MissionsSheet({
+    super.key,
+    this.state,
+    this.onClaimMission,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +34,8 @@ class MissionsSheet extends ConsumerWidget {
           const SheetHeader(
             icon: '🎯',
             title: 'Conservation Directives',
-            subtitle: 'Complete guided objectives to unlock grants and accelerate species recovery.',
+            subtitle:
+                'Complete guided objectives to unlock grants and accelerate species recovery.',
           ),
           const SizedBox(height: 14),
           Expanded(
@@ -47,13 +51,11 @@ class MissionsSheet extends ConsumerWidget {
   }
 
   Widget _buildMissionCard(
-    BuildContext context,
-    Mission m,
-    GameNotifier controller,
-  ) {
+      BuildContext context, Mission m, GameNotifier controller) {
     final isDone = m.isCompleted;
     final isClaimed = m.isClaimed;
-    final progressVal = (m.currentProgress / m.targetCount).clamp(0.0, 1.0);
+    final progressVal =
+        (m.currentProgress / m.targetCount).clamp(0.0, 1.0);
 
     String rewardIcon = '🪙';
     Color rewardColor = AppColors.amber;
@@ -149,10 +151,8 @@ class MissionsSheet extends ConsumerWidget {
           ),
           const SizedBox(width: 10),
           if (isClaimed)
-            const Text(
-              'Claimed ✓',
-              style: TextStyle(color: Colors.white38, fontSize: 11),
-            )
+            const Text('Claimed ✓',
+                style: TextStyle(color: Colors.white38, fontSize: 11))
           else if (isDone)
             ElevatedButton(
               onPressed: () {
@@ -165,10 +165,8 @@ class MissionsSheet extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emerald,
                 foregroundColor: AppColors.onFill(AppColors.emerald),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

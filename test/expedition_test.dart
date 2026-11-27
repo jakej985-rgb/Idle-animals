@@ -17,10 +17,7 @@ void main() {
 
       // At 10s elapsed
       expect(runningExp.checkCompleted(startTime + 10000), isFalse);
-      expect(
-        runningExp.getRemainingSeconds(startTime + 10000),
-        closeTo(20.0, 0.5),
-      );
+      expect(runningExp.getRemainingSeconds(startTime + 10000), closeTo(20.0, 0.5));
 
       // At 35s elapsed
       expect(runningExp.checkCompleted(startTime + 35000), isTrue);
@@ -55,10 +52,7 @@ void main() {
       // Verify Thylacine unlocked and habitat created
       expect(notifier.state.unlockedSpeciesIds, contains('thylacine'));
       expect(notifier.state.habitats.containsKey('tasman_forest'), isTrue);
-      expect(
-        notifier.state.habitats['tasman_forest']!.speciesId,
-        equals('thylacine'),
-      );
+      expect(notifier.state.habitats['tasman_forest']!.speciesId, equals('thylacine'));
       expect(notifier.state.totalExpeditionsCompleted, equals(1));
       expect(notifier.state.fossilInventory.isNotEmpty, isTrue);
     });

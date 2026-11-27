@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../models/game_state.dart';
 import '../models/species.dart';
 import '../providers/game_notifier.dart';
@@ -11,7 +10,11 @@ class WorldMapSheet extends ConsumerWidget {
   final GameState? state;
   final Function(String)? onSelectHabitat;
 
-  const WorldMapSheet({super.key, this.state, this.onSelectHabitat});
+  const WorldMapSheet({
+    super.key,
+    this.state,
+    this.onSelectHabitat,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,7 +71,8 @@ class WorldMapSheet extends ConsumerWidget {
           const SheetHeader(
             icon: '🌎',
             title: 'Global Sanctuary Network',
-            subtitle: 'Switch between restored sanctuaries. Each habitat operates concurrently.',
+            subtitle:
+                'Switch between restored sanctuaries. Each habitat operates concurrently.',
           ),
           const SizedBox(height: 14),
           Expanded(
@@ -93,8 +97,8 @@ class WorldMapSheet extends ConsumerWidget {
                       color: isActive
                           ? AppColors.accent
                           : (isUnlocked
-                                ? AppColors.border
-                                : const Color(0xFF162330)),
+                              ? AppColors.border
+                              : const Color(0xFF162330)),
                       width: isActive ? 1.5 : 1.0,
                     ),
                   ),
@@ -141,9 +145,7 @@ class WorldMapSheet extends ConsumerWidget {
                                 if (isActive)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: AppColors.primary,
                                       borderRadius: BorderRadius.circular(6),
@@ -152,8 +154,7 @@ class WorldMapSheet extends ConsumerWidget {
                                       'ACTIVE',
                                       style: TextStyle(
                                         color: AppColors.onFill(
-                                          AppColors.primary,
-                                        ),
+                                            AppColors.primary),
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -206,21 +207,16 @@ class WorldMapSheet extends ConsumerWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.onFill(
-                              AppColors.primary,
-                            ),
+                            foregroundColor:
+                                AppColors.onFill(AppColors.primary),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
+                                horizontal: 10, vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'View',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                          child: const Text('View',
+                              style: TextStyle(fontSize: 12)),
                         ),
                     ],
                   ),

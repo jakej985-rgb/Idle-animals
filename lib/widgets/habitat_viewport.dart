@@ -48,12 +48,12 @@ class _AnimalVisual {
     required this.y,
     required this.speed,
     required this.timer,
-  }) : targetX = x,
-       targetY = y,
-       activity = 'resting',
-       left = false,
-       jump = 0,
-       velocity = 0;
+  })  : targetX = x,
+        targetY = y,
+        activity = 'resting',
+        left = false,
+        jump = 0,
+        velocity = 0;
 }
 
 class _CareParticle {
@@ -119,7 +119,8 @@ class _HabitatViewportState extends State<HabitatViewport>
     if (!mounted) return;
     // Derive delta from the ticker so animation speed follows real elapsed
     // time on 60Hz, 90Hz and 120Hz displays. Clamp after app resumes.
-    final dt = ((elapsed - _lastElapsed).inMicroseconds / 1e6).clamp(0.0, 0.05);
+    final dt = ((elapsed - _lastElapsed).inMicroseconds / 1e6)
+        .clamp(0.0, 0.05);
     _lastElapsed = elapsed;
     _clock.value += dt;
     _advanceAnimals(dt);
@@ -130,12 +131,7 @@ class _HabitatViewportState extends State<HabitatViewport>
       animal.timer -= dt;
 
       if (animal.timer <= 0) {
-        final activities = <String>[
-          'roaming',
-          'feeding',
-          'drinking',
-          'resting',
-        ];
+        final activities = <String>['roaming', 'feeding', 'drinking', 'resting'];
         animal.activity = activities[_random.nextInt(activities.length)];
         animal.timer = 2 + _random.nextDouble() * 3;
 
@@ -231,12 +227,13 @@ class _HabitatViewportState extends State<HabitatViewport>
 
     return Semantics(
       button: true,
-      label:
-          '${habitat.name}: ${habitat.population} ${species.name} in the '
+      label: '${habitat.name}: ${habitat.population} ${species.name} in the '
           '${_biomeLabel(habitat.biomeType)}. Activate to care for the animals.',
       onTap: () {
         final size = context.size;
-        _handleTap(size == null ? Offset.zero : size.center(Offset.zero));
+        _handleTap(
+          size == null ? Offset.zero : size.center(Offset.zero),
+        );
       },
       child: ExcludeSemantics(
         child: RepaintBoundary(
@@ -270,7 +267,11 @@ class _HabitatViewportState extends State<HabitatViewport>
                         ..._buildAnimals(species),
                         ..._buildParticles(time),
                         if (_showHint)
-                          Positioned(left: 14, bottom: 12, child: _hint()),
+                          Positioned(
+                            left: 14,
+                            bottom: 12,
+                            child: _hint(),
+                          ),
                       ],
                     );
                   },
@@ -301,12 +302,16 @@ class _HabitatViewportState extends State<HabitatViewport>
   List<Widget> _buildAnimals(Species species) {
     return _animals.map((animal) {
       return Align(
-        alignment: Alignment((animal.x * 2) - 1, (animal.y * 2) - 1),
+        alignment: Alignment(
+          (animal.x * 2) - 1,
+          (animal.y * 2) - 1,
+        ),
         child: Transform.translate(
           offset: Offset(animal.left ? -2 : 2, animal.jump),
           child: Transform.scale(
             // Slight perspective: animals lower in the scene read as closer.
-            scale: (0.88 + animal.y * 0.26) * (animal.jump < -2 ? 1.08 : 1),
+            scale: (0.88 + animal.y * 0.26) *
+                (animal.jump < -2 ? 1.08 : 1),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -463,14 +468,15 @@ class _HabitatPainter extends CustomPainter {
     );
 
     final grass = Paint()
-      ..shader = RadialGradient(colors: <Color>[_grassLight(), _grassDark()])
-          .createShader(
-            Rect.fromCenter(
-              center: Offset(cx, cy - 2),
-              width: rx * 1.86,
-              height: ry * 1.78,
-            ),
-          );
+      ..shader = RadialGradient(
+        colors: <Color>[_grassLight(), _grassDark()],
+      ).createShader(
+        Rect.fromCenter(
+          center: Offset(cx, cy - 2),
+          width: rx * 1.86,
+          height: ry * 1.78,
+        ),
+      );
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(cx, cy - 2),
@@ -696,7 +702,11 @@ class _HabitatPainter extends CustomPainter {
       Offset(size.width * .58, size.height * .34),
     ]) {
       canvas.drawOval(
-        Rect.fromCenter(center: p, width: 20 * s, height: 7 * s),
+        Rect.fromCenter(
+          center: p,
+          width: 20 * s,
+          height: 7 * s,
+        ),
         undergrowth,
       );
     }
@@ -734,7 +744,12 @@ class _HabitatPainter extends CustomPainter {
       final base = size.height * 0.62;
       final path = Path()
         ..moveTo(x, base)
-        ..quadraticBezierTo(x + 6 * s, base - 12 * s, x - 2 * s, base - 22 * s);
+        ..quadraticBezierTo(
+          x + 6 * s,
+          base - 12 * s,
+          x - 2 * s,
+          base - 22 * s,
+        );
       canvas.drawPath(path, kelp);
     }
     canvas.drawCircle(
@@ -761,7 +776,11 @@ class _HabitatPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final acacia = Offset(size.width * .82, size.height * .42);
-    canvas.drawLine(acacia, acacia + Offset(0, 26 * s), trunk);
+    canvas.drawLine(
+      acacia,
+      acacia + Offset(0, 26 * s),
+      trunk,
+    );
     canvas.drawLine(
       acacia + Offset(0, 8 * s),
       acacia + Offset(-10 * s, 18 * s),
@@ -990,7 +1009,8 @@ class _HabitatPainter extends CustomPainter {
 
   void _drawFireflies(Canvas canvas, Size size) {
     final s = _propScale(size);
-    final glow = Paint()..color = _atmosphereColor().withValues(alpha: 0.8);
+    final glow = Paint()
+      ..color = _atmosphereColor().withValues(alpha: 0.8);
     for (var i = 0; i < 8; i++) {
       final x = (0.15 + ((i * 0.117) % .72)) * size.width;
       final y = (0.18 + ((i * .173) % .55)) * size.height;
@@ -1011,7 +1031,8 @@ class _HabitatPainter extends CustomPainter {
     canvas.drawCircle(center, 19 * s, paint);
   }
 
-  double _propScale(Size size) => (size.shortestSide / 360).clamp(0.75, 1.55);
+  double _propScale(Size size) =>
+      (size.shortestSide / 360).clamp(0.75, 1.55);
 
   Color _waterColor() {
     switch (biome) {

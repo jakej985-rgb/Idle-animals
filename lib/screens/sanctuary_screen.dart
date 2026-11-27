@@ -86,12 +86,10 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
     final habitat =
         state.habitats[state.activeHabitatId] ?? state.habitats.values.first;
 
-    final hasCompletedExpedition = state.expeditions.values.any(
-      (e) => e.isCompleted,
-    );
-    final hasClaimableMission = state.missions.values.any(
-      (m) => m.isCompleted && !m.isClaimed,
-    );
+    final hasCompletedExpedition =
+        state.expeditions.values.any((e) => e.isCompleted);
+    final hasClaimableMission =
+        state.missions.values.any((m) => m.isCompleted && !m.isClaimed);
 
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
@@ -102,7 +100,8 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
           builder: (context, constraints) {
             // Short or large-text viewports switch to a scrollable compact
             // composition so the viewport never collapses below a usable size.
-            final compact = constraints.maxHeight < 680 || textScale > 1.15;
+            final compact =
+                constraints.maxHeight < 680 || textScale > 1.15;
             final horizontalPadding = compact ? 12.0 : 16.0;
 
             final header = CurrencyHeader(state: state);
@@ -200,10 +199,8 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
       ),
       child: Row(
         children: [
-          Text(
-            _getBiomeEmoji(habitat.biomeType),
-            style: const TextStyle(fontSize: 22),
-          ),
+          Text(_getBiomeEmoji(habitat.biomeType),
+              style: const TextStyle(fontSize: 22)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -447,9 +444,8 @@ class _SanctuaryScreenState extends ConsumerState<SanctuaryScreen> {
                           style: TextStyle(
                             color: color,
                             fontSize: 10,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
                           ),
                         ),
                       ],

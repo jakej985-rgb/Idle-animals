@@ -104,8 +104,7 @@ void main() {
       expect(
         failures,
         isEmpty,
-        reason:
-            'Text colors must stay AA-readable on every surface. A color '
+        reason: 'Text colors must stay AA-readable on every surface. A color '
             'that cannot reach 4.5:1 is a disabled/inactive-only tier and '
             'belongs in AppColors.textSubdued, not in this list.',
       );
@@ -138,8 +137,7 @@ void main() {
       expect(
         failures,
         isEmpty,
-        reason:
-            'A fill that cannot carry either white or background text at '
+        reason: 'A fill that cannot carry either white or background text at '
             '4.5:1 needs a darker or lighter token, not a hardcoded white label.',
       );
     });
@@ -158,11 +156,7 @@ void main() {
         }
       }
 
-      expect(
-        failures,
-        isEmpty,
-        reason: 'Inactive labels still need to be seen.',
-      );
+      expect(failures, isEmpty, reason: 'Inactive labels still need to be seen.');
     });
 
     test('indicator tokens clear 3:1 as non-text UI', () {
@@ -181,8 +175,7 @@ void main() {
       expect(
         failures,
         isEmpty,
-        reason:
-            'Badges, bars and icons must stay distinguishable from the '
+        reason: 'Badges, bars and icons must stay distinguishable from the '
             'surface behind them.',
       );
     });
@@ -203,8 +196,7 @@ void main() {
           expect(
             stronger,
             greaterThan(weaker),
-            reason:
-                '${ramp[i].$1} must read stronger than ${ramp[i + 1].$1} on '
+            reason: '${ramp[i].$1} must read stronger than ${ramp[i + 1].$1} on '
                 '${surface.key}, otherwise the emphasis ramp collapses.',
           );
         }
